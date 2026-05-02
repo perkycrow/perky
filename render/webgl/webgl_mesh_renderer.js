@@ -11,6 +11,7 @@ import {LIGHTING_SHADER_DEF} from '../shaders/builtin/lighting_shader.js'
 import {SMAA_EDGE_SHADER_DEF, SMAA_WEIGHT_SHADER_DEF, SMAA_BLEND_SHADER_DEF} from '../shaders/builtin/smaa_shader.js'
 import {VOLUMETRIC_FOG_SHADER_DEF, FOG_BLUR_SHADER_DEF} from '../shaders/builtin/volumetric_fog_shader.js'
 import {SSAO_SHADER_DEF, SSAO_BLUR_SHADER_DEF} from '../shaders/builtin/ssao_shader.js'
+import {BLOOM_EXTRACT_SHADER_DEF, BLOOM_BLUR_SHADER_DEF, BLOOM_COMPOSITE_SHADER_DEF} from '../shaders/builtin/bloom_shader.js'
 import {SMAA_AREA_TEXTURE, SMAA_SEARCH_TEXTURE} from '../smaa_lookup_textures.js'
 import LightDataTexture from '../light_data_texture.js'
 import FullscreenQuad from '../postprocessing/fullscreen_quad.js'
@@ -73,6 +74,20 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     #ssaoRadius = 0.5
     #ssaoBias = 0.025
     #ssaoIntensity = 1.5
+    #bloomExtractProgram = null
+    #bloomBlurProgram = null
+    #bloomCompositeProgram = null
+    #bloomEnabled = false
+    #bloomExtractFBO = null
+    #bloomExtractTexture = null
+    #bloomPingFBO = null
+    #bloomPingTexture = null
+    #bloomPongFBO = null
+    #bloomPongTexture = null
+    #bloomThreshold = 0.8
+    #bloomSoftThreshold = 0.5
+    #bloomIntensity = 0.3
+    #bloomPasses = 4
     #fogBlurProgram = null
     #fogFBO = null
     #fogTexture = null
@@ -285,6 +300,39 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     }
 
 
+    get bloomEnabled () {
+        return this.#bloomEnabled
+    }
+
+    set bloomEnabled (v) {
+        this.#bloomEnabled = v
+    }
+
+    get bloomThreshold () {
+        return this.#bloomThreshold
+    }
+
+    set bloomThreshold (v) {
+        this.#bloomThreshold = v
+    }
+
+    get bloomIntensity () {
+        return this.#bloomIntensity
+    }
+
+    set bloomIntensity (v) {
+        this.#bloomIntensity = v
+    }
+
+    get bloomPasses () {
+        return this.#bloomPasses
+    }
+
+    set bloomPasses (v) {
+        this.#bloomPasses = v
+    }
+
+
     get volumetricFogEnabled () {
         return this.#volumetricFogEnabled
     }
@@ -403,6 +451,9 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         this.#fogBlurProgram = context.shaderRegistry.register('fogBlur', FOG_BLUR_SHADER_DEF)
         this.#ssaoProgram = context.shaderRegistry.register('ssao', SSAO_SHADER_DEF)
         this.#ssaoBlurProgram = context.shaderRegistry.register('ssaoBlur', SSAO_BLUR_SHADER_DEF)
+        this.#bloomExtractProgram = context.shaderRegistry.register('bloomExtract', BLOOM_EXTRACT_SHADER_DEF)
+        this.#bloomBlurProgram = context.shaderRegistry.register('bloomBlur', BLOOM_BLUR_SHADER_DEF)
+        this.#bloomCompositeProgram = context.shaderRegistry.register('bloomComposite', BLOOM_COMPOSITE_SHADER_DEF)
         this.#smaaEdgeProgram = context.shaderRegistry.register('smaaEdge', SMAA_EDGE_SHADER_DEF)
         this.#smaaWeightProgram = context.shaderRegistry.register('smaaWeight', SMAA_WEIGHT_SHADER_DEF)
         this.#smaaBlendProgram = context.shaderRegistry.register('smaaBlend', SMAA_BLEND_SHADER_DEF)
@@ -798,8 +849,16 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
             sceneTexture = this.#fogBlurTexture
         }
 
+        if (this.#bloomEnabled) {
+            this.#renderBloomPass(gl, sceneTexture)
+        }
+
         if (sceneTexture !== this.#outputTexture || needsOutputFBO) {
             this.#blitToScreen(gl, sceneTexture)
+        }
+
+        if (this.#bloomEnabled) {
+            this.#compositeBloom(gl)
         }
     }
 
@@ -867,6 +926,100 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         this.#ssaoBlurFBO = gl.createFramebuffer()
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.#ssaoBlurFBO)
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#ssaoBlurTexture, 0)
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+    }
+
+
+    #compositeBloom (gl) {
+        gl.disable(gl.DEPTH_TEST)
+        gl.enable(gl.BLEND)
+        const bi = this.#bloomIntensity
+        gl.blendColor(bi, bi, bi, 1.0)
+        gl.blendFunc(gl.CONSTANT_COLOR, gl.ONE)
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+
+        const program = this.#bloomExtractProgram
+        gl.useProgram(program.program)
+        gl.activeTexture(gl.TEXTURE0)
+        gl.bindTexture(gl.TEXTURE_2D, this.#bloomPongTexture)
+        gl.uniform1i(program.uniforms.uSceneColor, 0)
+        gl.uniform1f(program.uniforms.uThreshold, 0.0)
+        gl.uniform1f(program.uniforms.uSoftThreshold, 0.0)
+        this.#fullscreenQuad.draw(gl, program)
+
+        gl.disable(gl.BLEND)
+        gl.enable(gl.DEPTH_TEST)
+    }
+
+
+    #renderBloomPass (gl, sceneTexture) {
+        const bw = Math.ceil(gl.canvas.width / 2)
+        const bh = Math.ceil(gl.canvas.height / 2)
+
+        this.#ensureBloomFBOs(gl, bw, bh)
+
+        gl.disable(gl.DEPTH_TEST)
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#bloomExtractFBO)
+        gl.viewport(0, 0, bw, bh)
+        const extract = this.#bloomExtractProgram
+        gl.useProgram(extract.program)
+        gl.activeTexture(gl.TEXTURE0)
+        gl.bindTexture(gl.TEXTURE_2D, sceneTexture)
+        gl.uniform1i(extract.uniforms.uSceneColor, 0)
+        gl.uniform1f(extract.uniforms.uThreshold, this.#bloomThreshold)
+        gl.uniform1f(extract.uniforms.uSoftThreshold, this.#bloomSoftThreshold)
+        this.#fullscreenQuad.draw(gl, extract)
+
+        const blur = this.#bloomBlurProgram
+        gl.useProgram(blur.program)
+        gl.uniform2f(blur.uniforms.uTexelSize, 1 / bw, 1 / bh)
+
+        let readTex = this.#bloomExtractTexture
+        for (let i = 0; i < this.#bloomPasses; i++) {
+            gl.bindFramebuffer(gl.FRAMEBUFFER, this.#bloomPingFBO)
+            gl.activeTexture(gl.TEXTURE0)
+            gl.bindTexture(gl.TEXTURE_2D, readTex)
+            gl.uniform1i(blur.uniforms.uTexture, 0)
+            gl.uniform2f(blur.uniforms.uDirection, 1.0, 0.0)
+            this.#fullscreenQuad.draw(gl, blur)
+
+            gl.bindFramebuffer(gl.FRAMEBUFFER, this.#bloomPongFBO)
+            gl.activeTexture(gl.TEXTURE0)
+            gl.bindTexture(gl.TEXTURE_2D, this.#bloomPingTexture)
+            gl.uniform1i(blur.uniforms.uTexture, 0)
+            gl.uniform2f(blur.uniforms.uDirection, 0.0, 1.0)
+            this.#fullscreenQuad.draw(gl, blur)
+
+            readTex = this.#bloomPongTexture
+        }
+
+        gl.enable(gl.DEPTH_TEST)
+    }
+
+
+    #ensureBloomFBOs (gl, width, height) {
+        if (this.#bloomExtractFBO) {
+            return
+        }
+
+        this.#bloomExtractTexture = createScreenTexture(gl, width, height)
+        this.#bloomExtractFBO = gl.createFramebuffer()
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#bloomExtractFBO)
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#bloomExtractTexture, 0)
+
+        this.#bloomPingTexture = createScreenTexture(gl, width, height)
+        this.#bloomPingFBO = gl.createFramebuffer()
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#bloomPingFBO)
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#bloomPingTexture, 0)
+
+        this.#bloomPongTexture = createScreenTexture(gl, width, height)
+        this.#bloomPongFBO = gl.createFramebuffer()
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#bloomPongFBO)
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#bloomPongTexture, 0)
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null)
     }
@@ -1219,6 +1372,20 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         this.#fogBlurProgram = null
         this.#ssaoProgram = null
         this.#ssaoBlurProgram = null
+        this.#bloomExtractProgram = null
+        this.#bloomBlurProgram = null
+        this.#bloomCompositeProgram = null
+        if (this.#bloomExtractFBO) {
+            this.context?.gl?.deleteFramebuffer(this.#bloomExtractFBO)
+            this.context?.gl?.deleteTexture(this.#bloomExtractTexture)
+            this.context?.gl?.deleteFramebuffer(this.#bloomPingFBO)
+            this.context?.gl?.deleteTexture(this.#bloomPingTexture)
+            this.context?.gl?.deleteFramebuffer(this.#bloomPongFBO)
+            this.context?.gl?.deleteTexture(this.#bloomPongTexture)
+            this.#bloomExtractFBO = null
+            this.#bloomPingFBO = null
+            this.#bloomPongFBO = null
+        }
         if (this.#ssaoFBO) {
             this.context?.gl?.deleteFramebuffer(this.#ssaoFBO)
             this.context?.gl?.deleteTexture(this.#ssaoTexture)

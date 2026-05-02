@@ -70,6 +70,7 @@ export default class DungeonStage extends Stage {
         this.meshRenderer.fogColor = [0.06, 0.06, 0.08]
         this.meshRenderer.fogScatterAnisotropy = 0.4
         this.meshRenderer.ssaoEnabled = true
+        this.meshRenderer.bloomEnabled = true
 
         this.scene = new Object3D()
         layer.setContent(this.scene)
@@ -731,6 +732,24 @@ export default class DungeonStage extends Stage {
             ssaoBtn.textContent = 'SSAO: ' + (this.meshRenderer.ssaoEnabled ? 'ON' : 'OFF')
         })
         document.body.appendChild(ssaoBtn)
+
+        const bloomBtn = document.createElement('button')
+        bloomBtn.textContent = 'BLOOM: ON'
+        Object.assign(bloomBtn.style, {
+            position: 'fixed',
+            top: '100px',
+            right: '10px',
+            zIndex: '9999',
+            fontFamily: 'monospace',
+            fontSize: '13px',
+            padding: '4px 8px',
+            cursor: 'pointer'
+        })
+        bloomBtn.addEventListener('click', () => {
+            this.meshRenderer.bloomEnabled = !this.meshRenderer.bloomEnabled
+            bloomBtn.textContent = 'BLOOM: ' + (this.meshRenderer.bloomEnabled ? 'ON' : 'OFF')
+        })
+        document.body.appendChild(bloomBtn)
     }
 
 
