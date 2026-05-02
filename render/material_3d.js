@@ -6,7 +6,7 @@ const DEFAULTS = {
     unlit: false,
     uvScale: [1, 1],
     roughness: 0.8,
-    specular: 0.15,
+    specular: 0.04,
     normalMap: null,
     normalStrength: 1.0,
     filtering: 'linear'

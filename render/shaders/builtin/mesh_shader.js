@@ -121,6 +121,7 @@ void main() {
     } else {
         vec3 viewDir = normalize(uCameraPosition - vWorldPosition);
         float shininess = pow(2.0, (1.0 - uRoughness) * 10.0);
+        float specNorm = (shininess + 2.0) / 25.0;
         float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), 4.0) * (1.0 - uRoughness);
 
         vec3 dirLight = normalize(uLightDirection);
@@ -129,13 +130,12 @@ void main() {
         float hemiFactor = normal.y * 0.5 + 0.5;
         vec3 ambient = mix(uAmbientGround, uAmbientSky, hemiFactor);
         float occlusion = 0.5 + 0.5 * hemiFactor;
-        lit = baseColor * (ambient * occlusion + diffuse * shadow);
+        lit = baseColor * (ambient * occlusion + diffuse * shadow / 3.14159);
 
         if (uSpecular > 0.0 && diffuse > 0.0) {
             vec3 halfDir = normalize(dirLight + viewDir);
             float specAngle = max(dot(normal, halfDir), 0.0);
-            float spec = uSpecular * pow(specAngle, shininess);
-            lit += vec3(spec) * shadow;
+            lit += vec3(uSpecular * specNorm * pow(specAngle, shininess)) * shadow;
         }
 
         for (int i = 0; i < uNumLights; i++) {
@@ -155,12 +155,12 @@ void main() {
             }
 
             float nDotL = max(dot(normal, lightDir), 0.0);
-            lit += baseColor * colRad.xyz * posInt.w * nDotL * attenuation;
+            lit += baseColor * colRad.xyz * posInt.w * nDotL * attenuation / 3.14159;
 
             if (uSpecular > 0.0 && nDotL > 0.0) {
                 vec3 halfVec = normalize(lightDir + viewDir);
                 float specAngle = max(dot(normal, halfVec), 0.0);
-                lit += colRad.xyz * posInt.w * uSpecular * pow(specAngle, shininess) * attenuation;
+                lit += colRad.xyz * posInt.w * uSpecular * specNorm * pow(specAngle, shininess) * attenuation;
             }
         }
 

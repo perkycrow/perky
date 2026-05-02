@@ -45,8 +45,8 @@ export default class DungeonStage extends Stage {
         })
 
         this.meshRenderer.lightDirection = [0.0, 1.0, 0.0]
-        this.meshRenderer.ambientSky = [0.03, 0.03, 0.05]
-        this.meshRenderer.ambientGround = [0.01, 0.01, 0.01]
+        this.meshRenderer.ambientSky = [0.12, 0.12, 0.15]
+        this.meshRenderer.ambientGround = [0.05, 0.04, 0.04]
         this.meshRenderer.fogNear = 8
         this.meshRenderer.fogFar = 30
         this.meshRenderer.fogColor = [0.01, 0.01, 0.02]
@@ -108,8 +108,8 @@ export default class DungeonStage extends Stage {
             y: 2.7,
             z: cz,
             color: [1.0, 0.85, 0.6],
-            intensity: 1.2,
-            radius: 6
+            intensity: 3.5,
+            radius: 10
         }))
     }
 
