@@ -73,7 +73,7 @@ describe('buildRoomColliders', () => {
         const rooms = [{room: 'room-small', x: 0, z: 0}]
         const colliders = buildRoomColliders(rooms)
 
-        expect(colliders.length).toBe(4)
+        expect(colliders.length).toBe(5)
     })
 
 

@@ -1,43 +1,19 @@
 import Stage from '../../game/stage.js'
 import WebGLMeshRenderer from '../../render/webgl/webgl_mesh_renderer.js'
 import Camera3D from '../../render/camera_3d.js'
-import Geometry from '../../render/geometry.js'
-import Mesh from '../../render/mesh.js'
 import MeshInstance from '../../render/mesh_instance.js'
-import Material3D from '../../render/material_3d.js'
 import Light3D from '../../render/light_3d.js'
 import Object3D from '../../render/object_3d.js'
-import RoomLibrary from '../room_library.js'
+import {loadGlb, buildGltfScene} from '../../render/loaders/gltf_loader.js'
 import DungeonWorld from '../worlds/dungeon_world.js'
 import PlayerController from '../controllers/player_controller.js'
-import {loadGlb, buildGltfScene} from '../../render/loaders/gltf_loader.js'
-import {resolveCollisions, buildRoomColliders} from '../collision.js'
-import layout from '../layouts/main.json' with {type: 'json'}
 import wiring from '../wiring.js'
 
 
 const EYE_HEIGHT = 1.7
 const MOUSE_SENSITIVITY = 0.002
 const PITCH_LIMIT = Math.PI / 2 - 0.05
-const SPAWN = {x: 0, y: 0, z: 0}
-
-const TORCHES = [
-    {x: 0, y: 2.8, z: 0, color: [1.0, 0.7, 0.3], intensity: 2.0, radius: 16},
-
-    {x: 8, y: 2.8, z: 0, color: [1.0, 0.7, 0.3], intensity: 1.5, radius: 12},
-    {x: 12, y: 2.8, z: 0, color: [1.0, 0.7, 0.3], intensity: 1.5, radius: 12},
-
-    {x: 24, y: 2.8, z: 0, color: [1.0, 0.7, 0.3], intensity: 2.0, radius: 16},
-
-    {x: 0, y: 2.8, z: -8, color: [1.0, 0.7, 0.3], intensity: 1.5, radius: 12},
-    {x: 0, y: 2.8, z: -12, color: [1.0, 0.7, 0.3], intensity: 1.5, radius: 12},
-
-    {x: 0, y: 2.8, z: -20, color: [1.0, 0.7, 0.3], intensity: 2.0, radius: 16},
-
-    {x: 24, y: 2.8, z: -12, color: [1.0, 0.7, 0.3], intensity: 1.5, radius: 12},
-
-    {x: 24, y: 2.8, z: -32, color: [1.0, 0.75, 0.35], intensity: 2.5, radius: 20}
-]
+const SPAWN = {x: -2, y: 0, z: 0}
 
 
 export default class DungeonStage extends Stage {
@@ -51,7 +27,6 @@ export default class DungeonStage extends Stage {
 
         const renderer = this.game.getRenderer('game')
         const layer = this.game.getLayer('game')
-        const gl = renderer.gl
 
         this.meshRenderer = new WebGLMeshRenderer()
         renderer.registerRenderer(this.meshRenderer)
@@ -69,110 +44,154 @@ export default class DungeonStage extends Stage {
         })
 
         this.meshRenderer.lightDirection = [0.3, 0.85, 0.4]
-        this.meshRenderer.ambientSky = [0.45, 0.45, 0.5]
-        this.meshRenderer.ambientGround = [0.12, 0.1, 0.08]
-        this.meshRenderer.fogNear = 6
-        this.meshRenderer.fogFar = 34
-        this.meshRenderer.fogColor = [0.02, 0.02, 0.04]
+        this.meshRenderer.ambientSky = [0.15, 0.15, 0.18]
+        this.meshRenderer.ambientGround = [0.05, 0.04, 0.03]
+        this.meshRenderer.fogNear = 8
+        this.meshRenderer.fogFar = 30
+        this.meshRenderer.fogColor = [0.01, 0.01, 0.02]
 
         this.scene = new Object3D()
         layer.setContent(this.scene)
 
         this.player = this.world.spawnPlayer(SPAWN)
-
         this.#setupMouseLook(layer.canvas)
-        this.#setupTorches(gl)
 
         super.onStart()
 
-        this.colliders = buildRoomColliders(layout)
-        this.#buildColliderDebug(gl)
-
-        this.#loadDungeon(gl)
+        this.#buildScene()
     }
 
 
-    #setupTorches (gl) {
+    async #buildScene () {
+        const assets = await this.#loadAssets()
         const lights = []
-        const sphereGeo = Geometry.createSphere(0.15, 8, 6)
-        const sphereMesh = new Mesh({gl, geometry: sphereGeo})
 
-        for (const torch of TORCHES) {
-            const light = new Light3D(torch)
-            lights.push(light)
+        this.#buildRoom(assets, -2, 0, lights)
+        this.#buildRoom(assets, 2, 0, lights)
 
-            const bulbMat = new Material3D({
-                color: torch.color,
-                emissive: torch.color,
-                unlit: true
-            })
-            const bulb = new MeshInstance({mesh: sphereMesh, material: bulbMat})
-            bulb.position.set(torch.x, torch.y, torch.z)
-            bulb.castShadow = false
-            this.scene.addChild(bulb)
+        const doorway = this.#placeAsset(assets.doorway, 0, 0, 0, 90)
+        const door = this.#findByName(doorway, 'door_4')
+        if (door) {
+            door.rotation.setFromEuler(0, Math.PI * 0.45, 0, 'YXZ')
+            door.markDirty()
         }
+
+        this.#buildWall(assets.wall, -4, 0, 90)
+        this.#buildWall(assets.wall, 4, 0, -90)
 
         this.meshRenderer.lights = lights
-    }
-
-
-    async #loadDungeon (gl) {
-        this.roomLibrary = new RoomLibrary()
-        await this.roomLibrary.load(gl)
-
-        for (const entry of layout) {
-            const room = this.roomLibrary.placeRoom(entry)
-            this.scene.addChild(room)
-        }
-
-        await this.#loadTestProps(gl)
-
         this.scene.markDirty()
     }
 
 
-    #buildColliderDebug (gl) {
-        const debugMat = new Material3D({
-            color: [0.2, 1.0, 0.3],
-            opacity: 0.25,
-            unlit: true
-        })
+    #buildRoom (assets, cx, cz, lights) {
+        this.#placeAsset(assets.floor, cx, 0, cz, 0)
+        this.#placeAsset(assets.floor, cx, 3, cz, 0)
 
-        for (const box of this.colliders) {
-            const w = box.maxX - box.minX
-            const d = box.maxZ - box.minZ
-            const h = 3
-            const cx = (box.minX + box.maxX) / 2
-            const cz = (box.minZ + box.maxZ) / 2
+        this.#buildWall(assets.wall, cx, cz - 2, 0)
+        this.#buildWall(assets.wall, cx, cz + 2, 180)
 
-            const geo = Geometry.createBox(w, h, d)
-            const mesh = new Mesh({gl, geometry: geo})
-            const inst = new MeshInstance({mesh, material: debugMat})
-            inst.position.set(cx, h / 2, cz)
-            inst.castShadow = false
-            this.scene.addChild(inst)
+        this.#placeAsset(assets.lamp, cx, 3, cz, 0)
+
+        lights.push(new Light3D({
+            x: cx,
+            y: 2.7,
+            z: cz,
+            color: [1.0, 0.85, 0.6],
+            intensity: 2.0,
+            radius: 8
+        }))
+    }
+
+
+    #buildWall (wallScene, x, z, rot) {
+        this.#placeAsset(wallScene, x, 0, z, rot)
+    }
+
+
+    #placeAsset (sceneTemplate, x, y, z, rot) {
+        const instance = this.#cloneScene(sceneTemplate)
+        instance.position.set(x, y, z)
+        if (rot) {
+            instance.rotation.setFromEuler(0, rot * Math.PI / 180, 0, 'YXZ')
+        }
+        instance.markDirty()
+        this.scene.addChild(instance)
+        return instance
+    }
+
+
+    #cloneScene (sceneTemplate) {
+        const root = new Object3D()
+        this.#cloneChildren(sceneTemplate, root)
+        return root
+    }
+
+
+    #findByName (root, name) {
+        for (const child of root.children) {
+            if (child.name === name) {
+                return child
+            }
+            const found = this.#findByName(child, name)
+            if (found) {
+                return found
+            }
+        }
+        return null
+    }
+
+
+    #cloneChildren (source, target) {
+        for (const child of source.children) {
+            if (child instanceof MeshInstance) {
+                const clone = new MeshInstance({
+                    mesh: child.mesh,
+                    material: child.material,
+                    texture: child.texture
+                })
+                clone.name = child.name
+                clone.position.copy(child.position)
+                clone.rotation.copy(child.rotation)
+                clone.scale.copy(child.scale)
+                clone.castShadow = child.castShadow
+                target.addChild(clone)
+                this.#cloneChildren(child, clone)
+            } else if (child instanceof Object3D) {
+                const clone = new Object3D()
+                clone.name = child.name
+                clone.position.copy(child.position)
+                clone.rotation.copy(child.rotation)
+                clone.scale.copy(child.scale)
+                target.addChild(clone)
+                this.#cloneChildren(child, clone)
+            }
         }
     }
 
 
-    async #loadTestProps (gl) {
-        const items = [
-            {file: 'fps_wall', x: -3, y: 0, z: 3, label: 'FPS Kit wall'},
-            {file: 'fps_floor', x: 0, y: 0, z: 3, label: 'FPS Kit floor'},
-            {file: 'fps_column', x: 3, y: 0, z: 3, label: 'FPS Kit column'},
-            {file: 'fps_crate', x: 5, y: 0, z: 3, label: 'FPS Kit crate'},
-            {file: 'psx_pillar', x: -3, y: 0, z: 7, label: 'PSX pillar'},
-            {file: 'psx_doorway', x: 0, y: 0, z: 7, label: 'PSX doorway'},
-            {file: 'psx_lamp', x: 3, y: 2.5, z: 7, label: 'PSX lamp'},
-            {file: 'bunker_chair', x: 5, y: 0, z: 7, label: 'Bunker chair'},
-        ]
+    async #loadAssets () {
+        const [wallData, floorData, doorwayData, lampData] = await Promise.all([
+            loadGlb('assets/props/wall.glb'),
+            loadGlb('assets/props/floor.glb'),
+            loadGlb('assets/props/doorway.glb'),
+            loadGlb('assets/props/ceiling_lamp.glb')
+        ])
 
-        for (const item of items) {
-            const data = await loadGlb('assets/props/' + item.file + '.glb')
-            const {scene} = await buildGltfScene({...data, gl})
-            scene.position.set(item.x, item.y, item.z)
-            scene.markDirty()
-            this.scene.addChild(scene)
+        const gl = this.meshRenderer.context.gl
+
+        const [wall, floor, doorway, lamp] = await Promise.all([
+            buildGltfScene({...wallData, gl}),
+            buildGltfScene({...floorData, gl}),
+            buildGltfScene({...doorwayData, gl}),
+            buildGltfScene({...lampData, gl})
+        ])
+
+        return {
+            wall: wall.scene,
+            floor: floor.scene,
+            doorway: doorway.scene,
+            lamp: lamp.scene
         }
     }
 
@@ -217,7 +236,6 @@ export default class DungeonStage extends Stage {
         const dir = this.game.getDirection('move')
         this.player.setMoveInput(dir.y, dir.x)
         this.player.update(deltaTime)
-        resolveCollisions(this.player, this.colliders)
 
         this.camera3d.position.set(
             this.player.position.x,

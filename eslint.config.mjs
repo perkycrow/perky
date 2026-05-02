@@ -160,17 +160,17 @@ export default defineConfig([globalIgnores(['node_modules/*', 'dist/*', 'mist_ol
         'brace-style': 2,
         'callback-return': 0,
         'getter-return': 2,
-        camelcase: 0,
+        'camelcase': 0,
         'comma-dangle': [2, 'never'],
         'comma-spacing': 2,
         'comma-style': 2,
-        complexity: [2, 10],
+        'complexity': [2, 10],
         'local/nested-complexity': [2, 4],
         'computed-property-spacing': [2, 'never'],
         'consistent-return': 2,
         'consistent-this': [0, 'that'],
         'constructor-super': 0,
-        curly: 2,
+        'curly': 2,
         'default-case': 2,
         'dot-location': [2, 'property'],
 
@@ -179,7 +179,7 @@ export default defineConfig([globalIgnores(['node_modules/*', 'dist/*', 'mist_ol
         }],
 
         'eol-last': 0,
-        eqeqeq: 2,
+        'eqeqeq': 2,
         'func-names': 0,
         'func-name-matching': 2,
 
@@ -194,7 +194,7 @@ export default defineConfig([globalIgnores(['node_modules/*', 'dist/*', 'mist_ol
         'handle-callback-err': 0,
         'id-length': 0,
 
-        indent: [2, 4, {
+        'indent': [2, 4, {
             ignoreComments: true
         }],
 
@@ -251,12 +251,12 @@ export default defineConfig([globalIgnores(['node_modules/*', 'dist/*', 'mist_ol
         'prefer-const': 0,
         'prefer-spread': 0,
         'prefer-template': 0,
-        'quote-props': [2, 'as-needed'],
-        quotes: [2, 'single', 'avoid-escape'],
-        radix: 2,
+        'quote-props': [2, 'consistent-as-needed'],
+        'quotes': [2, 'single', 'avoid-escape'],
+        'radix': 2,
         'id-match': 0,
         'require-yield': 0,
-        semi: [2, 'never'],
+        'semi': [2, 'never'],
 
         'semi-spacing': [2, {
             before: false,
@@ -277,14 +277,14 @@ export default defineConfig([globalIgnores(['node_modules/*', 'dist/*', 'mist_ol
         'space-return-throw-case': 0,
         'space-unary-ops': 2,
         'spaced-comment': 0,
-        strict: 0,
+        'strict': 0,
         'use-isnan': 2,
         'valid-typeof': 2,
         'vars-on-top': 0,
         'wrap-iife': [2, 'any'],
         'wrap-regex': 0,
         'require-unicode-regexp': 0,
-        yoda: 2
+        'yoda': 2
     }
 }, {
     files: ['**/*.test.js'],

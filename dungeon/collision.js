@@ -89,12 +89,14 @@ function wall (cx, cz, hw, hd) {
 
 
 const T = 0.15
+const DOOR = 4
 const ROOM_COLLIDERS = {
     'room-small': [
         wall(0, -6, 6, T),
         wall(0, 6, 6, T),
         wall(-6, 0, T, 6),
-        wall(6, 0, T, 6)
+        wall(6, -(6 + DOOR) / 2, T, (6 - DOOR) / 2),
+        wall(6, (6 + DOOR) / 2, T, (6 - DOOR) / 2)
     ],
 
     'room-small-variation': [
@@ -105,8 +107,8 @@ const ROOM_COLLIDERS = {
     ],
 
     'corridor': [
-        wall(-2, 0, T, 2),
-        wall(2, 0, T, 2)
+        wall(0, -2, 2, T),
+        wall(0, 2, 2, T)
     ],
 
     'corridor-corner': [
