@@ -9,7 +9,7 @@ import {CUBE_DEPTH_SHADER_DEF} from '../shaders/builtin/cube_depth_shader.js'
 import {GBUFFER_SHADER_DEF} from '../shaders/builtin/gbuffer_shader.js'
 import {LIGHTING_SHADER_DEF} from '../shaders/builtin/lighting_shader.js'
 import {SMAA_EDGE_SHADER_DEF, SMAA_WEIGHT_SHADER_DEF, SMAA_BLEND_SHADER_DEF} from '../shaders/builtin/smaa_shader.js'
-import {VOLUMETRIC_FOG_SHADER_DEF} from '../shaders/builtin/volumetric_fog_shader.js'
+import {VOLUMETRIC_FOG_SHADER_DEF, FOG_BLUR_SHADER_DEF} from '../shaders/builtin/volumetric_fog_shader.js'
 import {SMAA_AREA_TEXTURE, SMAA_SEARCH_TEXTURE} from '../smaa_lookup_textures.js'
 import LightDataTexture from '../light_data_texture.js'
 import FullscreenQuad from '../postprocessing/fullscreen_quad.js'
@@ -60,8 +60,11 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     #fogColor = [0.0, 0.0, 0.0]
     #volumetricFogProgram = null
     #volumetricFogEnabled = false
+    #fogBlurProgram = null
     #fogFBO = null
     #fogTexture = null
+    #fogBlurFBO = null
+    #fogBlurTexture = null
     #fogDensity = 0.05
     #fogHeightFalloff = 0.2
     #fogBaseHeight = 0.0
@@ -276,6 +279,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         this.#gbufferProgram = context.shaderRegistry.register('gbuffer', GBUFFER_SHADER_DEF)
         this.#lightingProgram = context.shaderRegistry.register('lighting', LIGHTING_SHADER_DEF)
         this.#volumetricFogProgram = context.shaderRegistry.register('volumetricFog', VOLUMETRIC_FOG_SHADER_DEF)
+        this.#fogBlurProgram = context.shaderRegistry.register('fogBlur', FOG_BLUR_SHADER_DEF)
         this.#smaaEdgeProgram = context.shaderRegistry.register('smaaEdge', SMAA_EDGE_SHADER_DEF)
         this.#smaaWeightProgram = context.shaderRegistry.register('smaaWeight', SMAA_WEIGHT_SHADER_DEF)
         this.#smaaBlendProgram = context.shaderRegistry.register('smaaBlend', SMAA_BLEND_SHADER_DEF)
@@ -699,6 +703,22 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
 
         this.#fullscreenQuad.draw(gl, program)
 
+        const fullW = gl.canvas.width
+        const fullH = gl.canvas.height
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#fogBlurFBO)
+        gl.viewport(0, 0, fullW, fullH)
+
+        const blur = this.#fogBlurProgram
+        gl.useProgram(blur.program)
+        gl.activeTexture(gl.TEXTURE0)
+        gl.bindTexture(gl.TEXTURE_2D, this.#fogTexture)
+        gl.uniform1i(blur.uniforms.uFogTexture, 0)
+        gl.activeTexture(gl.TEXTURE1)
+        gl.bindTexture(gl.TEXTURE_2D, this.#gBuffer.depthTexture)
+        gl.uniform1i(blur.uniforms.uDepth, 1)
+        gl.uniform2f(blur.uniforms.uTexelSize, 1 / fullW, 1 / fullH)
+        this.#fullscreenQuad.draw(gl, blur)
+
         gl.enable(gl.DEPTH_TEST)
     }
 
@@ -711,12 +731,20 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         if (this.#fogFBO) {
             gl.deleteFramebuffer(this.#fogFBO)
             gl.deleteTexture(this.#fogTexture)
+            gl.deleteFramebuffer(this.#fogBlurFBO)
+            gl.deleteTexture(this.#fogBlurTexture)
         }
 
         this.#fogTexture = createScreenTexture(gl, width, height)
         this.#fogFBO = gl.createFramebuffer()
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.#fogFBO)
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#fogTexture, 0)
+
+        this.#fogBlurTexture = createScreenTexture(gl, gl.canvas.width, gl.canvas.height)
+        this.#fogBlurFBO = gl.createFramebuffer()
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#fogBlurFBO)
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#fogBlurTexture, 0)
+
         gl.bindFramebuffer(gl.FRAMEBUFFER, null)
     }
 
@@ -735,7 +763,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         gl.clear(gl.COLOR_BUFFER_BIT)
         const edgeProg = this.#smaaEdgeProgram
         gl.useProgram(edgeProg.program)
-        const smaaInput = this.#volumetricFogEnabled ? this.#fogTexture : this.#outputTexture
+        const smaaInput = this.#volumetricFogEnabled ? this.#fogBlurTexture : this.#outputTexture
         gl.activeTexture(gl.TEXTURE0)
         gl.bindTexture(gl.TEXTURE_2D, smaaInput)
         gl.uniform1i(edgeProg.uniforms.uColorTexture, 0)
@@ -930,11 +958,16 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         this.#smaaWeightProgram = null
         this.#smaaBlendProgram = null
         this.#volumetricFogProgram = null
+        this.#fogBlurProgram = null
         if (this.#fogFBO) {
             this.context?.gl?.deleteFramebuffer(this.#fogFBO)
             this.context?.gl?.deleteTexture(this.#fogTexture)
+            this.context?.gl?.deleteFramebuffer(this.#fogBlurFBO)
+            this.context?.gl?.deleteTexture(this.#fogBlurTexture)
             this.#fogFBO = null
             this.#fogTexture = null
+            this.#fogBlurFBO = null
+            this.#fogBlurTexture = null
         }
         this.#camera3d = null
         this.#shadowMap = null

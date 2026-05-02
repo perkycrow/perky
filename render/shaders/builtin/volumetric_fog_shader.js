@@ -146,6 +146,49 @@ void main() {
 `
 
 
+export const FOG_BLUR_VERTEX = VOLUMETRIC_FOG_VERTEX
+
+
+export const FOG_BLUR_FRAGMENT = `#version 300 es
+precision highp float;
+
+uniform sampler2D uFogTexture;
+uniform highp sampler2D uDepth;
+uniform vec2 uTexelSize;
+
+in vec2 vTexCoord;
+out vec4 fragColor;
+
+void main() {
+    float centerDepth = texture(uDepth, vTexCoord).r;
+    vec4 total = vec4(0.0);
+    float totalWeight = 0.0;
+
+    for (int x = -1; x <= 1; x++) {
+        for (int y = -1; y <= 1; y++) {
+            vec2 offset = vec2(float(x), float(y)) * uTexelSize;
+            vec2 uv = vTexCoord + offset;
+            float sampleDepth = texture(uDepth, uv).r;
+            float depthDiff = abs(centerDepth - sampleDepth);
+            float w = exp(-depthDiff * 1000.0);
+            total += texture(uFogTexture, uv) * w;
+            totalWeight += w;
+        }
+    }
+
+    fragColor = total / totalWeight;
+}
+`
+
+
+export const FOG_BLUR_SHADER_DEF = {
+    vertex: FOG_BLUR_VERTEX,
+    fragment: FOG_BLUR_FRAGMENT,
+    uniforms: ['uFogTexture', 'uDepth', 'uTexelSize'],
+    attributes: ['aPosition', 'aTexCoord']
+}
+
+
 export const VOLUMETRIC_FOG_SHADER_DEF = {
     vertex: VOLUMETRIC_FOG_VERTEX,
     fragment: VOLUMETRIC_FOG_FRAGMENT,
