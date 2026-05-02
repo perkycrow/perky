@@ -663,6 +663,28 @@ export default class DungeonStage extends Stage {
             textShadow: '1px 1px 2px #000'
         })
         document.body.appendChild(this.debugOverlay)
+
+        this.fpsFrames = 0
+        this.fpsTime = performance.now()
+        this.fpsDisplay = 0
+
+        const smaaBtn = document.createElement('button')
+        smaaBtn.textContent = 'SMAA: ON'
+        Object.assign(smaaBtn.style, {
+            position: 'fixed',
+            top: '10px',
+            right: '10px',
+            zIndex: '9999',
+            fontFamily: 'monospace',
+            fontSize: '13px',
+            padding: '4px 8px',
+            cursor: 'pointer'
+        })
+        smaaBtn.addEventListener('click', () => {
+            this.meshRenderer.smaaEnabled = !this.meshRenderer.smaaEnabled
+            smaaBtn.textContent = 'SMAA: ' + (this.meshRenderer.smaaEnabled ? 'ON' : 'OFF')
+        })
+        document.body.appendChild(smaaBtn)
     }
 
 
@@ -692,12 +714,22 @@ export default class DungeonStage extends Stage {
             .filter(m => !m.dirty).length
         const total = this.meshRenderer.cubeShadowMaps.length
 
+        this.fpsFrames++
+        const now = performance.now()
+        if (now - this.fpsTime >= 1000) {
+            this.fpsDisplay = this.fpsFrames
+            this.fpsFrames = 0
+            this.fpsTime = now
+        }
+
         this.debugOverlay.textContent = [
+            `fps: ${this.fpsDisplay}`,
             `pos: ${px.toFixed(1)}, ${pz.toFixed(1)}`,
             `lights in range: ${activeLights}/${lights.length}`,
             `active shadows: ${shadowLights}`,
             `cubemaps cached: ${cached}/${total}`,
-            `objects: ${this.meshRenderer.collected.length}`
+            `objects: ${this.meshRenderer.collected.length}`,
+            `smaa: ${this.meshRenderer.smaaEnabled ? 'on' : 'off'}`
         ].join('\n')
         this.debugOverlay.style.whiteSpace = 'pre'
     }
