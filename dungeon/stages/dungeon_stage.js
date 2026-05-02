@@ -5,6 +5,7 @@ import MeshInstance from '../../render/mesh_instance.js'
 import Light3D from '../../render/light_3d.js'
 import Object3D from '../../render/object_3d.js'
 import {loadGlb, buildGltfScene} from '../../render/loaders/gltf_loader.js'
+import {resolveCollisions} from '../collision.js'
 import DungeonWorld from '../worlds/dungeon_world.js'
 import PlayerController from '../controllers/player_controller.js'
 import wiring from '../wiring.js'
@@ -43,9 +44,9 @@ export default class DungeonStage extends Stage {
             this.camera3d.setAspect(width / height)
         })
 
-        this.meshRenderer.lightDirection = [0.3, 0.85, 0.4]
-        this.meshRenderer.ambientSky = [0.15, 0.15, 0.18]
-        this.meshRenderer.ambientGround = [0.05, 0.04, 0.03]
+        this.meshRenderer.lightDirection = [0.0, 1.0, 0.0]
+        this.meshRenderer.ambientSky = [0.03, 0.03, 0.05]
+        this.meshRenderer.ambientGround = [0.01, 0.01, 0.01]
         this.meshRenderer.fogNear = 8
         this.meshRenderer.fogFar = 30
         this.meshRenderer.fogColor = [0.01, 0.01, 0.02]
@@ -55,6 +56,15 @@ export default class DungeonStage extends Stage {
 
         this.player = this.world.spawnPlayer(SPAWN)
         this.#setupMouseLook(layer.canvas)
+
+        this.colliders = [
+            {minX: -4.05, maxX: -3.95, minZ: -2, maxZ: 2},
+            {minX: 3.95, maxX: 4.05, minZ: -2, maxZ: 2},
+            {minX: -4, maxX: 4, minZ: -2.05, maxZ: -1.95},
+            {minX: -4, maxX: 4, minZ: 1.95, maxZ: 2.05},
+            {minX: -0.05, maxX: 0.05, minZ: -2, maxZ: -0.6},
+            {minX: -0.05, maxX: 0.05, minZ: 0.6, maxZ: 2}
+        ]
 
         super.onStart()
 
@@ -98,8 +108,8 @@ export default class DungeonStage extends Stage {
             y: 2.7,
             z: cz,
             color: [1.0, 0.85, 0.6],
-            intensity: 2.0,
-            radius: 8
+            intensity: 1.2,
+            radius: 6
         }))
     }
 
@@ -236,6 +246,7 @@ export default class DungeonStage extends Stage {
         const dir = this.game.getDirection('move')
         this.player.setMoveInput(dir.y, dir.x)
         this.player.update(deltaTime)
+        resolveCollisions(this.player, this.colliders)
 
         this.camera3d.position.set(
             this.player.position.x,

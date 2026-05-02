@@ -145,7 +145,8 @@ void main() {
             vec4 spotExtra = texelFetch(uLightData, ivec2(3, i), 0);
             vec3 toLight = posInt.xyz - vWorldPosition;
             float dist = length(toLight);
-            float attenuation = 1.0 - smoothstep(0.0, colRad.w, dist);
+            float distNorm = dist / colRad.w;
+            float attenuation = clamp(1.0 / (1.0 + distNorm * distNorm * 10.0) - 0.05, 0.0, 1.0) * step(dist, colRad.w);
             vec3 lightDir = normalize(toLight);
 
             if (spotDir.w > -1.0) {

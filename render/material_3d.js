@@ -5,8 +5,8 @@ const DEFAULTS = {
     opacity: 1,
     unlit: false,
     uvScale: [1, 1],
-    roughness: 0.5,
-    specular: 0.5,
+    roughness: 0.8,
+    specular: 0.15,
     normalMap: null,
     normalStrength: 1.0,
     filtering: 'linear'
