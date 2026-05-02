@@ -61,6 +61,11 @@ export default class DungeonStage extends Stage {
             {length: 8},
             () => new CubeShadowMap({gl, resolution: 512})
         )
+        this.meshRenderer.volumetricFogEnabled = true
+        this.meshRenderer.fogDensity = 0.08
+        this.meshRenderer.fogHeightFalloff = 0.3
+        this.meshRenderer.fogBaseHeight = 0.0
+        this.meshRenderer.fogMaxDistance = 30
 
         this.scene = new Object3D()
         layer.setContent(this.scene)
@@ -609,6 +614,7 @@ export default class DungeonStage extends Stage {
         this.camera3d.position.set(px, py, pz)
         this.camera3d.rotation.setFromEuler(this.player.pitch, this.player.yaw, 0, 'YXZ')
         this.camera3d.markDirty()
+        this.meshRenderer.fogTime = performance.now() * 0.001
 
         this.#updateDebugOverlay()
     }
@@ -685,6 +691,24 @@ export default class DungeonStage extends Stage {
             smaaBtn.textContent = 'SMAA: ' + (this.meshRenderer.smaaEnabled ? 'ON' : 'OFF')
         })
         document.body.appendChild(smaaBtn)
+
+        const fogBtn = document.createElement('button')
+        fogBtn.textContent = 'FOG: ON'
+        Object.assign(fogBtn.style, {
+            position: 'fixed',
+            top: '40px',
+            right: '10px',
+            zIndex: '9999',
+            fontFamily: 'monospace',
+            fontSize: '13px',
+            padding: '4px 8px',
+            cursor: 'pointer'
+        })
+        fogBtn.addEventListener('click', () => {
+            this.meshRenderer.volumetricFogEnabled = !this.meshRenderer.volumetricFogEnabled
+            fogBtn.textContent = 'FOG: ' + (this.meshRenderer.volumetricFogEnabled ? 'ON' : 'OFF')
+        })
+        document.body.appendChild(fogBtn)
     }
 
 
@@ -729,7 +753,8 @@ export default class DungeonStage extends Stage {
             `active shadows: ${shadowLights}`,
             `cubemaps cached: ${cached}/${total}`,
             `objects: ${this.meshRenderer.collected.length}`,
-            `smaa: ${this.meshRenderer.smaaEnabled ? 'on' : 'off'}`
+            `smaa: ${this.meshRenderer.smaaEnabled ? 'on' : 'off'}`,
+            `fog: ${this.meshRenderer.volumetricFogEnabled ? 'on' : 'off'}`
         ].join('\n')
         this.debugOverlay.style.whiteSpace = 'pre'
     }

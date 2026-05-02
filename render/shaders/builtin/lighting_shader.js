@@ -53,6 +53,7 @@ uniform float uCubeShadowFar2;
 uniform float uCubeShadowFar3;
 uniform float uCubeShadowFar4;
 uniform int uNumCubeShadows;
+uniform float uVolumetricFogEnabled;
 
 in vec2 vTexCoord;
 
@@ -198,9 +199,11 @@ void main() {
 
     vec3 color = lit + baseColor * emissive;
 
-    float dist = length(worldPos - uCameraPosition);
-    float fogFactor = clamp((uFogFar - dist) / (uFogFar - uFogNear), 0.0, 1.0);
-    color = mix(uFogColor, color, fogFactor);
+    if (uVolumetricFogEnabled < 0.5) {
+        float dist = length(worldPos - uCameraPosition);
+        float fogFactor = clamp((uFogFar - dist) / (uFogFar - uFogNear), 0.0, 1.0);
+        color = mix(uFogColor, color, fogFactor);
+    }
 
     color = acesToneMap(color);
     color += (fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715)) * 52.9829189) - 0.5) / 255.0;
@@ -234,7 +237,8 @@ export const LIGHTING_SHADER_DEF = {
         'uCubeShadow0', 'uCubeShadow1', 'uCubeShadow2', 'uCubeShadow3', 'uCubeShadow4',
         'uCubeShadowPos0', 'uCubeShadowPos1', 'uCubeShadowPos2', 'uCubeShadowPos3', 'uCubeShadowPos4',
         'uCubeShadowFar0', 'uCubeShadowFar1', 'uCubeShadowFar2', 'uCubeShadowFar3', 'uCubeShadowFar4',
-        'uNumCubeShadows'
+        'uNumCubeShadows',
+        'uVolumetricFogEnabled'
     ],
     attributes: ['aPosition', 'aTexCoord']
 }
