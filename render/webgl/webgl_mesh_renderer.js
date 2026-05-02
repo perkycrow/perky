@@ -6,7 +6,7 @@ import {CUBE_DEPTH_SHADER_DEF} from '../shaders/builtin/cube_depth_shader.js'
 import LightDataTexture from '../light_data_texture.js'
 
 
-const MAX_CUBE_SHADOWS = 2
+const MAX_CUBE_SHADOWS = 3
 
 
 export default class WebGLMeshRenderer extends WebGLObjectRenderer {

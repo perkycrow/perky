@@ -54,6 +54,7 @@ export default class DungeonStage extends Stage {
         const gl = this.meshRenderer.context.gl
         this.meshRenderer.cubeShadowMaps = [
             new CubeShadowMap({gl, resolution: 512}),
+            new CubeShadowMap({gl, resolution: 512}),
             new CubeShadowMap({gl, resolution: 512})
         ]
 
@@ -65,11 +66,14 @@ export default class DungeonStage extends Stage {
 
         this.colliders = [
             {minX: -8.05, maxX: -7.95, minZ: -2, maxZ: 2},
-            {minX: 3.95, maxX: 4.05, minZ: -2, maxZ: 2},
-            {minX: -8, maxX: 4, minZ: -2.05, maxZ: -1.95},
             {minX: -8, maxX: 4, minZ: 1.95, maxZ: 2.05},
+            {minX: -8, maxX: 1.4, minZ: -2.05, maxZ: -1.95},
+            {minX: 2.6, maxX: 4, minZ: -2.05, maxZ: -1.95},
             {minX: -0.05, maxX: 0.05, minZ: -2, maxZ: -0.6},
-            {minX: -0.05, maxX: 0.05, minZ: 0.6, maxZ: 2}
+            {minX: -0.05, maxX: 0.05, minZ: 0.6, maxZ: 2},
+            {minX: 3.95, maxX: 4.05, minZ: -6, maxZ: 2},
+            {minX: -0.05, maxX: 0.05, minZ: -6, maxZ: -2},
+            {minX: 0, maxX: 4, minZ: -6.05, maxZ: -5.95}
         ]
 
         super.onStart()
@@ -84,12 +88,20 @@ export default class DungeonStage extends Stage {
 
         this.#buildBigRoom(assets, lights)
         this.#buildSmallRoom(assets, lights)
+        this.#buildSideRoom(assets, lights)
 
-        const doorway = this.#placeAsset(assets.doorway, 0, 0, 0, 90)
-        const door = this.#findByName(doorway, 'door_4')
-        if (door) {
-            door.rotation.setFromEuler(0, Math.PI * 0.45, 0, 'YXZ')
-            door.markDirty()
+        const doorway1 = this.#placeAsset(assets.doorway, 0, 0, 0, 90)
+        const door1 = this.#findByName(doorway1, 'door_4')
+        if (door1) {
+            door1.rotation.setFromEuler(0, Math.PI * 0.45, 0, 'YXZ')
+            door1.markDirty()
+        }
+
+        const doorway2 = this.#placeAsset(assets.doorway, 2, 0, -2, 0)
+        const door2 = this.#findByName(doorway2, 'door_4')
+        if (door2) {
+            door2.rotation.setFromEuler(0, Math.PI * 0.45, 0, 'YXZ')
+            door2.markDirty()
         }
 
         this.meshRenderer.lights = lights
@@ -134,7 +146,6 @@ export default class DungeonStage extends Stage {
         this.#placeAsset(assets.floor, 2, 0, 0, 0)
         this.#placeCeiling(assets.floor, 2, 3, 0)
 
-        this.#buildWall(assets.wall, 2, -2, 0)
         this.#buildWall(assets.wall, 2, 2, 180)
         this.#buildWall(assets.wall, 4, 0, -90)
 
@@ -153,6 +164,31 @@ export default class DungeonStage extends Stage {
         this.#placeAsset(assets.crate, 3.3, 0, -1.5, 0)
         this.#placeAsset(assets.crate, 3.3, 0.2, -1.5, 25)
         this.#placeAsset(assets.metalShelf, 3.5, 0, 0.5, -90)
+    }
+
+
+    #buildSideRoom (assets, lights) {
+        this.#placeAsset(assets.floor, 2, 0, -4, 0)
+        this.#placeCeiling(assets.floor, 2, 3, -4)
+
+        this.#buildWall(assets.wall, 0, -4, 90)
+        this.#buildWall(assets.wall, 4, -4, -90)
+        this.#buildWall(assets.wall, 2, -6, 0)
+
+        const lamp3 = this.#placeAsset(assets.ceilingLamp, 2, 3, -4, 0)
+        this.#setCastShadow(lamp3, false)
+
+        lights.push(new Light3D({
+            x: 2,
+            y: 2.7,
+            z: -4,
+            color: [0.6, 0.8, 1.0],
+            intensity: 3.5,
+            radius: 10
+        }))
+
+        this.#placeAsset(assets.barrel, 3.3, 0, -5.3, 20)
+        this.#placeAsset(assets.crate, 0.7, 0, -5, -10)
     }
 
 

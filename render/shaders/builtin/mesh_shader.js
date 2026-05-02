@@ -66,10 +66,13 @@ uniform float uHasShadowMap;
 
 uniform mediump samplerCube uCubeShadow0;
 uniform mediump samplerCube uCubeShadow1;
+uniform mediump samplerCube uCubeShadow2;
 uniform vec3 uCubeShadowPos0;
 uniform vec3 uCubeShadowPos1;
+uniform vec3 uCubeShadowPos2;
 uniform float uCubeShadowFar0;
 uniform float uCubeShadowFar1;
+uniform float uCubeShadowFar2;
 uniform int uNumCubeShadows;
 
 uniform float uHasVertexColors;
@@ -123,6 +126,8 @@ float calcPointShadow (vec3 lightPos, vec3 normal) {
         return calcCubeShadowSample(uCubeShadow0, uCubeShadowPos0, uCubeShadowFar0, normal);
     if (uNumCubeShadows >= 2 && length(lightPos - uCubeShadowPos1) < 0.1)
         return calcCubeShadowSample(uCubeShadow1, uCubeShadowPos1, uCubeShadowFar1, normal);
+    if (uNumCubeShadows >= 3 && length(lightPos - uCubeShadowPos2) < 0.1)
+        return calcCubeShadowSample(uCubeShadow2, uCubeShadowPos2, uCubeShadowFar2, normal);
     return 1.0;
 }
 
@@ -253,10 +258,13 @@ export const MESH_SHADER_DEF = {
         'uHasShadowMap',
         'uCubeShadow0',
         'uCubeShadow1',
+        'uCubeShadow2',
         'uCubeShadowPos0',
         'uCubeShadowPos1',
+        'uCubeShadowPos2',
         'uCubeShadowFar0',
         'uCubeShadowFar1',
+        'uCubeShadowFar2',
         'uNumCubeShadows',
         'uHasVertexColors'
     ],
