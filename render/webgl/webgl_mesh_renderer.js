@@ -8,7 +8,8 @@ import {DEPTH_SHADER_DEF} from '../shaders/builtin/depth_shader.js'
 import {CUBE_DEPTH_SHADER_DEF} from '../shaders/builtin/cube_depth_shader.js'
 import {GBUFFER_SHADER_DEF} from '../shaders/builtin/gbuffer_shader.js'
 import {LIGHTING_SHADER_DEF} from '../shaders/builtin/lighting_shader.js'
-import {FXAA_SHADER_DEF} from '../shaders/builtin/fxaa_shader.js'
+import {SMAA_EDGE_SHADER_DEF, SMAA_WEIGHT_SHADER_DEF, SMAA_BLEND_SHADER_DEF} from '../shaders/builtin/smaa_shader.js'
+import {SMAA_AREA_TEXTURE, SMAA_SEARCH_TEXTURE} from '../smaa_lookup_textures.js'
 import LightDataTexture from '../light_data_texture.js'
 import FullscreenQuad from '../postprocessing/fullscreen_quad.js'
 import Matrix4 from '../../math/matrix4.js'
@@ -25,8 +26,17 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     #cubeDepthProgram = null
     #gbufferProgram = null
     #lightingProgram = null
-    #fxaaProgram = null
-    #fxaaEnabled = true
+    #smaaEdgeProgram = null
+    #smaaWeightProgram = null
+    #smaaBlendProgram = null
+    #smaaEnabled = true
+    #smaaEdgesFBO = null
+    #smaaEdgesTexture = null
+    #smaaWeightsFBO = null
+    #smaaWeightsTexture = null
+    #smaaAreaTexture = null
+    #smaaSearchTexture = null
+    #smaaReady = false
     #outputFBO = null
     #outputTexture = null
     #outputWidth = 0
@@ -198,13 +208,13 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     }
 
 
-    get fxaaEnabled () {
-        return this.#fxaaEnabled
+    get smaaEnabled () {
+        return this.#smaaEnabled
     }
 
 
-    set fxaaEnabled (value) {
-        this.#fxaaEnabled = value
+    set smaaEnabled (value) {
+        this.#smaaEnabled = value
     }
 
 
@@ -215,8 +225,11 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         this.#cubeDepthProgram = context.shaderRegistry.register('cubeDepth', CUBE_DEPTH_SHADER_DEF)
         this.#gbufferProgram = context.shaderRegistry.register('gbuffer', GBUFFER_SHADER_DEF)
         this.#lightingProgram = context.shaderRegistry.register('lighting', LIGHTING_SHADER_DEF)
-        this.#fxaaProgram = context.shaderRegistry.register('fxaa', FXAA_SHADER_DEF)
+        this.#smaaEdgeProgram = context.shaderRegistry.register('smaaEdge', SMAA_EDGE_SHADER_DEF)
+        this.#smaaWeightProgram = context.shaderRegistry.register('smaaWeight', SMAA_WEIGHT_SHADER_DEF)
+        this.#smaaBlendProgram = context.shaderRegistry.register('smaaBlend', SMAA_BLEND_SHADER_DEF)
         this.#lightDataTexture = new LightDataTexture(context.gl)
+        this.#loadSmaaTextures(context.gl)
         this.#fullscreenQuad = new FullscreenQuad(context.gl)
         this.#decalQuadMesh = createDecalQuad(context.gl)
     }
@@ -489,8 +502,8 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
 
 
     #renderLightingPass (gl, numLights) {
-        if (this.#fxaaEnabled) {
-            this.#ensureOutputFBO(gl, gl.canvas.width, gl.canvas.height)
+        if (this.#smaaEnabled && this.#smaaReady) {
+            this.#ensureSmaaFBOs(gl, gl.canvas.width, gl.canvas.height)
             gl.bindFramebuffer(gl.FRAMEBUFFER, this.#outputFBO)
         } else {
             gl.bindFramebuffer(gl.FRAMEBUFFER, null)
@@ -580,64 +593,150 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
 
         gl.depthFunc(gl.LEQUAL)
 
-        if (this.#fxaaEnabled) {
-            this.#renderFxaaPass(gl)
+        if (this.#smaaEnabled && this.#smaaReady) {
+            this.#renderSmaaPass(gl)
         }
     }
 
 
-    #renderFxaaPass (gl) {
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null)
-        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+    #renderSmaaPass (gl) {
+        const w = gl.canvas.width
+        const h = gl.canvas.height
+        const tx = 1 / w
+        const ty = 1 / h
+
         gl.disable(gl.DEPTH_TEST)
 
-        const program = this.#fxaaProgram
-        gl.useProgram(program.program)
-
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#smaaEdgesFBO)
+        gl.viewport(0, 0, w, h)
+        gl.clearColor(0.0, 0.0, 0.0, 0.0)
+        gl.clear(gl.COLOR_BUFFER_BIT)
+        const edgeProg = this.#smaaEdgeProgram
+        gl.useProgram(edgeProg.program)
         gl.activeTexture(gl.TEXTURE0)
         gl.bindTexture(gl.TEXTURE_2D, this.#outputTexture)
-        gl.uniform1i(program.uniforms.uTexture, 0)
-        gl.uniform2f(program.uniforms.uInverseResolution, 1 / gl.canvas.width, 1 / gl.canvas.height)
+        gl.uniform1i(edgeProg.uniforms.uColorTexture, 0)
+        gl.uniform2f(edgeProg.uniforms.uTexelSize, tx, ty)
+        this.#fullscreenQuad.draw(gl, edgeProg)
 
-        this.#fullscreenQuad.draw(gl, program)
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#smaaWeightsFBO)
+        gl.viewport(0, 0, w, h)
+        gl.clear(gl.COLOR_BUFFER_BIT)
+        const weightProg = this.#smaaWeightProgram
+        gl.useProgram(weightProg.program)
+        gl.activeTexture(gl.TEXTURE0)
+        gl.bindTexture(gl.TEXTURE_2D, this.#smaaEdgesTexture)
+        gl.uniform1i(weightProg.uniforms.uEdgesTexture, 0)
+        gl.activeTexture(gl.TEXTURE1)
+        gl.bindTexture(gl.TEXTURE_2D, this.#smaaAreaTexture)
+        gl.uniform1i(weightProg.uniforms.uAreaTexture, 1)
+        gl.activeTexture(gl.TEXTURE2)
+        gl.bindTexture(gl.TEXTURE_2D, this.#smaaSearchTexture)
+        gl.uniform1i(weightProg.uniforms.uSearchTexture, 2)
+        gl.uniform2f(weightProg.uniforms.uTexelSize, tx, ty)
+        gl.uniform2f(weightProg.uniforms.uViewportSize, w, h)
+        this.#fullscreenQuad.draw(gl, weightProg)
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+        gl.viewport(0, 0, w, h)
+        const blendProg = this.#smaaBlendProgram
+        gl.useProgram(blendProg.program)
+        gl.activeTexture(gl.TEXTURE0)
+        gl.bindTexture(gl.TEXTURE_2D, this.#outputTexture)
+        gl.uniform1i(blendProg.uniforms.uColorTexture, 0)
+        gl.activeTexture(gl.TEXTURE1)
+        gl.bindTexture(gl.TEXTURE_2D, this.#smaaWeightsTexture)
+        gl.uniform1i(blendProg.uniforms.uBlendTexture, 1)
+        gl.uniform2f(blendProg.uniforms.uTexelSize, tx, ty)
+        this.#fullscreenQuad.draw(gl, blendProg)
 
         gl.enable(gl.DEPTH_TEST)
     }
 
 
-    #ensureOutputFBO (gl, width, height) {
+    #ensureSmaaFBOs (gl, width, height) {
         if (this.#outputFBO && this.#outputWidth === width && this.#outputHeight === height) {
             return
         }
 
-        if (this.#outputFBO) {
-            gl.deleteFramebuffer(this.#outputFBO)
-            gl.deleteTexture(this.#outputTexture)
-        }
+        this.#deleteSmaaFBOs(gl)
 
-        this.#outputTexture = gl.createTexture()
-        gl.bindTexture(gl.TEXTURE_2D, this.#outputTexture)
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null)
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-
+        this.#outputTexture = createScreenTexture(gl, width, height)
         const depthRB = gl.createRenderbuffer()
         gl.bindRenderbuffer(gl.RENDERBUFFER, depthRB)
         gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT24, width, height)
-
         this.#outputFBO = gl.createFramebuffer()
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.#outputFBO)
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#outputTexture, 0)
         gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthRB)
 
+        this.#smaaEdgesTexture = createScreenTexture(gl, width, height)
+        this.#smaaEdgesFBO = gl.createFramebuffer()
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#smaaEdgesFBO)
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#smaaEdgesTexture, 0)
+
+        this.#smaaWeightsTexture = createScreenTexture(gl, width, height)
+        this.#smaaWeightsFBO = gl.createFramebuffer()
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#smaaWeightsFBO)
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#smaaWeightsTexture, 0)
+
         gl.bindFramebuffer(gl.FRAMEBUFFER, null)
-        gl.bindTexture(gl.TEXTURE_2D, null)
         gl.bindRenderbuffer(gl.RENDERBUFFER, null)
 
         this.#outputWidth = width
         this.#outputHeight = height
+    }
+
+
+    #deleteSmaaFBOs (gl) {
+        if (this.#outputFBO) {
+            gl.deleteFramebuffer(this.#outputFBO)
+            gl.deleteTexture(this.#outputTexture)
+            this.#outputFBO = null
+            this.#outputTexture = null
+        }
+        if (this.#smaaEdgesFBO) {
+            gl.deleteFramebuffer(this.#smaaEdgesFBO)
+            gl.deleteTexture(this.#smaaEdgesTexture)
+            this.#smaaEdgesFBO = null
+            this.#smaaEdgesTexture = null
+        }
+        if (this.#smaaWeightsFBO) {
+            gl.deleteFramebuffer(this.#smaaWeightsFBO)
+            gl.deleteTexture(this.#smaaWeightsTexture)
+            this.#smaaWeightsFBO = null
+            this.#smaaWeightsTexture = null
+        }
+    }
+
+
+    #loadSmaaTextures (gl) {
+        const loadImage = (src) => {
+            const img = new Image()
+            img.src = src
+            return new Promise(resolve => { img.onload = () => resolve(img) })
+        }
+
+        Promise.all([loadImage(SMAA_AREA_TEXTURE), loadImage(SMAA_SEARCH_TEXTURE)]).then(([areaImg, searchImg]) => {
+            this.#smaaAreaTexture = gl.createTexture()
+            gl.bindTexture(gl.TEXTURE_2D, this.#smaaAreaTexture)
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, areaImg)
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+
+            this.#smaaSearchTexture = gl.createTexture()
+            gl.bindTexture(gl.TEXTURE_2D, this.#smaaSearchTexture)
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, searchImg)
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+
+            gl.bindTexture(gl.TEXTURE_2D, null)
+            this.#smaaReady = true
+        })
     }
 
 
@@ -688,18 +787,25 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
             this.#decalQuadMesh.dispose()
             this.#decalQuadMesh = null
         }
-        if (this.#outputFBO) {
-            this.context?.gl?.deleteFramebuffer(this.#outputFBO)
-            this.context?.gl?.deleteTexture(this.#outputTexture)
-            this.#outputFBO = null
-            this.#outputTexture = null
+        if (this.context?.gl) {
+            this.#deleteSmaaFBOs(this.context.gl)
+        }
+        if (this.#smaaAreaTexture) {
+            this.context?.gl?.deleteTexture(this.#smaaAreaTexture)
+            this.#smaaAreaTexture = null
+        }
+        if (this.#smaaSearchTexture) {
+            this.context?.gl?.deleteTexture(this.#smaaSearchTexture)
+            this.#smaaSearchTexture = null
         }
         this.#meshProgram = null
         this.#depthProgram = null
         this.#cubeDepthProgram = null
         this.#gbufferProgram = null
         this.#lightingProgram = null
-        this.#fxaaProgram = null
+        this.#smaaEdgeProgram = null
+        this.#smaaWeightProgram = null
+        this.#smaaBlendProgram = null
         this.#camera3d = null
         this.#shadowMap = null
         this.#cubeShadowMaps = []
@@ -1003,4 +1109,17 @@ function createDecalQuad (gl) {
         indices: [0, 1, 2, 0, 2, 3]
     })
     return new Mesh({gl, geometry: geo})
+}
+
+
+function createScreenTexture (gl, width, height) {
+    const texture = gl.createTexture()
+    gl.bindTexture(gl.TEXTURE_2D, texture)
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+    gl.bindTexture(gl.TEXTURE_2D, null)
+    return texture
 }
