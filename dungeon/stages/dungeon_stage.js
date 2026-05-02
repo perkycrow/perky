@@ -10,6 +10,7 @@ import Object3D from '../../render/object_3d.js'
 import RoomLibrary from '../room_library.js'
 import DungeonWorld from '../worlds/dungeon_world.js'
 import PlayerController from '../controllers/player_controller.js'
+import {loadGlb, buildGltfScene} from '../../render/loaders/gltf_loader.js'
 import layout from '../layouts/main.json' with {type: 'json'}
 import wiring from '../wiring.js'
 
@@ -120,7 +121,31 @@ export default class DungeonStage extends Stage {
             this.scene.addChild(room)
         }
 
+        await this.#loadTestProps(gl)
+
         this.scene.markDirty()
+    }
+
+
+    async #loadTestProps (gl) {
+        const items = [
+            {file: 'fps_wall', x: -3, y: 0, z: 3, label: 'FPS Kit wall'},
+            {file: 'fps_floor', x: 0, y: 0, z: 3, label: 'FPS Kit floor'},
+            {file: 'fps_column', x: 3, y: 0, z: 3, label: 'FPS Kit column'},
+            {file: 'fps_crate', x: 5, y: 0, z: 3, label: 'FPS Kit crate'},
+            {file: 'psx_pillar', x: -3, y: 0, z: 7, label: 'PSX pillar'},
+            {file: 'psx_doorway', x: 0, y: 0, z: 7, label: 'PSX doorway'},
+            {file: 'psx_lamp', x: 3, y: 2.5, z: 7, label: 'PSX lamp'},
+            {file: 'bunker_chair', x: 5, y: 0, z: 7, label: 'Bunker chair'},
+        ]
+
+        for (const item of items) {
+            const data = await loadGlb('assets/props/' + item.file + '.glb')
+            const {scene} = await buildGltfScene({...data, gl})
+            scene.position.set(item.x, item.y, item.z)
+            scene.markDirty()
+            this.scene.addChild(scene)
+        }
     }
 
 
