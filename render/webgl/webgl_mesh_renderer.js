@@ -10,6 +10,7 @@ import {GBUFFER_SHADER_DEF} from '../shaders/builtin/gbuffer_shader.js'
 import {LIGHTING_SHADER_DEF} from '../shaders/builtin/lighting_shader.js'
 import {SMAA_EDGE_SHADER_DEF, SMAA_WEIGHT_SHADER_DEF, SMAA_BLEND_SHADER_DEF} from '../shaders/builtin/smaa_shader.js'
 import {VOLUMETRIC_FOG_SHADER_DEF, FOG_BLUR_SHADER_DEF} from '../shaders/builtin/volumetric_fog_shader.js'
+import {SSAO_SHADER_DEF, SSAO_BLUR_SHADER_DEF} from '../shaders/builtin/ssao_shader.js'
 import {SMAA_AREA_TEXTURE, SMAA_SEARCH_TEXTURE} from '../smaa_lookup_textures.js'
 import LightDataTexture from '../light_data_texture.js'
 import FullscreenQuad from '../postprocessing/fullscreen_quad.js'
@@ -60,6 +61,16 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     #fogColor = [0.0, 0.0, 0.0]
     #volumetricFogProgram = null
     #volumetricFogEnabled = false
+    #ssaoProgram = null
+    #ssaoBlurProgram = null
+    #ssaoEnabled = false
+    #ssaoFBO = null
+    #ssaoTexture = null
+    #ssaoBlurFBO = null
+    #ssaoBlurTexture = null
+    #ssaoRadius = 0.5
+    #ssaoBias = 0.025
+    #ssaoIntensity = 1.5
     #fogBlurProgram = null
     #fogFBO = null
     #fogTexture = null
@@ -237,6 +248,16 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     }
 
 
+    get ssaoEnabled () { return this.#ssaoEnabled }
+    set ssaoEnabled (v) { this.#ssaoEnabled = v }
+    get ssaoRadius () { return this.#ssaoRadius }
+    set ssaoRadius (v) { this.#ssaoRadius = v }
+    get ssaoBias () { return this.#ssaoBias }
+    set ssaoBias (v) { this.#ssaoBias = v }
+    get ssaoIntensity () { return this.#ssaoIntensity }
+    set ssaoIntensity (v) { this.#ssaoIntensity = v }
+
+
     get volumetricFogEnabled () {
         return this.#volumetricFogEnabled
     }
@@ -280,6 +301,8 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         this.#lightingProgram = context.shaderRegistry.register('lighting', LIGHTING_SHADER_DEF)
         this.#volumetricFogProgram = context.shaderRegistry.register('volumetricFog', VOLUMETRIC_FOG_SHADER_DEF)
         this.#fogBlurProgram = context.shaderRegistry.register('fogBlur', FOG_BLUR_SHADER_DEF)
+        this.#ssaoProgram = context.shaderRegistry.register('ssao', SSAO_SHADER_DEF)
+        this.#ssaoBlurProgram = context.shaderRegistry.register('ssaoBlur', SSAO_BLUR_SHADER_DEF)
         this.#smaaEdgeProgram = context.shaderRegistry.register('smaaEdge', SMAA_EDGE_SHADER_DEF)
         this.#smaaWeightProgram = context.shaderRegistry.register('smaaWeight', SMAA_WEIGHT_SHADER_DEF)
         this.#smaaBlendProgram = context.shaderRegistry.register('smaaBlend', SMAA_BLEND_SHADER_DEF)
@@ -365,6 +388,10 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         this.#gBuffer.resize(gl.canvas.width, gl.canvas.height)
 
         this.#renderGBufferPass(gl, opaque, decals)
+
+        if (this.#ssaoEnabled) {
+            this.#renderSsaoPass(gl)
+        }
 
         const numLights = this.#lightDataTexture.update(this.#lights, this.#camera3d.position, this.#fogFar)
         this.#renderLightingPass(gl, numLights)
@@ -608,6 +635,15 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         gl.uniform3fv(program.uniforms.uFogColor, this.#fogColor)
         gl.uniform1f(program.uniforms.uVolumetricFogEnabled, this.#volumetricFogEnabled ? 1 : 0)
 
+        gl.activeTexture(gl.TEXTURE11)
+        if (this.#ssaoEnabled && this.#ssaoBlurTexture) {
+            gl.bindTexture(gl.TEXTURE_2D, this.#ssaoBlurTexture)
+            gl.uniform1i(program.uniforms.uSSAO, 11)
+            gl.uniform1f(program.uniforms.uHasSSAO, 1)
+        } else {
+            gl.uniform1f(program.uniforms.uHasSSAO, 0)
+        }
+
         gl.uniform1i(program.uniforms.uNumLights, numLights)
 
         gl.activeTexture(gl.TEXTURE4)
@@ -656,6 +692,74 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         if (this.#smaaEnabled && this.#smaaReady) {
             this.#renderSmaaPass(gl)
         }
+    }
+
+
+    #renderSsaoPass (gl) {
+        const hw = Math.ceil(gl.canvas.width / 2)
+        const hh = Math.ceil(gl.canvas.height / 2)
+
+        this.#ensureSsaoFBOs(gl, hw, hh)
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#ssaoFBO)
+        gl.viewport(0, 0, hw, hh)
+        gl.disable(gl.DEPTH_TEST)
+
+        const program = this.#ssaoProgram
+        gl.useProgram(program.program)
+
+        gl.activeTexture(gl.TEXTURE0)
+        gl.bindTexture(gl.TEXTURE_2D, this.#gBuffer.depthTexture)
+        gl.uniform1i(program.uniforms.uDepth, 0)
+
+        gl.activeTexture(gl.TEXTURE1)
+        gl.bindTexture(gl.TEXTURE_2D, this.#gBuffer.normalTexture)
+        gl.uniform1i(program.uniforms.uGNormal, 1)
+
+        gl.uniformMatrix4fv(program.uniforms.uProjection, false, this.#camera3d.projectionMatrix.elements)
+        gl.uniformMatrix4fv(program.uniforms.uInverseViewProjection, false, this.#inverseVP.elements)
+        gl.uniformMatrix4fv(program.uniforms.uView, false, this.#camera3d.viewMatrix.elements)
+        gl.uniform2f(program.uniforms.uTexelSize, 1 / hw, 1 / hh)
+        gl.uniform1f(program.uniforms.uRadius, this.#ssaoRadius)
+        gl.uniform1f(program.uniforms.uBias, this.#ssaoBias)
+        gl.uniform1f(program.uniforms.uIntensity, this.#ssaoIntensity)
+
+        this.#fullscreenQuad.draw(gl, program)
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#ssaoBlurFBO)
+        gl.viewport(0, 0, hw, hh)
+
+        const blur = this.#ssaoBlurProgram
+        gl.useProgram(blur.program)
+        gl.activeTexture(gl.TEXTURE0)
+        gl.bindTexture(gl.TEXTURE_2D, this.#ssaoTexture)
+        gl.uniform1i(blur.uniforms.uSSAOTexture, 0)
+        gl.activeTexture(gl.TEXTURE1)
+        gl.bindTexture(gl.TEXTURE_2D, this.#gBuffer.depthTexture)
+        gl.uniform1i(blur.uniforms.uDepth, 1)
+        gl.uniform2f(blur.uniforms.uTexelSize, 1 / hw, 1 / hh)
+        this.#fullscreenQuad.draw(gl, blur)
+
+        gl.enable(gl.DEPTH_TEST)
+    }
+
+
+    #ensureSsaoFBOs (gl, width, height) {
+        if (this.#ssaoFBO && this.#ssaoTexture) {
+            return
+        }
+
+        this.#ssaoTexture = createScreenTexture(gl, width, height)
+        this.#ssaoFBO = gl.createFramebuffer()
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#ssaoFBO)
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#ssaoTexture, 0)
+
+        this.#ssaoBlurTexture = createScreenTexture(gl, width, height)
+        this.#ssaoBlurFBO = gl.createFramebuffer()
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#ssaoBlurFBO)
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#ssaoBlurTexture, 0)
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null)
     }
 
 
@@ -959,6 +1063,18 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         this.#smaaBlendProgram = null
         this.#volumetricFogProgram = null
         this.#fogBlurProgram = null
+        this.#ssaoProgram = null
+        this.#ssaoBlurProgram = null
+        if (this.#ssaoFBO) {
+            this.context?.gl?.deleteFramebuffer(this.#ssaoFBO)
+            this.context?.gl?.deleteTexture(this.#ssaoTexture)
+            this.context?.gl?.deleteFramebuffer(this.#ssaoBlurFBO)
+            this.context?.gl?.deleteTexture(this.#ssaoBlurTexture)
+            this.#ssaoFBO = null
+            this.#ssaoTexture = null
+            this.#ssaoBlurFBO = null
+            this.#ssaoBlurTexture = null
+        }
         if (this.#fogFBO) {
             this.context?.gl?.deleteFramebuffer(this.#fogFBO)
             this.context?.gl?.deleteTexture(this.#fogTexture)

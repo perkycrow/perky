@@ -54,6 +54,8 @@ uniform float uCubeShadowFar3;
 uniform float uCubeShadowFar4;
 uniform int uNumCubeShadows;
 uniform float uVolumetricFogEnabled;
+uniform sampler2D uSSAO;
+uniform float uHasSSAO;
 
 in vec2 vTexCoord;
 
@@ -158,7 +160,8 @@ void main() {
         float hemiFactor = normal.y * 0.5 + 0.5;
         vec3 ambient = mix(uAmbientGround, uAmbientSky, hemiFactor);
         float occlusion = 0.5 + 0.5 * hemiFactor;
-        lit = baseColor * (ambient * occlusion + diffuse * shadow);
+        float ssao = uHasSSAO > 0.5 ? texture(uSSAO, vTexCoord).r : 1.0;
+        lit = baseColor * (ambient * occlusion * ssao + diffuse * shadow);
 
         if (specular > 0.0 && diffuse > 0.0) {
             vec3 halfDir = normalize(dirLight + viewDir);
@@ -238,7 +241,9 @@ export const LIGHTING_SHADER_DEF = {
         'uCubeShadowPos0', 'uCubeShadowPos1', 'uCubeShadowPos2', 'uCubeShadowPos3', 'uCubeShadowPos4',
         'uCubeShadowFar0', 'uCubeShadowFar1', 'uCubeShadowFar2', 'uCubeShadowFar3', 'uCubeShadowFar4',
         'uNumCubeShadows',
-        'uVolumetricFogEnabled'
+        'uVolumetricFogEnabled',
+        'uSSAO',
+        'uHasSSAO'
     ],
     attributes: ['aPosition', 'aTexCoord']
 }

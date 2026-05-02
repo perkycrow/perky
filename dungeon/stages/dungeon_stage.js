@@ -68,6 +68,7 @@ export default class DungeonStage extends Stage {
         this.meshRenderer.fogMaxDistance = 30
         this.meshRenderer.fogColor = [0.15, 0.15, 0.18]
         this.meshRenderer.fogScatterAnisotropy = 0.6
+        this.meshRenderer.ssaoEnabled = true
 
         this.scene = new Object3D()
         layer.setContent(this.scene)
@@ -711,6 +712,24 @@ export default class DungeonStage extends Stage {
             fogBtn.textContent = 'FOG: ' + (this.meshRenderer.volumetricFogEnabled ? 'ON' : 'OFF')
         })
         document.body.appendChild(fogBtn)
+
+        const ssaoBtn = document.createElement('button')
+        ssaoBtn.textContent = 'SSAO: ON'
+        Object.assign(ssaoBtn.style, {
+            position: 'fixed',
+            top: '70px',
+            right: '10px',
+            zIndex: '9999',
+            fontFamily: 'monospace',
+            fontSize: '13px',
+            padding: '4px 8px',
+            cursor: 'pointer'
+        })
+        ssaoBtn.addEventListener('click', () => {
+            this.meshRenderer.ssaoEnabled = !this.meshRenderer.ssaoEnabled
+            ssaoBtn.textContent = 'SSAO: ' + (this.meshRenderer.ssaoEnabled ? 'ON' : 'OFF')
+        })
+        document.body.appendChild(ssaoBtn)
     }
 
 
