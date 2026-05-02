@@ -108,6 +108,27 @@ Questions :
 - Faut-il pouvoir assigner un shader custom a un material ? Ou l'uber-shader suffit ?
 - Les textures Kenney retro (64x128) sont trop basses res pour un look non-retro — il faudra des textures 512px+ avec normal maps pour le style vise
 
+### Systeme d'ombres
+
+Quatre modes de shadow, combinables par objet :
+
+- **Off** : aucune ombre (cout 0)
+- **Blob shadow** : decal circulaire sombre projete au sol sous l'objet. Tres cheap. Pour personnages, objets mobiles, ou fallback basse qualite
+- **Directional shadow map** : une shadow map 2D depuis une lumiere directionnelle (soleil). Pour scenes exterieures. 1 render pass
+- **Cubemap point light shadows** : cubemap RGBA8 par light. 6 render passes par cubemap. Pour eclairage interieur. Parametrable :
+  - `maxCubeShadows` : nombre de slots (2 minimum = 1 actif + 1 transition). Default 3. Max 5
+  - Le dernier slot est toujours un slot de transition avec fade progressif
+  - Les slots sont assignes dynamiquement aux N lights les plus proches du joueur
+  - Culling par distance : seuls les objets dans le radius de la light sont rendus dans son cubemap
+
+Controle a 3 niveaux :
+- **Renderer** : `shadowMode` (off/blob/directional/cubemap), `maxCubeShadows` (slider 2-5)
+- **Per-objet** : `castShadow` (bool, existe deja), `shadowType` (blob/cubemap/none) pour mixer
+- **Settings user** : menu qualite graphique -> slider ombres qui ajuste `maxCubeShadows`. Permet de gagner des perfs sur machines faibles
+
+Chaque cubemap coute 6 render passes x nombre d'objets dans le radius. En low-poly avec 50 objets et 3 cubemaps = ~900 draw calls supplementaires par frame. Leger pour du low-poly, potentiellement lourd pour des scenes denses -> d'ou l'importance du slider user.
+
+
 ### Collisions simplifiees
 
 Pas de mesh collision — trop lourd. Chaque Prefab definit sa collision shape :

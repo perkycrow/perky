@@ -6,7 +6,8 @@ import {CUBE_DEPTH_SHADER_DEF} from '../shaders/builtin/cube_depth_shader.js'
 import LightDataTexture from '../light_data_texture.js'
 
 
-const MAX_CUBE_SHADOWS = 3
+const SHADER_CUBE_SLOTS = 5
+const DEFAULT_MAX_CUBE_SHADOWS = 3
 
 
 export default class WebGLMeshRenderer extends WebGLObjectRenderer {
@@ -18,6 +19,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     #shadowMap = null
     #cubeShadowMaps = []
     #activeCubeShadows = []
+    #maxCubeShadows = DEFAULT_MAX_CUBE_SHADOWS
     #lightDirection = [0.5, 1.0, 0.3]
     #ambientSky = [0.3, 0.3, 0.3]
     #ambientGround = [0.3, 0.3, 0.3]
@@ -154,6 +156,16 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     }
 
 
+    get maxCubeShadows () {
+        return this.#maxCubeShadows
+    }
+
+
+    set maxCubeShadows (value) {
+        this.#maxCubeShadows = Math.max(2, Math.min(value, SHADER_CUBE_SLOTS))
+    }
+
+
     init (context) {
         super.init(context)
         this.#meshProgram = context.shaderRegistry.register('mesh', MESH_SHADER_DEF)
@@ -183,7 +195,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
                 .map((light, idx) => ({light, idx, dist: this.#distToCamera(light)}))
                 .sort((a, b) => a.dist - b.dist)
 
-            for (let i = 0; i < sorted.length && this.#activeCubeShadows.length < MAX_CUBE_SHADOWS; i++) {
+            for (let i = 0; i < sorted.length && this.#activeCubeShadows.length < this.#maxCubeShadows; i++) {
                 const {light, idx} = sorted[i]
                 if (idx >= this.#cubeShadowMaps.length) {
                     continue
@@ -387,7 +399,6 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         const active = this.#activeCubeShadows
         gl.uniform1i(program.uniforms.uNumCubeShadows, active.length)
 
-        const SHADER_CUBE_SLOTS = 5
         for (let i = 0; i < SHADER_CUBE_SLOTS; i++) {
             const unit = gl.TEXTURE4 + i
             gl.activeTexture(unit)
