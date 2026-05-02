@@ -12,7 +12,6 @@ void main() {
 export const VOLUMETRIC_FOG_FRAGMENT = `#version 300 es
 precision highp float;
 
-uniform sampler2D uSceneColor;
 uniform highp sampler2D uDepth;
 uniform highp sampler2D uLightData;
 
@@ -32,6 +31,7 @@ uniform float uFogScatterAnisotropy;
 uniform vec3 uFogColor;
 uniform int uFogSteps;
 uniform float uFogMaxDistance;
+uniform float uFogStartDistance;
 
 in vec2 vTexCoord;
 out vec4 fragColor;
@@ -82,11 +82,11 @@ vec3 reconstructWorldPosition(vec2 uv, float depth) {
 
 
 void main() {
-    vec4 sceneColor = texture(uSceneColor, vTexCoord);
     float depth = texture(uDepth, vTexCoord).r;
 
     if (depth > 0.9999) {
-        fragColor = vec4(mix(sceneColor.rgb, uFogColor, 1.0 - exp(-uFogDensity * uFogMaxDistance)), sceneColor.a);
+        float skyTransmittance = exp(-uFogDensity * uFogMaxDistance);
+        fragColor = vec4(uFogColor * (1.0 - skyTransmittance), skyTransmittance);
         return;
     }
 
@@ -110,7 +110,7 @@ void main() {
 
         float t = rayOffset + float(i) * stepSize;
         vec3 samplePos = uCameraPosition + rayDir * t;
-        float density = fogDensityAt(samplePos);
+        float density = fogDensityAt(samplePos) * smoothstep(uFogStartDistance, uFogStartDistance + 3.0, t);
 
         if (density < 0.0001) continue;
 
@@ -140,8 +140,7 @@ void main() {
         transmittance *= stepTransmittance;
     }
 
-    vec3 result = sceneColor.rgb * transmittance + fogAccum;
-    fragColor = vec4(result, sceneColor.a);
+    fragColor = vec4(fogAccum, transmittance);
 }
 `
 
@@ -153,6 +152,7 @@ export const FOG_BLUR_FRAGMENT = `#version 300 es
 precision highp float;
 
 uniform sampler2D uFogTexture;
+uniform sampler2D uSceneColor;
 uniform highp sampler2D uDepth;
 uniform vec2 uTexelSize;
 
@@ -164,8 +164,8 @@ void main() {
     vec4 total = vec4(0.0);
     float totalWeight = 0.0;
 
-    for (int x = -1; x <= 1; x++) {
-        for (int y = -1; y <= 1; y++) {
+    for (int x = -2; x <= 2; x++) {
+        for (int y = -2; y <= 2; y++) {
             vec2 offset = vec2(float(x), float(y)) * uTexelSize;
             vec2 uv = vTexCoord + offset;
             float sampleDepth = texture(uDepth, uv).r;
@@ -176,7 +176,9 @@ void main() {
         }
     }
 
-    fragColor = total / totalWeight;
+    vec4 fog = total / totalWeight;
+    vec3 scene = texture(uSceneColor, vTexCoord).rgb;
+    fragColor = vec4(scene * fog.a + fog.rgb, 1.0);
 }
 `
 
@@ -184,7 +186,7 @@ void main() {
 export const FOG_BLUR_SHADER_DEF = {
     vertex: FOG_BLUR_VERTEX,
     fragment: FOG_BLUR_FRAGMENT,
-    uniforms: ['uFogTexture', 'uDepth', 'uTexelSize'],
+    uniforms: ['uFogTexture', 'uSceneColor', 'uDepth', 'uTexelSize'],
     attributes: ['aPosition', 'aTexCoord']
 }
 
@@ -193,7 +195,6 @@ export const VOLUMETRIC_FOG_SHADER_DEF = {
     vertex: VOLUMETRIC_FOG_VERTEX,
     fragment: VOLUMETRIC_FOG_FRAGMENT,
     uniforms: [
-        'uSceneColor',
         'uDepth',
         'uLightData',
         'uInverseViewProjection',
@@ -210,7 +211,8 @@ export const VOLUMETRIC_FOG_SHADER_DEF = {
         'uFogScatterAnisotropy',
         'uFogColor',
         'uFogSteps',
-        'uFogMaxDistance'
+        'uFogMaxDistance',
+        'uFogStartDistance'
     ],
     attributes: ['aPosition', 'aTexCoord']
 }

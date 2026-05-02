@@ -38,6 +38,8 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     #smaaWeightsTexture = null
     #smaaAreaTexture = null
     #smaaSearchTexture = null
+    #smaaOutputFBO = null
+    #smaaOutputTexture = null
     #smaaReady = false
     #outputFBO = null
     #outputTexture = null
@@ -86,7 +88,9 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     #fogScatterAnisotropy = 0.3
     #fogSteps = 16
     #fogMaxDistance = 80
+    #fogStartDistance = 3
     #fogTime = 0
+    #dummyBlackTexture = null
     #dummyShadowTexture = null
     #dummyCubeShadowTexture = null
     #lights = []
@@ -248,14 +252,37 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     }
 
 
-    get ssaoEnabled () { return this.#ssaoEnabled }
-    set ssaoEnabled (v) { this.#ssaoEnabled = v }
-    get ssaoRadius () { return this.#ssaoRadius }
-    set ssaoRadius (v) { this.#ssaoRadius = v }
-    get ssaoBias () { return this.#ssaoBias }
-    set ssaoBias (v) { this.#ssaoBias = v }
-    get ssaoIntensity () { return this.#ssaoIntensity }
-    set ssaoIntensity (v) { this.#ssaoIntensity = v }
+    get ssaoEnabled () {
+        return this.#ssaoEnabled
+    }
+
+    set ssaoEnabled (v) {
+        this.#ssaoEnabled = v
+    }
+
+    get ssaoRadius () {
+        return this.#ssaoRadius
+    }
+
+    set ssaoRadius (v) {
+        this.#ssaoRadius = v
+    }
+
+    get ssaoBias () {
+        return this.#ssaoBias
+    }
+
+    set ssaoBias (v) {
+        this.#ssaoBias = v
+    }
+
+    get ssaoIntensity () {
+        return this.#ssaoIntensity
+    }
+
+    set ssaoIntensity (v) {
+        this.#ssaoIntensity = v
+    }
 
 
     get volumetricFogEnabled () {
@@ -268,28 +295,101 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     }
 
 
-    get fogDensity () { return this.#fogDensity }
-    set fogDensity (v) { this.#fogDensity = v }
-    get fogHeightFalloff () { return this.#fogHeightFalloff }
-    set fogHeightFalloff (v) { this.#fogHeightFalloff = v }
-    get fogBaseHeight () { return this.#fogBaseHeight }
-    set fogBaseHeight (v) { this.#fogBaseHeight = v }
-    get fogNoiseScale () { return this.#fogNoiseScale }
-    set fogNoiseScale (v) { this.#fogNoiseScale = v }
-    get fogNoiseStrength () { return this.#fogNoiseStrength }
-    set fogNoiseStrength (v) { this.#fogNoiseStrength = v }
-    get fogWindDirection () { return this.#fogWindDirection }
-    set fogWindDirection (v) { this.#fogWindDirection = v }
-    get fogWindSpeed () { return this.#fogWindSpeed }
-    set fogWindSpeed (v) { this.#fogWindSpeed = v }
-    get fogScatterAnisotropy () { return this.#fogScatterAnisotropy }
-    set fogScatterAnisotropy (v) { this.#fogScatterAnisotropy = v }
-    get fogSteps () { return this.#fogSteps }
-    set fogSteps (v) { this.#fogSteps = v }
-    get fogMaxDistance () { return this.#fogMaxDistance }
-    set fogMaxDistance (v) { this.#fogMaxDistance = v }
-    get fogTime () { return this.#fogTime }
-    set fogTime (v) { this.#fogTime = v }
+    get fogDensity () {
+        return this.#fogDensity
+    }
+
+    set fogDensity (v) {
+        this.#fogDensity = v
+    }
+
+    get fogHeightFalloff () {
+        return this.#fogHeightFalloff
+    }
+
+    set fogHeightFalloff (v) {
+        this.#fogHeightFalloff = v
+    }
+
+    get fogBaseHeight () {
+        return this.#fogBaseHeight
+    }
+
+    set fogBaseHeight (v) {
+        this.#fogBaseHeight = v
+    }
+
+    get fogNoiseScale () {
+        return this.#fogNoiseScale
+    }
+
+    set fogNoiseScale (v) {
+        this.#fogNoiseScale = v
+    }
+
+    get fogNoiseStrength () {
+        return this.#fogNoiseStrength
+    }
+
+    set fogNoiseStrength (v) {
+        this.#fogNoiseStrength = v
+    }
+
+    get fogWindDirection () {
+        return this.#fogWindDirection
+    }
+
+    set fogWindDirection (v) {
+        this.#fogWindDirection = v
+    }
+
+    get fogWindSpeed () {
+        return this.#fogWindSpeed
+    }
+
+    set fogWindSpeed (v) {
+        this.#fogWindSpeed = v
+    }
+
+    get fogScatterAnisotropy () {
+        return this.#fogScatterAnisotropy
+    }
+
+    set fogScatterAnisotropy (v) {
+        this.#fogScatterAnisotropy = v
+    }
+
+    get fogSteps () {
+        return this.#fogSteps
+    }
+
+    set fogSteps (v) {
+        this.#fogSteps = v
+    }
+
+    get fogMaxDistance () {
+        return this.#fogMaxDistance
+    }
+
+    set fogMaxDistance (v) {
+        this.#fogMaxDistance = v
+    }
+
+    get fogStartDistance () {
+        return this.#fogStartDistance
+    }
+
+    set fogStartDistance (v) {
+        this.#fogStartDistance = v
+    }
+
+    get fogTime () {
+        return this.#fogTime
+    }
+
+    set fogTime (v) {
+        this.#fogTime = v
+    }
 
 
     init (context) {
@@ -583,8 +683,9 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     }
 
 
-    #renderLightingPass (gl, numLights) {
-        if (this.#smaaEnabled && this.#smaaReady) {
+    #renderLightingPass (gl, numLights) { // eslint-disable-line complexity -- clean
+        const needsOutputFBO = (this.#smaaEnabled && this.#smaaReady) || this.#volumetricFogEnabled
+        if (needsOutputFBO) {
             this.#ensureSmaaFBOs(gl, gl.canvas.width, gl.canvas.height)
             gl.bindFramebuffer(gl.FRAMEBUFFER, this.#outputFBO)
         } else {
@@ -685,12 +786,20 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
 
         gl.depthFunc(gl.LEQUAL)
 
-        if (this.#volumetricFogEnabled) {
-            this.#renderVolumetricFogPass(gl, numLights)
-        }
+        let sceneTexture = this.#outputTexture
 
         if (this.#smaaEnabled && this.#smaaReady) {
-            this.#renderSmaaPass(gl)
+            this.#renderSmaaPass(gl, sceneTexture)
+            sceneTexture = this.#smaaOutputTexture
+        }
+
+        if (this.#volumetricFogEnabled) {
+            this.#renderVolumetricFogPass(gl, sceneTexture, numLights)
+            sceneTexture = this.#fogBlurTexture
+        }
+
+        if (sceneTexture !== this.#outputTexture || needsOutputFBO) {
+            this.#blitToScreen(gl, sceneTexture)
         }
     }
 
@@ -763,7 +872,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     }
 
 
-    #renderVolumetricFogPass (gl, numLights) {
+    #renderVolumetricFogPass (gl, sceneTexture, numLights) {
         const fw = Math.ceil(gl.canvas.width / 2)
         const fh = Math.ceil(gl.canvas.height / 2)
 
@@ -777,16 +886,12 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         gl.useProgram(program.program)
 
         gl.activeTexture(gl.TEXTURE0)
-        gl.bindTexture(gl.TEXTURE_2D, this.#outputTexture)
-        gl.uniform1i(program.uniforms.uSceneColor, 0)
+        gl.bindTexture(gl.TEXTURE_2D, this.#gBuffer.depthTexture)
+        gl.uniform1i(program.uniforms.uDepth, 0)
 
         gl.activeTexture(gl.TEXTURE1)
-        gl.bindTexture(gl.TEXTURE_2D, this.#gBuffer.depthTexture)
-        gl.uniform1i(program.uniforms.uDepth, 1)
-
-        gl.activeTexture(gl.TEXTURE2)
         gl.bindTexture(gl.TEXTURE_2D, this.#lightDataTexture.texture)
-        gl.uniform1i(program.uniforms.uLightData, 2)
+        gl.uniform1i(program.uniforms.uLightData, 1)
 
         gl.uniformMatrix4fv(program.uniforms.uInverseViewProjection, false, this.#inverseVP.elements)
         gl.uniform3f(program.uniforms.uCameraPosition, this.#camera3d.position.x, this.#camera3d.position.y, this.#camera3d.position.z)
@@ -804,6 +909,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         gl.uniform3fv(program.uniforms.uFogColor, this.#fogColor)
         gl.uniform1i(program.uniforms.uFogSteps, this.#fogSteps)
         gl.uniform1f(program.uniforms.uFogMaxDistance, this.#fogMaxDistance)
+        gl.uniform1f(program.uniforms.uFogStartDistance, this.#fogStartDistance)
 
         this.#fullscreenQuad.draw(gl, program)
 
@@ -818,8 +924,11 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         gl.bindTexture(gl.TEXTURE_2D, this.#fogTexture)
         gl.uniform1i(blur.uniforms.uFogTexture, 0)
         gl.activeTexture(gl.TEXTURE1)
+        gl.bindTexture(gl.TEXTURE_2D, sceneTexture)
+        gl.uniform1i(blur.uniforms.uSceneColor, 1)
+        gl.activeTexture(gl.TEXTURE2)
         gl.bindTexture(gl.TEXTURE_2D, this.#gBuffer.depthTexture)
-        gl.uniform1i(blur.uniforms.uDepth, 1)
+        gl.uniform1i(blur.uniforms.uDepth, 2)
         gl.uniform2f(blur.uniforms.uTexelSize, 1 / fullW, 1 / fullH)
         this.#fullscreenQuad.draw(gl, blur)
 
@@ -853,7 +962,27 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     }
 
 
-    #renderSmaaPass (gl) {
+    #blitToScreen (gl, texture) {
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+        gl.disable(gl.DEPTH_TEST)
+
+        const program = this.#smaaBlendProgram
+        gl.useProgram(program.program)
+        gl.activeTexture(gl.TEXTURE0)
+        gl.bindTexture(gl.TEXTURE_2D, texture)
+        gl.uniform1i(program.uniforms.uColorTexture, 0)
+        gl.activeTexture(gl.TEXTURE1)
+        gl.bindTexture(gl.TEXTURE_2D, this.#getDummyBlackTexture(gl))
+        gl.uniform1i(program.uniforms.uBlendTexture, 1)
+        gl.uniform2f(program.uniforms.uTexelSize, 1 / gl.canvas.width, 1 / gl.canvas.height)
+        this.#fullscreenQuad.draw(gl, program)
+
+        gl.enable(gl.DEPTH_TEST)
+    }
+
+
+    #renderSmaaPass (gl, inputTexture) {
         const w = gl.canvas.width
         const h = gl.canvas.height
         const tx = 1 / w
@@ -867,9 +996,8 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         gl.clear(gl.COLOR_BUFFER_BIT)
         const edgeProg = this.#smaaEdgeProgram
         gl.useProgram(edgeProg.program)
-        const smaaInput = this.#volumetricFogEnabled ? this.#fogBlurTexture : this.#outputTexture
         gl.activeTexture(gl.TEXTURE0)
-        gl.bindTexture(gl.TEXTURE_2D, smaaInput)
+        gl.bindTexture(gl.TEXTURE_2D, inputTexture)
         gl.uniform1i(edgeProg.uniforms.uColorTexture, 0)
         gl.uniform2f(edgeProg.uniforms.uTexelSize, tx, ty)
         this.#fullscreenQuad.draw(gl, edgeProg)
@@ -892,12 +1020,12 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         gl.uniform2f(weightProg.uniforms.uViewportSize, w, h)
         this.#fullscreenQuad.draw(gl, weightProg)
 
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#smaaOutputFBO)
         gl.viewport(0, 0, w, h)
         const blendProg = this.#smaaBlendProgram
         gl.useProgram(blendProg.program)
         gl.activeTexture(gl.TEXTURE0)
-        gl.bindTexture(gl.TEXTURE_2D, smaaInput)
+        gl.bindTexture(gl.TEXTURE_2D, inputTexture)
         gl.uniform1i(blendProg.uniforms.uColorTexture, 0)
         gl.activeTexture(gl.TEXTURE1)
         gl.bindTexture(gl.TEXTURE_2D, this.#smaaWeightsTexture)
@@ -935,6 +1063,11 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.#smaaWeightsFBO)
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#smaaWeightsTexture, 0)
 
+        this.#smaaOutputTexture = createScreenTexture(gl, width, height)
+        this.#smaaOutputFBO = gl.createFramebuffer()
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#smaaOutputFBO)
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#smaaOutputTexture, 0)
+
         gl.bindFramebuffer(gl.FRAMEBUFFER, null)
         gl.bindRenderbuffer(gl.RENDERBUFFER, null)
 
@@ -962,6 +1095,12 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
             this.#smaaWeightsFBO = null
             this.#smaaWeightsTexture = null
         }
+        if (this.#smaaOutputFBO) {
+            gl.deleteFramebuffer(this.#smaaOutputFBO)
+            gl.deleteTexture(this.#smaaOutputTexture)
+            this.#smaaOutputFBO = null
+            this.#smaaOutputTexture = null
+        }
     }
 
 
@@ -969,7 +1108,9 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         const loadImage = (src) => {
             const img = new Image()
             img.src = src
-            return new Promise(resolve => { img.onload = () => resolve(img) })
+            return new Promise(resolve => {
+                img.onload = () => resolve(img)
+            })
         }
 
         Promise.all([loadImage(SMAA_AREA_TEXTURE), loadImage(SMAA_SEARCH_TEXTURE)]).then(([areaImg, searchImg]) => {
@@ -992,6 +1133,19 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
             gl.bindTexture(gl.TEXTURE_2D, null)
             this.#smaaReady = true
         })
+    }
+
+
+    #getDummyBlackTexture (gl) {
+        if (!this.#dummyBlackTexture) {
+            this.#dummyBlackTexture = gl.createTexture()
+            gl.bindTexture(gl.TEXTURE_2D, this.#dummyBlackTexture)
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 0]))
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
+            gl.bindTexture(gl.TEXTURE_2D, null)
+        }
+        return this.#dummyBlackTexture
     }
 
 
