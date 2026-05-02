@@ -126,18 +126,26 @@ float calcCubeShadowSample (mediump samplerCube smap, vec3 lightPos, float far, 
 }
 
 
+float fadedShadow (mediump samplerCube smap, vec3 pos, float far, vec3 normal) {
+    float shadowVal = calcCubeShadowSample(smap, pos, far, normal);
+    float distToEye = length(pos - uCameraPosition);
+    float fade = 1.0 - smoothstep(far * 0.6, far, distToEye);
+    return mix(1.0, shadowVal, fade);
+}
+
+
 float calcPointShadow (vec3 lightPos, vec3 normal) {
     if (uNumCubeShadows < 1) return 1.0;
     if (length(lightPos - uCubeShadowPos0) < 0.1)
-        return calcCubeShadowSample(uCubeShadow0, uCubeShadowPos0, uCubeShadowFar0, normal);
+        return fadedShadow(uCubeShadow0, uCubeShadowPos0, uCubeShadowFar0, normal);
     if (uNumCubeShadows >= 2 && length(lightPos - uCubeShadowPos1) < 0.1)
-        return calcCubeShadowSample(uCubeShadow1, uCubeShadowPos1, uCubeShadowFar1, normal);
+        return fadedShadow(uCubeShadow1, uCubeShadowPos1, uCubeShadowFar1, normal);
     if (uNumCubeShadows >= 3 && length(lightPos - uCubeShadowPos2) < 0.1)
-        return calcCubeShadowSample(uCubeShadow2, uCubeShadowPos2, uCubeShadowFar2, normal);
+        return fadedShadow(uCubeShadow2, uCubeShadowPos2, uCubeShadowFar2, normal);
     if (uNumCubeShadows >= 4 && length(lightPos - uCubeShadowPos3) < 0.1)
-        return calcCubeShadowSample(uCubeShadow3, uCubeShadowPos3, uCubeShadowFar3, normal);
+        return fadedShadow(uCubeShadow3, uCubeShadowPos3, uCubeShadowFar3, normal);
     if (uNumCubeShadows >= 5 && length(lightPos - uCubeShadowPos4) < 0.1)
-        return calcCubeShadowSample(uCubeShadow4, uCubeShadowPos4, uCubeShadowFar4, normal);
+        return fadedShadow(uCubeShadow4, uCubeShadowPos4, uCubeShadowFar4, normal);
     return 1.0;
 }
 

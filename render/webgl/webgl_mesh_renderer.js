@@ -6,7 +6,7 @@ import {CUBE_DEPTH_SHADER_DEF} from '../shaders/builtin/cube_depth_shader.js'
 import LightDataTexture from '../light_data_texture.js'
 
 
-const MAX_CUBE_SHADOWS = 5
+const MAX_CUBE_SHADOWS = 2
 
 
 export default class WebGLMeshRenderer extends WebGLObjectRenderer {
@@ -387,7 +387,8 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         const active = this.#activeCubeShadows
         gl.uniform1i(program.uniforms.uNumCubeShadows, active.length)
 
-        for (let i = 0; i < MAX_CUBE_SHADOWS; i++) {
+        const SHADER_CUBE_SLOTS = 5
+        for (let i = 0; i < SHADER_CUBE_SLOTS; i++) {
             const unit = gl.TEXTURE4 + i
             gl.activeTexture(unit)
 

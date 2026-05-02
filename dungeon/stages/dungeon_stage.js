@@ -481,7 +481,7 @@ export default class DungeonStage extends Stage {
         this.debugOverlay.textContent = [
             `pos: ${px.toFixed(1)}, ${pz.toFixed(1)}`,
             `lights in range: ${activeLights}/${lights.length}`,
-            `active shadows: ${shadowLights}/5`,
+            `active shadows: ${shadowLights}/2`,
             `objects: ${this.meshRenderer.collected.length}`
         ].join('\n')
         this.debugOverlay.style.whiteSpace = 'pre'
