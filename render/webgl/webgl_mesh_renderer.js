@@ -2,6 +2,7 @@ import WebGLObjectRenderer from './webgl_object_renderer.js'
 import MeshInstance from '../mesh_instance.js'
 import {MESH_SHADER_DEF} from '../shaders/builtin/mesh_shader.js'
 import {DEPTH_SHADER_DEF} from '../shaders/builtin/depth_shader.js'
+import {CUBE_DEPTH_SHADER_DEF} from '../shaders/builtin/cube_depth_shader.js'
 import LightDataTexture from '../light_data_texture.js'
 
 
@@ -9,8 +10,11 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
 
     #meshProgram = null
     #depthProgram = null
+    #cubeDepthProgram = null
     #camera3d = null
     #shadowMap = null
+    #cubeShadowMap = null
+    #cubeShadowLightIndex = 0
     #lightDirection = [0.5, 1.0, 0.3]
     #ambientSky = [0.3, 0.3, 0.3]
     #ambientGround = [0.3, 0.3, 0.3]
@@ -18,6 +22,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     #fogFar = 80
     #fogColor = [0.0, 0.0, 0.0]
     #dummyShadowTexture = null
+    #dummyCubeShadowTexture = null
     #lights = []
     #lightDataTexture = null
 
@@ -131,10 +136,21 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     }
 
 
+    get cubeShadowMap () {
+        return this.#cubeShadowMap
+    }
+
+
+    set cubeShadowMap (value) {
+        this.#cubeShadowMap = value
+    }
+
+
     init (context) {
         super.init(context)
         this.#meshProgram = context.shaderRegistry.register('mesh', MESH_SHADER_DEF)
         this.#depthProgram = context.shaderRegistry.register('depth', DEPTH_SHADER_DEF)
+        this.#cubeDepthProgram = context.shaderRegistry.register('cubeDepth', CUBE_DEPTH_SHADER_DEF)
         this.#lightDataTexture = new LightDataTexture(context.gl)
     }
 
@@ -153,6 +169,10 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
             this.#renderShadowPass(gl)
         }
 
+        if (this.#cubeShadowMap && this.#lights.length > 0) {
+            this.#renderCubeShadowPass(gl)
+        }
+
         gl.clear(gl.DEPTH_BUFFER_BIT)
 
         const numLights = this.#lightDataTexture.update(this.#lights, this.#camera3d.position, this.#fogFar)
@@ -163,6 +183,21 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         }
 
         gl.disable(gl.DEPTH_TEST)
+    }
+
+
+    #getDummyCubeShadowTexture (gl) {
+        if (!this.#dummyCubeShadowTexture) {
+            this.#dummyCubeShadowTexture = gl.createTexture()
+            gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.#dummyCubeShadowTexture)
+            for (let i = 0; i < 6; i++) {
+                gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([255, 255, 255, 255]))
+            }
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+            gl.bindTexture(gl.TEXTURE_CUBE_MAP, null)
+        }
+        return this.#dummyCubeShadowTexture
     }
 
 
@@ -186,8 +221,13 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
             this.context?.gl?.deleteTexture(this.#dummyShadowTexture)
             this.#dummyShadowTexture = null
         }
+        if (this.#dummyCubeShadowTexture) {
+            this.context?.gl?.deleteTexture(this.#dummyCubeShadowTexture)
+            this.#dummyCubeShadowTexture = null
+        }
         this.#meshProgram = null
         this.#depthProgram = null
+        this.#cubeDepthProgram = null
         this.#camera3d = null
         this.#shadowMap = null
         this.#lights = []
@@ -222,6 +262,42 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
 
         gl.disable(gl.CULL_FACE)
         sm.end()
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
+    }
+
+
+    #renderCubeShadowPass (gl) {
+        const csm = this.#cubeShadowMap
+        const light = this.#lights[this.#cubeShadowLightIndex]
+
+        if (!light) {
+            return
+        }
+
+        const far = light.radius
+        csm.update(light.position, far)
+
+        const program = this.#cubeDepthProgram
+        gl.useProgram(program.program)
+        gl.enable(gl.DEPTH_TEST)
+        gl.depthFunc(gl.LEQUAL)
+        gl.uniformMatrix4fv(program.uniforms.uProjection, false, csm.projection.elements)
+        gl.uniform3f(program.uniforms.uLightPosition, light.position.x, light.position.y, light.position.z)
+        gl.uniform1f(program.uniforms.uFar, far)
+
+        for (let face = 0; face < 6; face++) {
+            csm.beginFace(face)
+            gl.uniformMatrix4fv(program.uniforms.uView, false, csm.getView(face).elements)
+
+            for (const {object} of this.collected) {
+                if (!object.mesh || !object.visible || !object.castShadow) {
+                    continue
+                }
+                gl.uniformMatrix4fv(program.uniforms.uModel, false, object.worldMatrix.elements)
+                object.mesh.draw()
+            }
+        }
+        csm.end()
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
     }
 
@@ -281,6 +357,23 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         gl.activeTexture(gl.TEXTURE3)
         gl.bindTexture(gl.TEXTURE_2D, this.#lightDataTexture.texture)
         gl.uniform1i(program.uniforms.uLightData, 3)
+
+        gl.activeTexture(gl.TEXTURE4)
+        if (this.#cubeShadowMap) {
+            gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.#cubeShadowMap.texture)
+            gl.uniform1i(program.uniforms.uCubeShadowMap, 4)
+            gl.uniform1f(program.uniforms.uHasCubeShadowMap, 1)
+            const light = this.#lights[this.#cubeShadowLightIndex]
+            if (light) {
+                gl.uniform3f(program.uniforms.uCubeShadowLightPos, light.position.x, light.position.y, light.position.z)
+                gl.uniform1f(program.uniforms.uCubeShadowFar, light.radius)
+            }
+            gl.uniform1i(program.uniforms.uCubeShadowLightIdx, this.#cubeShadowLightIndex)
+        } else {
+            gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.#getDummyCubeShadowTexture(gl))
+            gl.uniform1i(program.uniforms.uCubeShadowMap, 4)
+            gl.uniform1f(program.uniforms.uHasCubeShadowMap, 0)
+        }
     }
 
 

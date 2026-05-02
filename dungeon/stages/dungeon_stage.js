@@ -1,6 +1,7 @@
 import Stage from '../../game/stage.js'
 import WebGLMeshRenderer from '../../render/webgl/webgl_mesh_renderer.js'
 import Camera3D from '../../render/camera_3d.js'
+import CubeShadowMap from '../../render/cube_shadow_map.js'
 import MeshInstance from '../../render/mesh_instance.js'
 import Light3D from '../../render/light_3d.js'
 import Object3D from '../../render/object_3d.js'
@@ -50,6 +51,8 @@ export default class DungeonStage extends Stage {
         this.meshRenderer.fogNear = 8
         this.meshRenderer.fogFar = 30
         this.meshRenderer.fogColor = [0.01, 0.01, 0.02]
+        const gl = this.meshRenderer.context.gl
+        this.meshRenderer.cubeShadowMap = new CubeShadowMap({gl, resolution: 512})
 
         this.scene = new Object3D()
         layer.setContent(this.scene)
@@ -103,7 +106,8 @@ export default class DungeonStage extends Stage {
         this.#buildWall(assets.wall, -2, 2, 180)
         this.#buildWall(assets.wall, -8, 0, 90)
 
-        this.#placeAsset(assets.ceilingLamp, -4, 3, 0, 0)
+        const lamp1 = this.#placeAsset(assets.ceilingLamp, -4, 3, 0, 0)
+        this.#setCastShadow(lamp1, false)
 
         lights.push(new Light3D({
             x: -4,
@@ -131,16 +135,17 @@ export default class DungeonStage extends Stage {
         this.#buildWall(assets.wall, 2, 2, 180)
         this.#buildWall(assets.wall, 4, 0, -90)
 
-        this.#placeAsset(assets.ceilingLamp, 2, 3, 0, 0)
+        const lamp2 = this.#placeAsset(assets.ceilingLamp, 2, 3, 0, 0)
+        this.#setCastShadow(lamp2, false)
 
-        lights.push(new Light3D({
-            x: 2,
-            y: 2.7,
-            z: 0,
-            color: [1.0, 0.85, 0.6],
-            intensity: 3.5,
-            radius: 10
-        }))
+        // lights.push(new Light3D({
+        //     x: 2,
+        //     y: 2.7,
+        //     z: 0,
+        //     color: [1.0, 0.85, 0.6],
+        //     intensity: 3.5,
+        //     radius: 10
+        // }))
 
         this.#placeAsset(assets.crate, 3.3, 0, -1.5, 0)
         this.#placeAsset(assets.crate, 3.3, 0.2, -1.5, 25)
@@ -303,13 +308,14 @@ export default class DungeonStage extends Stage {
 
 
 
-        this.camera3d.position.set(
-            this.player.position.x,
-            this.player.position.y + EYE_HEIGHT,
-            this.player.position.z
-        )
+        const px = this.player.position.x
+        const py = this.player.position.y + EYE_HEIGHT
+        const pz = this.player.position.z
+
+        this.camera3d.position.set(px, py, pz)
         this.camera3d.rotation.setFromEuler(this.player.pitch, this.player.yaw, 0, 'YXZ')
         this.camera3d.markDirty()
+
     }
 
 

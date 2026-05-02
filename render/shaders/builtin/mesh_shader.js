@@ -64,6 +64,12 @@ uniform highp sampler2D uLightData;
 uniform highp sampler2DShadow uShadowMap;
 uniform float uHasShadowMap;
 
+uniform mediump samplerCube uCubeShadowMap;
+uniform float uHasCubeShadowMap;
+uniform vec3 uCubeShadowLightPos;
+uniform float uCubeShadowFar;
+uniform int uCubeShadowLightIdx;
+
 uniform float uHasVertexColors;
 
 in vec2 vTexCoord;
@@ -92,6 +98,19 @@ float calcShadow (vec3 normal, vec3 lightDir) {
         }
     }
     return shadow / 25.0;
+}
+
+
+float calcCubeShadow (vec3 fragToLight, float currentDist, vec3 normal) {
+    if (uHasCubeShadowMap < 0.5) return 1.0;
+    vec3 lightDir = normalize(-fragToLight);
+    float NdotL = dot(normal, lightDir);
+    if (NdotL < 0.05) return 1.0;
+    float storedDist = texture(uCubeShadowMap, fragToLight).r * uCubeShadowFar;
+    float diff = currentDist - storedDist;
+    float inShadow = smoothstep(0.02, 0.4, diff);
+    float fade = smoothstep(0.05, 0.4, NdotL);
+    return mix(1.0, 1.0 - inShadow * 0.85, fade);
 }
 
 
@@ -154,13 +173,19 @@ void main() {
                 attenuation *= smoothstep(spotDir.w, spotExtra.x, cosTheta);
             }
 
+            float pointShadow = 1.0;
+            if (uHasCubeShadowMap > 0.5) {
+                vec3 lightToFrag = vWorldPosition - uCubeShadowLightPos;
+                pointShadow = calcCubeShadow(lightToFrag, length(lightToFrag), normal);
+            }
+
             float nDotL = max(dot(normal, lightDir), 0.0);
-            lit += baseColor * colRad.xyz * posInt.w * nDotL * attenuation / 3.14159;
+            lit += baseColor * colRad.xyz * posInt.w * nDotL * attenuation * pointShadow / 3.14159;
 
             if (uSpecular > 0.0 && nDotL > 0.0) {
                 vec3 halfVec = normalize(lightDir + viewDir);
                 float specAngle = max(dot(normal, halfVec), 0.0);
-                lit += colRad.xyz * posInt.w * uSpecular * specNorm * pow(specAngle, shininess) * attenuation;
+                lit += colRad.xyz * posInt.w * uSpecular * specNorm * pow(specAngle, shininess) * attenuation * pointShadow;
             }
         }
 
@@ -217,6 +242,11 @@ export const MESH_SHADER_DEF = {
         'uLightMatrix',
         'uShadowMap',
         'uHasShadowMap',
+        'uCubeShadowMap',
+        'uHasCubeShadowMap',
+        'uCubeShadowLightPos',
+        'uCubeShadowFar',
+        'uCubeShadowLightIdx',
         'uHasVertexColors'
     ],
     attributes: ['aPosition', 'aNormal', 'aTexCoord', 'aTangent', 'aColor']

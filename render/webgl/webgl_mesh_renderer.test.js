@@ -30,6 +30,21 @@ function createMockGL () {
         TEXTURE_MAG_FILTER: 0x2800,
         TEXTURE_WRAP_S: 0x2802,
         TEXTURE_WRAP_T: 0x2803,
+        BLEND: 0x0BE2,
+        SRC_ALPHA: 0x0302,
+        ONE_MINUS_SRC_ALPHA: 0x0303,
+        TEXTURE4: 0x84C4,
+        TEXTURE_CUBE_MAP: 0x8513,
+        DEPTH_COMPONENT24: 0x81A6,
+        DEPTH_COMPONENT: 0x1902,
+        UNSIGNED_INT: 0x1405,
+        TEXTURE_COMPARE_MODE: 0x884C,
+        COMPARE_REF_TO_TEXTURE: 0x884E,
+        TEXTURE_COMPARE_FUNC: 0x884D,
+        LINEAR: 0x2601,
+        R32F: 0x822E,
+        RED: 0x1903,
+        COLOR_BUFFER_BIT: 0x4000,
         canvas: {width: 800, height: 600},
         calls,
         createTexture () {
@@ -101,6 +116,12 @@ function createMockGL () {
         },
         texParameteri (...args) {
             calls.push({fn: 'texParameteri', args})
+        },
+        blendFunc (...args) {
+            calls.push({fn: 'blendFunc', args})
+        },
+        depthMask (flag) {
+            calls.push({fn: 'depthMask', args: [flag]})
         }
     }
 }
@@ -115,7 +136,8 @@ function createMockShaderRegistry () {
             uModel: 2,
             uTexture: 3,
             uLightDirection: 4,
-            uAmbient: 5,
+            uAmbientSky: 5,
+            uAmbientGround: 33,
             uTintColor: 6,
             uFogNear: 7,
             uFogFar: 8,
@@ -137,6 +159,11 @@ function createMockShaderRegistry () {
             uLightMatrix: 24,
             uShadowMap: 25,
             uHasShadowMap: 26,
+            uCubeShadowMap: 28,
+            uHasCubeShadowMap: 29,
+            uCubeShadowLightPos: 30,
+            uCubeShadowFar: 31,
+            uCubeShadowLightIdx: 32,
             uHasVertexColors: 27
         },
         attributes: {
