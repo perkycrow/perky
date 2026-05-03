@@ -108,7 +108,8 @@ void main() {
         if (i >= uFogSteps) break;
         if (transmittance < 0.01) break;
 
-        float t = rayOffset + float(i) * stepSize;
+        float jitter = fract(ign + float(i) * 0.618034);
+        float t = (float(i) + jitter) * stepSize;
         vec3 samplePos = uCameraPosition + rayDir * t;
         float density = fogDensityAt(samplePos) * smoothstep(uFogStartDistance, uFogStartDistance + 3.0, t);
 
@@ -140,7 +141,8 @@ void main() {
         transmittance *= stepTransmittance;
     }
 
-    fragColor = vec4(fogAccum, transmittance);
+    float dither = (fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715)) * 52.9829189) - 0.5) / 255.0;
+    fragColor = vec4(fogAccum + dither, transmittance + dither);
 }
 `
 
@@ -178,7 +180,9 @@ void main() {
 
     vec4 fog = total / totalWeight;
     vec3 scene = texture(uSceneColor, vTexCoord).rgb;
-    fragColor = vec4(scene * fog.a + fog.rgb, 1.0);
+    vec3 result = scene * fog.a + fog.rgb;
+    result += (fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715)) * 52.9829189) - 0.5) / 255.0;
+    fragColor = vec4(result, 1.0);
 }
 `
 
