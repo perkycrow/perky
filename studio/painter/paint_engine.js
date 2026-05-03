@@ -66,7 +66,8 @@ const DEFAULT_BRUSH = {
     flow: 0.8,
     spacing: 0.05,
     smoothing: 0.9,
-    color: [0, 0, 0, 1]
+    color: [0, 0, 0, 1],
+    eraser: false
 }
 
 
@@ -337,6 +338,10 @@ export default class PaintEngine {
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, layer.fbo)
 
+        if (this.#brush.eraser) {
+            gl.blendFunc(gl.ZERO, gl.ONE_MINUS_SRC_ALPHA)
+        }
+
         this.#stampShader.use()
             .setUniform2f('u_center', x * dpr, y * dpr)
             .setUniform1f('u_size', this.#brush.size * dpr)
@@ -349,6 +354,11 @@ export default class PaintEngine {
         gl.bindVertexArray(this.#vao)
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
         gl.bindVertexArray(null)
+
+        if (this.#brush.eraser) {
+            gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
+        }
+
         gl.bindFramebuffer(gl.FRAMEBUFFER, null)
     }
 

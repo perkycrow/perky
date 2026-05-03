@@ -48,6 +48,7 @@
             font-family: inherit;
         }
         .controls button:hover { background: #444; }
+        .controls button.active { background: #6366f1; color: #fff; }
         .layer-panel {
             position: fixed;
             top: 60px;
@@ -106,6 +107,7 @@
         <label>Opacity <input type="range" id="opacity" min="1" max="100" value="100"></label>
         <label>Flow <input type="range" id="flow" min="1" max="100" value="80"></label>
         <label>Smooth <input type="range" id="smoothing" min="0" max="90" value="90"></label>
+        <button id="eraser">Eraser</button>
         <button id="clear">Clear</button>
     </div>
     <div class="layer-panel">

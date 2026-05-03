@@ -10,6 +10,7 @@ const hardnessInput = document.getElementById('hardness')
 const opacityInput = document.getElementById('opacity')
 const flowInput = document.getElementById('flow')
 const smoothingInput = document.getElementById('smoothing')
+const eraserBtn = document.getElementById('eraser')
 const clearBtn = document.getElementById('clear')
 const addLayerBtn = document.getElementById('add-layer')
 const removeLayerBtn = document.getElementById('remove-layer')
@@ -95,6 +96,12 @@ hardnessInput.addEventListener('input', updateBrush)
 opacityInput.addEventListener('input', updateBrush)
 flowInput.addEventListener('input', updateBrush)
 smoothingInput.addEventListener('input', updateBrush)
+eraserBtn.addEventListener('click', () => {
+    const active = !engine.brush.eraser
+    engine.setBrush({eraser: active})
+    eraserBtn.classList.toggle('active', active)
+})
+
 clearBtn.addEventListener('click', () => engine.clear())
 
 addLayerBtn.addEventListener('click', () => {
