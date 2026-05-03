@@ -72,6 +72,18 @@ export default class GBuffer {
     }
 
 
+    resume () {
+        const gl = this.#gl
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#framebuffer)
+        gl.drawBuffers([
+            gl.COLOR_ATTACHMENT0,
+            gl.COLOR_ATTACHMENT1,
+            gl.COLOR_ATTACHMENT2
+        ])
+        gl.viewport(0, 0, this.#width, this.#height)
+    }
+
+
     end () {
         const gl = this.#gl
         gl.drawBuffers([gl.COLOR_ATTACHMENT0])

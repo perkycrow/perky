@@ -238,6 +238,7 @@ void main() {
     float roughness = materialSample.r;
     float specular = materialSample.g;
     float emissive = materialSample.b;
+    float doubleSided = materialSample.a;
 
     vec3 worldPos = reconstructWorldPosition(vTexCoord, depth);
 
@@ -250,6 +251,10 @@ void main() {
         float shininess = pow(2.0, (1.0 - roughness) * 10.0);
         float specNorm = (shininess + 2.0) / 25.0;
         float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), 4.0) * (1.0 - roughness);
+
+        if (doubleSided > 0.5) {
+            normal = faceforward(normal, -viewDir, normal);
+        }
 
         vec3 dirLight = normalize(uLightDirection);
         float diffuse = max(dot(normal, dirLight), 0.0) * uDirectionalIntensity;

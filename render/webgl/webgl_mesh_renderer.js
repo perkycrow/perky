@@ -65,6 +65,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     #ssao = new SsaoEffect()
     #bloom = new BloomEffect()
     #cinematic = new CinematicEffect()
+    #sprite3dRenderer = null
     #dummyBlackTexture = null
     #dummyShadowTexture = null
     #dummyCubeShadowTexture = null
@@ -223,6 +224,15 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
 
     set gBuffer (value) {
         this.#gBuffer = value
+    }
+
+
+    get sprite3dRenderer () {
+        return this.#sprite3dRenderer
+    }
+
+    set sprite3dRenderer (value) {
+        this.#sprite3dRenderer = value
     }
 
 
@@ -701,6 +711,10 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         this.#gBuffer.resize(gl.canvas.width, gl.canvas.height)
 
         this.#renderGBufferPass(gl, opaque, decals)
+
+        if (this.#sprite3dRenderer) {
+            this.#sprite3dRenderer.flushToGBuffer(gl)
+        }
 
         if (this.#ssao.enabled) {
             this.#ssao.render(gl, {canvasWidth: gl.canvas.width, canvasHeight: gl.canvas.height, gBuffer: this.#gBuffer, camera3d: this.#camera3d, inverseVP: this.#inverseVP, fullscreenQuad: this.#fullscreenQuad})

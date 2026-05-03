@@ -8,6 +8,8 @@ import Material3D from '../../render/material_3d.js'
 import Decal from '../../render/decal.js'
 import Light3D from '../../render/light_3d.js'
 import Object3D from '../../render/object_3d.js'
+import Sprite3D from '../../render/sprite_3d.js'
+import WebGLSprite3DRenderer from '../../render/webgl/webgl_sprite3d_renderer.js'
 import {loadGlb, buildGltfScene} from '../../render/loaders/gltf_loader.js'
 import {loadImage} from '../../application/loaders.js'
 import {resolveCollisions} from '../collision.js'
@@ -37,6 +39,9 @@ export default class DungeonStage extends Stage {
         this.meshRenderer = new WebGLMeshRenderer()
         renderer.registerRenderer(this.meshRenderer)
 
+        this.sprite3dRenderer = new WebGLSprite3DRenderer()
+        renderer.registerRenderer(this.sprite3dRenderer)
+
         this.camera3d = new Camera3D({
             fov: Math.PI / 3,
             aspect: layer.canvas.width / layer.canvas.height,
@@ -57,7 +62,11 @@ export default class DungeonStage extends Stage {
         this.meshRenderer.fogFar = 30
         this.meshRenderer.fogColor = [0.01, 0.01, 0.02]
         const gl = this.meshRenderer.context.gl
-        this.meshRenderer.gBuffer = new GBuffer({gl, width: gl.canvas.width, height: gl.canvas.height})
+        const gBuffer = new GBuffer({gl, width: gl.canvas.width, height: gl.canvas.height})
+        this.meshRenderer.gBuffer = gBuffer
+        this.sprite3dRenderer.camera3d = this.camera3d
+        this.sprite3dRenderer.gBuffer = gBuffer
+        this.meshRenderer.sprite3dRenderer = this.sprite3dRenderer
         this.meshRenderer.cubeShadowMaps = Array.from(
             {length: 8},
             () => new CubeShadowMap({gl, resolution: 512})
@@ -87,6 +96,24 @@ export default class DungeonStage extends Stage {
 
         this.scene = new Object3D()
         layer.setContent(this.scene)
+
+        loadImage('assets/textures/pig.png').then(pigImage => {
+            const testSprite = new Sprite3D({
+                x: -3,
+                y: 0,
+                z: 0,
+                width: 1.5,
+                height: 1.5,
+                texture: pigImage,
+                material: new Material3D({
+                    texture: pigImage,
+                    roughness: 0.8,
+                    specular: 0.04
+                })
+            })
+            testSprite.updateWorldMatrix()
+            this.scene.addChild(testSprite)
+        })
 
         this.player = this.world.spawnPlayer(SPAWN)
         this.#setupMouseLook(layer.canvas)
@@ -126,23 +153,6 @@ export default class DungeonStage extends Stage {
         const assets = await this.#loadAssets()
         const lights = []
 
-        const shroomTex = await loadImage('assets/props/shroom.png')
-        const shroomDecal = new Decal({
-            x: -3,
-            y: 0.01,
-            z: 0.5,
-            width: 1,
-            height: 1,
-            material: new Material3D({
-                texture: shroomTex,
-                opacity: 0.9,
-                unlit: true
-            })
-        })
-        shroomDecal.rotation.setFromEuler(-Math.PI / 2, 0, 0, 'YXZ')
-        this.scene.addChild(shroomDecal)
-
-        this.shroomTex = shroomTex
 
         this.#buildBigRoom(assets, lights)
         this.#buildSmallRoom(assets, lights)
@@ -534,7 +544,7 @@ export default class DungeonStage extends Stage {
 
 
     #placeDecalAtCenter () {
-        if (!this.shroomTex) {
+        if (!this.decalTexture) {
             return
         }
 
@@ -605,7 +615,7 @@ export default class DungeonStage extends Stage {
             width: 0.5,
             height: 0.5,
             material: new Material3D({
-                texture: this.shroomTex,
+                texture: this.decalTexture,
                 color: [0.3, 0.3, 0.3],
                 opacity: 0.9
             })
