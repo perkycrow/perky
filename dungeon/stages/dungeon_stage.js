@@ -89,6 +89,7 @@ export default class DungeonStage extends Stage {
         this.meshRenderer.lightBlobiness = 0.015
         this.meshRenderer.outlineEnabled = true
         this.meshRenderer.outlineColor = [0.0, 0.0, 0.0]
+        this.meshRenderer.outlineWobble = 8.0
         this.meshRenderer.rimIntensity = 0.0
         this.meshRenderer.rimColor = [0.6, 0.65, 0.8]
         this.meshRenderer.paperIntensity = 0.15

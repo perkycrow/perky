@@ -327,6 +327,14 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         this.#outline.normalThreshold = v
     }
 
+    get outlineWobble () {
+        return this.#outline.wobble
+    }
+
+    set outlineWobble (v) {
+        this.#outline.wobble = v
+    }
+
 
     get lightBlobiness () {
         return this.#lightBlobiness
@@ -1028,7 +1036,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         }
 
         if (this.#outline.enabled) {
-            sceneTexture = this.#outline.render(gl, {canvasWidth: gl.canvas.width, canvasHeight: gl.canvas.height, gBuffer: this.#gBuffer, fullscreenQuad: this.#fullscreenQuad}, sceneTexture)
+            sceneTexture = this.#outline.render(gl, {canvasWidth: gl.canvas.width, canvasHeight: gl.canvas.height, gBuffer: this.#gBuffer, fullscreenQuad: this.#fullscreenQuad, inverseVP: this.#inverseVP}, sceneTexture)
         }
 
         if (this.#volumetricFog.enabled) {

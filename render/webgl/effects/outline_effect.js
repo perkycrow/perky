@@ -11,6 +11,7 @@ export default class OutlineEffect {
     #color = [0.0, 0.0, 0.0]
     #depthThreshold = 0.001
     #normalThreshold = 0.3
+    #wobble = 0.0
 
     get enabled () {
         return this.#enabled
@@ -42,6 +43,14 @@ export default class OutlineEffect {
 
     set normalThreshold (v) {
         this.#normalThreshold = v
+    }
+
+    get wobble () {
+        return this.#wobble
+    }
+
+    set wobble (v) {
+        this.#wobble = v
     }
 
 
@@ -79,6 +88,10 @@ export default class OutlineEffect {
         gl.uniform3fv(program.uniforms.uOutlineColor, this.#color)
         gl.uniform1f(program.uniforms.uDepthThreshold, this.#depthThreshold)
         gl.uniform1f(program.uniforms.uNormalThreshold, this.#normalThreshold)
+        gl.uniform1f(program.uniforms.uWobble, this.#wobble)
+        if (ctx.inverseVP) {
+            gl.uniformMatrix4fv(program.uniforms.uInverseViewProjection, false, ctx.inverseVP.elements)
+        }
 
         ctx.fullscreenQuad.draw(gl, program)
 
