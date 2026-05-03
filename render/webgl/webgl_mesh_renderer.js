@@ -79,6 +79,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     #outlineColor = [0.0, 0.0, 0.0]
     #depthThreshold = 0.001
     #normalThreshold = 0.3
+    #lightBlobiness = 0.0
     #shadowSoftness = 0.7
     #ssaoProgram = null
     #ssaoBlurProgram = null
@@ -376,6 +377,15 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
 
     set normalThreshold (v) {
         this.#normalThreshold = v
+    }
+
+
+    get lightBlobiness () {
+        return this.#lightBlobiness
+    }
+
+    set lightBlobiness (v) {
+        this.#lightBlobiness = v
     }
 
 
@@ -998,6 +1008,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         gl.uniform1f(program.uniforms.uFogNear, this.#fogNear)
         gl.uniform1f(program.uniforms.uFogFar, this.#fogFar)
         gl.uniform3fv(program.uniforms.uFogColor, this.#fogColor)
+        gl.uniform1f(program.uniforms.uLightBlobiness, this.#lightBlobiness)
         gl.uniform1f(program.uniforms.uShadowSoftness, this.#shadowSoftness)
         gl.uniform1f(program.uniforms.uVolumetricFogEnabled, this.#volumetricFogEnabled ? 1 : 0)
 

@@ -37,6 +37,7 @@ uniform float uFogNear;
 uniform float uFogFar;
 uniform vec3 uFogColor;
 
+uniform float uLightBlobiness;
 uniform int uNumLights;
 uniform highp sampler2D uLightData;
 
@@ -199,6 +200,23 @@ float toonify (float value) {
 }
 
 
+float hash3D (vec3 p) {
+    p = fract(p * 0.3183099 + 0.1);
+    p *= 17.0;
+    return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+}
+
+float lightNoise (vec3 p) {
+    vec3 i = floor(p);
+    vec3 f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    return mix(mix(mix(hash3D(i), hash3D(i + vec3(1, 0, 0)), f.x),
+                   mix(hash3D(i + vec3(0, 1, 0)), hash3D(i + vec3(1, 1, 0)), f.x), f.y),
+               mix(mix(hash3D(i + vec3(0, 0, 1)), hash3D(i + vec3(1, 0, 1)), f.x),
+                   mix(hash3D(i + vec3(0, 1, 1)), hash3D(i + vec3(1, 1, 1)), f.x), f.y), f.z);
+}
+
+
 vec3 acesToneMap (vec3 x) {
     return clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0);
 }
@@ -255,6 +273,9 @@ void main() {
             vec4 spotExtra = texelFetch(uLightData, ivec2(3, i), 0);
             vec3 toLight = posInt.xyz - worldPos;
             float dist = length(toLight);
+            if (uLightBlobiness > 0.0) {
+                dist += (lightNoise(worldPos * 1.5) - 0.5) * colRad.w * uLightBlobiness;
+            }
             float distNorm = dist / colRad.w;
             float attenuation = clamp(1.0 / (1.0 + distNorm * distNorm * 10.0) - 0.05, 0.0, 1.0) * step(dist, colRad.w);
             vec3 lightDir = normalize(toLight);
@@ -281,10 +302,11 @@ void main() {
 
         if (uRimIntensity > 0.0) {
             float rim = 1.0 - max(dot(viewDir, normal), 0.0);
+            float rimMask = 1.0 - abs(normal.y);
             rim = uToonLevels > 1.5
                 ? step(0.6, rim) * uRimIntensity
                 : pow(rim, uRimPower) * uRimIntensity;
-            lit += rim * uRimColor;
+            lit += rim * rimMask * uRimColor;
         }
     }
 
@@ -335,6 +357,7 @@ export const LIGHTING_SHADER_DEF = {
         'uCubeShadowPos0', 'uCubeShadowPos1', 'uCubeShadowPos2', 'uCubeShadowPos3', 'uCubeShadowPos4',
         'uCubeShadowFar0', 'uCubeShadowFar1', 'uCubeShadowFar2', 'uCubeShadowFar3', 'uCubeShadowFar4',
         'uNumCubeShadows',
+        'uLightBlobiness',
         'uShadowSoftness',
         'uVolumetricFogEnabled',
         'uSSAO',

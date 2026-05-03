@@ -76,6 +76,8 @@ export default class DungeonStage extends Stage {
         this.meshRenderer.temperature = -0.3
         this.meshRenderer.saturation = 0.9
         this.meshRenderer.toonLevels = 10
+        this.meshRenderer.toonBlend = 0.8
+        this.meshRenderer.lightBlobiness = 0.015
         this.meshRenderer.outlineEnabled = true
         this.meshRenderer.outlineColor = [0.0, 0.0, 0.0]
         this.meshRenderer.rimIntensity = 0.0
