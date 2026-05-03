@@ -53,6 +53,7 @@ uniform float uCubeShadowFar2;
 uniform float uCubeShadowFar3;
 uniform float uCubeShadowFar4;
 uniform int uNumCubeShadows;
+uniform float uShadowSoftness;
 uniform float uVolumetricFogEnabled;
 uniform sampler2D uSSAO;
 uniform float uHasSSAO;
@@ -96,11 +97,36 @@ float calcCubeShadowSample (mediump samplerCube smap, vec3 lightPos, float far, 
     vec3 lightDir = normalize(-fragToLight);
     float NdotL = dot(normal, lightDir);
     if (NdotL < 0.05) return 1.0;
-    float storedDist = texture(smap, fragToLight).r * far;
-    float diff = currentDist - storedDist;
-    float inShadow = smoothstep(0.02, 0.4, diff);
+    float normalBias = (1.0 - NdotL) * 0.3;
+    vec3 biasedPos = worldPos + normal * normalBias;
+    vec3 biasedFrag = biasedPos - lightPos;
+
+    if (uShadowSoftness < 0.01) {
+        float storedDist = texture(smap, biasedFrag).r * far;
+        float diff = currentDist - storedDist;
+        float inShadow = smoothstep(0.02, 0.4, diff);
+        float fade = smoothstep(0.05, 0.4, NdotL);
+        return mix(1.0, 1.0 - inShadow * 0.85, fade);
+    }
+
+    vec3 absDir = abs(normalize(biasedFrag));
+    float maxComp = max(absDir.x, max(absDir.y, absDir.z));
+    float texelSize = far / (512.0 * maxComp) * uShadowSoftness;
+    vec3 side = normalize(cross(biasedFrag, vec3(0.0, 1.0, 0.0)));
+    if (length(side) < 0.01) side = normalize(cross(biasedFrag, vec3(1.0, 0.0, 0.0)));
+    vec3 up = normalize(cross(biasedFrag, side));
+    float shadow = 0.0;
+    for (int x = -1; x <= 1; x++) {
+        for (int y = -1; y <= 1; y++) {
+            vec3 offset = (side * float(x) + up * float(y)) * texelSize;
+            float storedDist = texture(smap, biasedFrag + offset).r * far;
+            float diff = currentDist - storedDist;
+            shadow += smoothstep(0.02, 0.4, diff);
+        }
+    }
+    shadow /= 9.0;
     float fade = smoothstep(0.05, 0.4, NdotL);
-    return mix(1.0, 1.0 - inShadow * 0.85, fade);
+    return mix(1.0, 1.0 - shadow * 0.85, fade);
 }
 
 
@@ -241,6 +267,7 @@ export const LIGHTING_SHADER_DEF = {
         'uCubeShadowPos0', 'uCubeShadowPos1', 'uCubeShadowPos2', 'uCubeShadowPos3', 'uCubeShadowPos4',
         'uCubeShadowFar0', 'uCubeShadowFar1', 'uCubeShadowFar2', 'uCubeShadowFar3', 'uCubeShadowFar4',
         'uNumCubeShadows',
+        'uShadowSoftness',
         'uVolumetricFogEnabled',
         'uSSAO',
         'uHasSSAO'

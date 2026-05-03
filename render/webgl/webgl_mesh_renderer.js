@@ -65,6 +65,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     #fogColor = [0.0, 0.0, 0.0]
     #volumetricFogProgram = null
     #volumetricFogEnabled = false
+    #shadowSoftness = 0.7
     #ssaoProgram = null
     #ssaoBlurProgram = null
     #ssaoEnabled = false
@@ -274,6 +275,15 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
 
     set smaaEnabled (value) {
         this.#smaaEnabled = value
+    }
+
+
+    get shadowSoftness () {
+        return this.#shadowSoftness
+    }
+
+    set shadowSoftness (v) {
+        this.#shadowSoftness = v
     }
 
 
@@ -861,6 +871,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         gl.uniform1f(program.uniforms.uFogNear, this.#fogNear)
         gl.uniform1f(program.uniforms.uFogFar, this.#fogFar)
         gl.uniform3fv(program.uniforms.uFogColor, this.#fogColor)
+        gl.uniform1f(program.uniforms.uShadowSoftness, this.#shadowSoftness)
         gl.uniform1f(program.uniforms.uVolumetricFogEnabled, this.#volumetricFogEnabled ? 1 : 0)
 
         gl.activeTexture(gl.TEXTURE11)

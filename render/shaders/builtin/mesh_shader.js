@@ -118,11 +118,26 @@ float calcCubeShadowSample (mediump samplerCube smap, vec3 lightPos, float far, 
     vec3 lightDir = normalize(-fragToLight);
     float NdotL = dot(normal, lightDir);
     if (NdotL < 0.05) return 1.0;
-    float storedDist = texture(smap, fragToLight).r * far;
-    float diff = currentDist - storedDist;
-    float inShadow = smoothstep(0.02, 0.4, diff);
+    float normalBias = (1.0 - NdotL) * 0.3;
+    vec3 biasedFrag = (vWorldPosition + normal * normalBias) - lightPos;
+    vec3 absDir = abs(normalize(biasedFrag));
+    float maxComp = max(absDir.x, max(absDir.y, absDir.z));
+    float texelSize = far / (512.0 * maxComp);
+    vec3 side = normalize(cross(biasedFrag, vec3(0.0, 1.0, 0.0)));
+    if (length(side) < 0.01) side = normalize(cross(biasedFrag, vec3(1.0, 0.0, 0.0)));
+    vec3 up = normalize(cross(biasedFrag, side));
+    float shadow = 0.0;
+    for (int x = -1; x <= 1; x++) {
+        for (int y = -1; y <= 1; y++) {
+            vec3 offset = (side * float(x) + up * float(y)) * texelSize * 0.7;
+            float storedDist = texture(smap, biasedFrag + offset).r * far;
+            float diff = currentDist - storedDist;
+            shadow += smoothstep(0.02, 0.4, diff);
+        }
+    }
+    shadow /= 9.0;
     float fade = smoothstep(0.05, 0.4, NdotL);
-    return mix(1.0, 1.0 - inShadow * 0.85, fade);
+    return mix(1.0, 1.0 - shadow * 0.85, fade);
 }
 
 
