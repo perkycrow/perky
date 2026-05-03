@@ -826,5 +826,5 @@ test('dispose cleans up', () => {
     expect(renderer.camera3d).toBe(null)
     expect(renderer.lights).toEqual([])
     const deleteCalls = gl.calls.filter(c => c.fn === 'deleteTexture')
-    expect(deleteCalls.length).toBe(1)
+    expect(deleteCalls.length).toBe(2)
 })

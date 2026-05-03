@@ -8,15 +8,15 @@ import {DEPTH_SHADER_DEF} from '../shaders/builtin/depth_shader.js'
 import {CUBE_DEPTH_SHADER_DEF} from '../shaders/builtin/cube_depth_shader.js'
 import {GBUFFER_SHADER_DEF} from '../shaders/builtin/gbuffer_shader.js'
 import {LIGHTING_SHADER_DEF} from '../shaders/builtin/lighting_shader.js'
-import {SMAA_EDGE_SHADER_DEF, SMAA_WEIGHT_SHADER_DEF, SMAA_BLEND_SHADER_DEF} from '../shaders/builtin/smaa_shader.js'
-import {VOLUMETRIC_FOG_SHADER_DEF, FOG_BLUR_SHADER_DEF} from '../shaders/builtin/volumetric_fog_shader.js'
-import {SSAO_SHADER_DEF, SSAO_BLUR_SHADER_DEF} from '../shaders/builtin/ssao_shader.js'
-import {BLOOM_EXTRACT_SHADER_DEF, BLOOM_BLUR_SHADER_DEF, BLOOM_COMPOSITE_SHADER_DEF} from '../shaders/builtin/bloom_shader.js'
-import {CINEMATIC_SHADER_DEF} from '../shaders/builtin/cinematic_shader.js'
-import {OUTLINE_SHADER_DEF} from '../shaders/builtin/outline_shader.js'
-import {SMAA_AREA_TEXTURE, SMAA_SEARCH_TEXTURE} from '../smaa_lookup_textures.js'
+import SmaaEffect from './effects/smaa_effect.js'
+import VolumetricFogEffect from './effects/volumetric_fog_effect.js'
+import SsaoEffect from './effects/ssao_effect.js'
+import BloomEffect from './effects/bloom_effect.js'
+import CinematicEffect from './effects/cinematic_effect.js'
+import OutlineEffect from './effects/outline_effect.js'
 import LightDataTexture from '../light_data_texture.js'
 import FullscreenQuad from '../postprocessing/fullscreen_quad.js'
+import {createScreenTexture} from './effects/texture_helpers.js'
 import Matrix4 from '../../math/matrix4.js'
 
 
@@ -31,19 +31,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     #cubeDepthProgram = null
     #gbufferProgram = null
     #lightingProgram = null
-    #smaaEdgeProgram = null
-    #smaaWeightProgram = null
-    #smaaBlendProgram = null
-    #smaaEnabled = true
-    #smaaEdgesFBO = null
-    #smaaEdgesTexture = null
-    #smaaWeightsFBO = null
-    #smaaWeightsTexture = null
-    #smaaAreaTexture = null
-    #smaaSearchTexture = null
-    #smaaOutputFBO = null
-    #smaaOutputTexture = null
-    #smaaReady = false
+    #smaa = new SmaaEffect()
     #outputFBO = null
     #outputTexture = null
     #outputWidth = 0
@@ -65,75 +53,18 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     #fogNear = 20
     #fogFar = 80
     #fogColor = [0.0, 0.0, 0.0]
-    #volumetricFogProgram = null
-    #volumetricFogEnabled = false
+    #volumetricFog = new VolumetricFogEffect()
     #toonLevels = 0
     #toonBlend = 0.25
     #rimPower = 3.0
     #rimIntensity = 0.0
     #rimColor = [1.0, 1.0, 1.0]
-    #outlineProgram = null
-    #outlineEnabled = false
-    #outlineFBO = null
-    #outlineTexture = null
-    #outlineColor = [0.0, 0.0, 0.0]
-    #depthThreshold = 0.001
-    #normalThreshold = 0.3
+    #outline = new OutlineEffect()
     #lightBlobiness = 0.0
     #shadowSoftness = 0.7
-    #ssaoProgram = null
-    #ssaoBlurProgram = null
-    #ssaoEnabled = false
-    #ssaoFBO = null
-    #ssaoTexture = null
-    #ssaoBlurFBO = null
-    #ssaoBlurTexture = null
-    #ssaoRadius = 0.5
-    #ssaoBias = 0.025
-    #ssaoIntensity = 1.5
-    #bloomExtractProgram = null
-    #bloomBlurProgram = null
-    #bloomCompositeProgram = null
-    #bloomEnabled = false
-    #bloomExtractFBO = null
-    #bloomExtractTexture = null
-    #bloomPingFBO = null
-    #bloomPingTexture = null
-    #bloomPongFBO = null
-    #bloomPongTexture = null
-    #bloomThreshold = 0.8
-    #bloomSoftThreshold = 0.5
-    #bloomIntensity = 0.3
-    #bloomPasses = 2
-    #cinematicProgram = null
-    #cinematicEnabled = false
-    #vignetteIntensity = 0.4
-    #vignetteSmoothness = 0.8
-    #saturation = 1.0
-    #temperature = 0.0
-    #brightness = 1.0
-    #contrast = 1.0
-    #grainIntensity = 0.0
-    #colorLevels = 0
-    #paperIntensity = 0.0
-    #paperTexture = null
-    #fogBlurProgram = null
-    #fogFBO = null
-    #fogTexture = null
-    #fogBlurFBO = null
-    #fogBlurTexture = null
-    #fogDensity = 0.05
-    #fogHeightFalloff = 0.2
-    #fogBaseHeight = 0.0
-    #fogNoiseScale = 0.1
-    #fogNoiseStrength = 0.5
-    #fogWindDirection = [1.0, 0.0]
-    #fogWindSpeed = 0.5
-    #fogScatterAnisotropy = 0.3
-    #fogSteps = 16
-    #fogMaxDistance = 80
-    #fogStartDistance = 3
-    #fogTime = 0
+    #ssao = new SsaoEffect()
+    #bloom = new BloomEffect()
+    #cinematic = new CinematicEffect()
     #dummyBlackTexture = null
     #dummyShadowTexture = null
     #dummyCubeShadowTexture = null
@@ -295,13 +226,16 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     }
 
 
-    get smaaEnabled () {
-        return this.#smaaEnabled
+    get smaa () {
+        return this.#smaa
     }
 
+    get smaaEnabled () {
+        return this.#smaa.enabled
+    }
 
     set smaaEnabled (value) {
-        this.#smaaEnabled = value
+        this.#smaa.enabled = value
     }
 
 
@@ -347,36 +281,40 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         this.#toonLevels = v
     }
 
+    get outline () {
+        return this.#outline
+    }
+
     get outlineEnabled () {
-        return this.#outlineEnabled
+        return this.#outline.enabled
     }
 
     set outlineEnabled (v) {
-        this.#outlineEnabled = v
+        this.#outline.enabled = v
     }
 
     get outlineColor () {
-        return this.#outlineColor
+        return this.#outline.color
     }
 
     set outlineColor (v) {
-        this.#outlineColor = v
+        this.#outline.color = v
     }
 
     get depthThreshold () {
-        return this.#depthThreshold
+        return this.#outline.depthThreshold
     }
 
     set depthThreshold (v) {
-        this.#depthThreshold = v
+        this.#outline.depthThreshold = v
     }
 
     get normalThreshold () {
-        return this.#normalThreshold
+        return this.#outline.normalThreshold
     }
 
     set normalThreshold (v) {
-        this.#normalThreshold = v
+        this.#outline.normalThreshold = v
     }
 
 
@@ -398,259 +336,274 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     }
 
 
+    get ssao () {
+        return this.#ssao
+    }
+
     get ssaoEnabled () {
-        return this.#ssaoEnabled
+        return this.#ssao.enabled
     }
 
     set ssaoEnabled (v) {
-        this.#ssaoEnabled = v
+        this.#ssao.enabled = v
     }
 
     get ssaoRadius () {
-        return this.#ssaoRadius
+        return this.#ssao.radius
     }
 
     set ssaoRadius (v) {
-        this.#ssaoRadius = v
+        this.#ssao.radius = v
     }
 
     get ssaoBias () {
-        return this.#ssaoBias
+        return this.#ssao.bias
     }
 
     set ssaoBias (v) {
-        this.#ssaoBias = v
+        this.#ssao.bias = v
     }
 
     get ssaoIntensity () {
-        return this.#ssaoIntensity
+        return this.#ssao.intensity
     }
 
     set ssaoIntensity (v) {
-        this.#ssaoIntensity = v
+        this.#ssao.intensity = v
+    }
+
+
+    get cinematic () {
+        return this.#cinematic
     }
 
 
     get cinematicEnabled () {
-        return this.#cinematicEnabled
+        return this.#cinematic.enabled
     }
 
     set cinematicEnabled (v) {
-        this.#cinematicEnabled = v
+        this.#cinematic.enabled = v
     }
 
     get vignetteIntensity () {
-        return this.#vignetteIntensity
+        return this.#cinematic.vignetteIntensity
     }
 
     set vignetteIntensity (v) {
-        this.#vignetteIntensity = v
+        this.#cinematic.vignetteIntensity = v
     }
 
     get vignetteSmoothness () {
-        return this.#vignetteSmoothness
+        return this.#cinematic.vignetteSmoothness
     }
 
     set vignetteSmoothness (v) {
-        this.#vignetteSmoothness = v
+        this.#cinematic.vignetteSmoothness = v
     }
 
     get saturation () {
-        return this.#saturation
+        return this.#cinematic.saturation
     }
 
     set saturation (v) {
-        this.#saturation = v
+        this.#cinematic.saturation = v
     }
 
     get temperature () {
-        return this.#temperature
+        return this.#cinematic.temperature
     }
 
     set temperature (v) {
-        this.#temperature = v
+        this.#cinematic.temperature = v
     }
 
     get brightness () {
-        return this.#brightness
+        return this.#cinematic.brightness
     }
 
     set brightness (v) {
-        this.#brightness = v
+        this.#cinematic.brightness = v
     }
 
     get contrast () {
-        return this.#contrast
+        return this.#cinematic.contrast
     }
 
     set contrast (v) {
-        this.#contrast = v
+        this.#cinematic.contrast = v
     }
 
     get colorLevels () {
-        return this.#colorLevels
+        return this.#cinematic.colorLevels
     }
 
     set colorLevels (v) {
-        this.#colorLevels = v
+        this.#cinematic.colorLevels = v
     }
 
 
     get paperIntensity () {
-        return this.#paperIntensity
+        return this.#cinematic.paperIntensity
     }
 
     set paperIntensity (v) {
-        this.#paperIntensity = v
+        this.#cinematic.paperIntensity = v
     }
 
 
     get grainIntensity () {
-        return this.#grainIntensity
+        return this.#cinematic.grainIntensity
     }
 
     set grainIntensity (v) {
-        this.#grainIntensity = v
+        this.#cinematic.grainIntensity = v
     }
 
 
+    get bloom () {
+        return this.#bloom
+    }
+
     get bloomEnabled () {
-        return this.#bloomEnabled
+        return this.#bloom.enabled
     }
 
     set bloomEnabled (v) {
-        this.#bloomEnabled = v
+        this.#bloom.enabled = v
     }
 
     get bloomThreshold () {
-        return this.#bloomThreshold
+        return this.#bloom.threshold
     }
 
     set bloomThreshold (v) {
-        this.#bloomThreshold = v
+        this.#bloom.threshold = v
     }
 
     get bloomIntensity () {
-        return this.#bloomIntensity
+        return this.#bloom.intensity
     }
 
     set bloomIntensity (v) {
-        this.#bloomIntensity = v
+        this.#bloom.intensity = v
     }
 
     get bloomPasses () {
-        return this.#bloomPasses
+        return this.#bloom.passes
     }
 
     set bloomPasses (v) {
-        this.#bloomPasses = v
+        this.#bloom.passes = v
     }
 
+
+    get volumetricFog () {
+        return this.#volumetricFog
+    }
 
     get volumetricFogEnabled () {
-        return this.#volumetricFogEnabled
+        return this.#volumetricFog.enabled
     }
-
 
     set volumetricFogEnabled (value) {
-        this.#volumetricFogEnabled = value
+        this.#volumetricFog.enabled = value
     }
 
-
     get fogDensity () {
-        return this.#fogDensity
+        return this.#volumetricFog.density
     }
 
     set fogDensity (v) {
-        this.#fogDensity = v
+        this.#volumetricFog.density = v
     }
 
     get fogHeightFalloff () {
-        return this.#fogHeightFalloff
+        return this.#volumetricFog.heightFalloff
     }
 
     set fogHeightFalloff (v) {
-        this.#fogHeightFalloff = v
+        this.#volumetricFog.heightFalloff = v
     }
 
     get fogBaseHeight () {
-        return this.#fogBaseHeight
+        return this.#volumetricFog.baseHeight
     }
 
     set fogBaseHeight (v) {
-        this.#fogBaseHeight = v
+        this.#volumetricFog.baseHeight = v
     }
 
     get fogNoiseScale () {
-        return this.#fogNoiseScale
+        return this.#volumetricFog.noiseScale
     }
 
     set fogNoiseScale (v) {
-        this.#fogNoiseScale = v
+        this.#volumetricFog.noiseScale = v
     }
 
     get fogNoiseStrength () {
-        return this.#fogNoiseStrength
+        return this.#volumetricFog.noiseStrength
     }
 
     set fogNoiseStrength (v) {
-        this.#fogNoiseStrength = v
+        this.#volumetricFog.noiseStrength = v
     }
 
     get fogWindDirection () {
-        return this.#fogWindDirection
+        return this.#volumetricFog.windDirection
     }
 
     set fogWindDirection (v) {
-        this.#fogWindDirection = v
+        this.#volumetricFog.windDirection = v
     }
 
     get fogWindSpeed () {
-        return this.#fogWindSpeed
+        return this.#volumetricFog.windSpeed
     }
 
     set fogWindSpeed (v) {
-        this.#fogWindSpeed = v
+        this.#volumetricFog.windSpeed = v
     }
 
     get fogScatterAnisotropy () {
-        return this.#fogScatterAnisotropy
+        return this.#volumetricFog.scatterAnisotropy
     }
 
     set fogScatterAnisotropy (v) {
-        this.#fogScatterAnisotropy = v
+        this.#volumetricFog.scatterAnisotropy = v
     }
 
     get fogSteps () {
-        return this.#fogSteps
+        return this.#volumetricFog.steps
     }
 
     set fogSteps (v) {
-        this.#fogSteps = v
+        this.#volumetricFog.steps = v
     }
 
     get fogMaxDistance () {
-        return this.#fogMaxDistance
+        return this.#volumetricFog.maxDistance
     }
 
     set fogMaxDistance (v) {
-        this.#fogMaxDistance = v
+        this.#volumetricFog.maxDistance = v
     }
 
     get fogStartDistance () {
-        return this.#fogStartDistance
+        return this.#volumetricFog.startDistance
     }
 
     set fogStartDistance (v) {
-        this.#fogStartDistance = v
+        this.#volumetricFog.startDistance = v
     }
 
     get fogTime () {
-        return this.#fogTime
+        return this.#volumetricFog.time
     }
 
     set fogTime (v) {
-        this.#fogTime = v
+        this.#volumetricFog.time = v
     }
 
 
@@ -661,23 +614,15 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         this.#cubeDepthProgram = context.shaderRegistry.register('cubeDepth', CUBE_DEPTH_SHADER_DEF)
         this.#gbufferProgram = context.shaderRegistry.register('gbuffer', GBUFFER_SHADER_DEF)
         this.#lightingProgram = context.shaderRegistry.register('lighting', LIGHTING_SHADER_DEF)
-        this.#volumetricFogProgram = context.shaderRegistry.register('volumetricFog', VOLUMETRIC_FOG_SHADER_DEF)
-        this.#fogBlurProgram = context.shaderRegistry.register('fogBlur', FOG_BLUR_SHADER_DEF)
-        this.#ssaoProgram = context.shaderRegistry.register('ssao', SSAO_SHADER_DEF)
-        this.#ssaoBlurProgram = context.shaderRegistry.register('ssaoBlur', SSAO_BLUR_SHADER_DEF)
-        this.#bloomExtractProgram = context.shaderRegistry.register('bloomExtract', BLOOM_EXTRACT_SHADER_DEF)
-        this.#bloomBlurProgram = context.shaderRegistry.register('bloomBlur', BLOOM_BLUR_SHADER_DEF)
-        this.#bloomCompositeProgram = context.shaderRegistry.register('bloomComposite', BLOOM_COMPOSITE_SHADER_DEF)
-        this.#cinematicProgram = context.shaderRegistry.register('cinematic', CINEMATIC_SHADER_DEF)
-        this.#outlineProgram = context.shaderRegistry.register('outline', OUTLINE_SHADER_DEF)
-        this.#smaaEdgeProgram = context.shaderRegistry.register('smaaEdge', SMAA_EDGE_SHADER_DEF)
-        this.#smaaWeightProgram = context.shaderRegistry.register('smaaWeight', SMAA_WEIGHT_SHADER_DEF)
-        this.#smaaBlendProgram = context.shaderRegistry.register('smaaBlend', SMAA_BLEND_SHADER_DEF)
+        this.#volumetricFog.init(context.shaderRegistry)
+        this.#ssao.init(context.shaderRegistry)
+        this.#bloom.init(context.shaderRegistry)
+        this.#cinematic.init(context.shaderRegistry, context.gl)
+        this.#outline.init(context.shaderRegistry)
+        this.#smaa.init(context.shaderRegistry, context.gl)
         this.#lightDataTexture = new LightDataTexture(context.gl)
-        this.#loadSmaaTextures(context.gl)
         this.#fullscreenQuad = new FullscreenQuad(context.gl)
         this.#decalQuadMesh = createDecalQuad(context.gl)
-        this.#paperTexture = createPaperTexture(context.gl)
     }
 
 
@@ -757,8 +702,8 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
 
         this.#renderGBufferPass(gl, opaque, decals)
 
-        if (this.#ssaoEnabled) {
-            this.#renderSsaoPass(gl)
+        if (this.#ssao.enabled) {
+            this.#ssao.render(gl, {canvasWidth: gl.canvas.width, canvasHeight: gl.canvas.height, gBuffer: this.#gBuffer, camera3d: this.#camera3d, inverseVP: this.#inverseVP, fullscreenQuad: this.#fullscreenQuad})
         }
 
         const numLights = this.#lightDataTexture.update(this.#lights, this.#camera3d.position, this.#fogFar)
@@ -952,9 +897,9 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
 
 
     #renderLightingPass (gl, numLights) { // eslint-disable-line complexity -- clean
-        const needsOutputFBO = (this.#smaaEnabled && this.#smaaReady) || this.#volumetricFogEnabled
+        const needsOutputFBO = (this.#smaa.enabled && this.#smaa.ready) || this.#volumetricFog.enabled
         if (needsOutputFBO) {
-            this.#ensureSmaaFBOs(gl, gl.canvas.width, gl.canvas.height)
+            this.#ensureOutputFBO(gl, gl.canvas.width, gl.canvas.height)
             gl.bindFramebuffer(gl.FRAMEBUFFER, this.#outputFBO)
         } else {
             gl.bindFramebuffer(gl.FRAMEBUFFER, null)
@@ -1010,11 +955,11 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         gl.uniform3fv(program.uniforms.uFogColor, this.#fogColor)
         gl.uniform1f(program.uniforms.uLightBlobiness, this.#lightBlobiness)
         gl.uniform1f(program.uniforms.uShadowSoftness, this.#shadowSoftness)
-        gl.uniform1f(program.uniforms.uVolumetricFogEnabled, this.#volumetricFogEnabled ? 1 : 0)
+        gl.uniform1f(program.uniforms.uVolumetricFogEnabled, this.#volumetricFog.enabled ? 1 : 0)
 
         gl.activeTexture(gl.TEXTURE11)
-        if (this.#ssaoEnabled && this.#ssaoBlurTexture) {
-            gl.bindTexture(gl.TEXTURE_2D, this.#ssaoBlurTexture)
+        if (this.#ssao.enabled && this.#ssao.outputTexture) {
+            gl.bindTexture(gl.TEXTURE_2D, this.#ssao.outputTexture)
             gl.uniform1i(program.uniforms.uSSAO, 11)
             gl.uniform1f(program.uniforms.uHasSSAO, 1)
         } else {
@@ -1064,368 +1009,44 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
 
         let sceneTexture = this.#outputTexture
 
-        if (this.#smaaEnabled && this.#smaaReady) {
-            this.#renderSmaaPass(gl, sceneTexture)
-            sceneTexture = this.#smaaOutputTexture
+        if (this.#smaa.enabled && this.#smaa.ready) {
+            sceneTexture = this.#smaa.render(gl, {canvasWidth: gl.canvas.width, canvasHeight: gl.canvas.height, fullscreenQuad: this.#fullscreenQuad}, sceneTexture)
         }
 
-        if (this.#outlineEnabled) {
-            this.#renderOutlinePass(gl, sceneTexture)
-            sceneTexture = this.#outlineTexture
+        if (this.#outline.enabled) {
+            sceneTexture = this.#outline.render(gl, {canvasWidth: gl.canvas.width, canvasHeight: gl.canvas.height, gBuffer: this.#gBuffer, fullscreenQuad: this.#fullscreenQuad}, sceneTexture)
         }
 
-        if (this.#volumetricFogEnabled) {
-            this.#renderVolumetricFogPass(gl, sceneTexture, numLights)
-            sceneTexture = this.#fogBlurTexture
+        if (this.#volumetricFog.enabled) {
+            sceneTexture = this.#volumetricFog.render(gl, {canvasWidth: gl.canvas.width, canvasHeight: gl.canvas.height, gBuffer: this.#gBuffer, camera3d: this.#camera3d, inverseVP: this.#inverseVP, lightDataTexture: this.#lightDataTexture, numLights, fogColor: this.#fogColor, fullscreenQuad: this.#fullscreenQuad}, sceneTexture)
         }
 
-        if (this.#bloomEnabled) {
-            this.#renderBloomPass(gl, sceneTexture)
+        const bloomCtx = {canvasWidth: gl.canvas.width, canvasHeight: gl.canvas.height, fullscreenQuad: this.#fullscreenQuad}
+
+        if (this.#bloom.enabled) {
+            this.#bloom.render(gl, bloomCtx, sceneTexture)
         }
 
-        if (this.#cinematicEnabled) {
-            this.#renderCinematicPass(gl, sceneTexture)
+        if (this.#cinematic.enabled) {
+            this.#cinematic.render(gl, bloomCtx, sceneTexture, this.#volumetricFog.time)
         } else if (sceneTexture !== this.#outputTexture || needsOutputFBO) {
             this.#blitToScreen(gl, sceneTexture)
         }
 
-        if (this.#bloomEnabled) {
-            this.#compositeBloom(gl)
+        if (this.#bloom.enabled) {
+            this.#bloom.composite(gl, bloomCtx)
         }
     }
 
 
-    #renderSsaoPass (gl) {
-        const hw = Math.ceil(gl.canvas.width / 2)
-        const hh = Math.ceil(gl.canvas.height / 2)
 
-        this.#ensureSsaoFBOs(gl, hw, hh)
 
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#ssaoFBO)
-        gl.viewport(0, 0, hw, hh)
-        gl.disable(gl.DEPTH_TEST)
 
-        const program = this.#ssaoProgram
-        gl.useProgram(program.program)
 
-        gl.activeTexture(gl.TEXTURE0)
-        gl.bindTexture(gl.TEXTURE_2D, this.#gBuffer.depthTexture)
-        gl.uniform1i(program.uniforms.uDepth, 0)
 
-        gl.activeTexture(gl.TEXTURE1)
-        gl.bindTexture(gl.TEXTURE_2D, this.#gBuffer.normalTexture)
-        gl.uniform1i(program.uniforms.uGNormal, 1)
 
-        gl.uniformMatrix4fv(program.uniforms.uProjection, false, this.#camera3d.projectionMatrix.elements)
-        gl.uniformMatrix4fv(program.uniforms.uInverseViewProjection, false, this.#inverseVP.elements)
-        gl.uniformMatrix4fv(program.uniforms.uView, false, this.#camera3d.viewMatrix.elements)
-        gl.uniform2f(program.uniforms.uTexelSize, 1 / hw, 1 / hh)
-        gl.uniform1f(program.uniforms.uRadius, this.#ssaoRadius)
-        gl.uniform1f(program.uniforms.uBias, this.#ssaoBias)
-        gl.uniform1f(program.uniforms.uIntensity, this.#ssaoIntensity)
 
-        this.#fullscreenQuad.draw(gl, program)
 
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#ssaoBlurFBO)
-        gl.viewport(0, 0, hw, hh)
-
-        const blur = this.#ssaoBlurProgram
-        gl.useProgram(blur.program)
-        gl.activeTexture(gl.TEXTURE0)
-        gl.bindTexture(gl.TEXTURE_2D, this.#ssaoTexture)
-        gl.uniform1i(blur.uniforms.uSSAOTexture, 0)
-        gl.activeTexture(gl.TEXTURE1)
-        gl.bindTexture(gl.TEXTURE_2D, this.#gBuffer.depthTexture)
-        gl.uniform1i(blur.uniforms.uDepth, 1)
-        gl.uniform2f(blur.uniforms.uTexelSize, 1 / hw, 1 / hh)
-        this.#fullscreenQuad.draw(gl, blur)
-
-        gl.enable(gl.DEPTH_TEST)
-    }
-
-
-    #ensureSsaoFBOs (gl, width, height) {
-        if (this.#ssaoFBO && this.#ssaoTexture) {
-            return
-        }
-
-        this.#ssaoTexture = createScreenTexture(gl, width, height)
-        this.#ssaoFBO = gl.createFramebuffer()
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#ssaoFBO)
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#ssaoTexture, 0)
-
-        this.#ssaoBlurTexture = createScreenTexture(gl, width, height)
-        this.#ssaoBlurFBO = gl.createFramebuffer()
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#ssaoBlurFBO)
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#ssaoBlurTexture, 0)
-
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null)
-    }
-
-
-    #renderCinematicPass (gl, sceneTexture) {
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null)
-        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
-        gl.disable(gl.DEPTH_TEST)
-
-        const program = this.#cinematicProgram
-        gl.useProgram(program.program)
-
-        gl.activeTexture(gl.TEXTURE0)
-        gl.bindTexture(gl.TEXTURE_2D, sceneTexture)
-        gl.uniform1i(program.uniforms.uSceneColor, 0)
-        gl.uniform1f(program.uniforms.uTime, this.#fogTime)
-        gl.uniform1f(program.uniforms.uVignetteIntensity, this.#vignetteIntensity)
-        gl.uniform1f(program.uniforms.uVignetteSmoothness, this.#vignetteSmoothness)
-        gl.uniform1f(program.uniforms.uSaturation, this.#saturation)
-        gl.uniform1f(program.uniforms.uTemperature, this.#temperature)
-        gl.uniform1f(program.uniforms.uBrightness, this.#brightness)
-        gl.uniform1f(program.uniforms.uContrast, this.#contrast)
-        gl.uniform1f(program.uniforms.uGrainIntensity, this.#grainIntensity)
-        gl.uniform1f(program.uniforms.uPaperIntensity, this.#paperIntensity)
-        gl.uniform1f(program.uniforms.uColorLevels, this.#colorLevels)
-        gl.activeTexture(gl.TEXTURE1)
-        gl.bindTexture(gl.TEXTURE_2D, this.#paperTexture)
-        gl.uniform1i(program.uniforms.uPaperTexture, 1)
-
-        this.#fullscreenQuad.draw(gl, program)
-
-        gl.enable(gl.DEPTH_TEST)
-    }
-
-
-    #compositeBloom (gl) {
-        gl.disable(gl.DEPTH_TEST)
-        gl.enable(gl.BLEND)
-        const bi = this.#bloomIntensity
-        gl.blendColor(bi, bi, bi, 1.0)
-        gl.blendFunc(gl.CONSTANT_COLOR, gl.ONE)
-
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null)
-        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
-
-        const program = this.#bloomExtractProgram
-        gl.useProgram(program.program)
-        gl.activeTexture(gl.TEXTURE0)
-        gl.bindTexture(gl.TEXTURE_2D, this.#bloomPongTexture)
-        gl.uniform1i(program.uniforms.uSceneColor, 0)
-        gl.uniform1f(program.uniforms.uThreshold, 0.0)
-        gl.uniform1f(program.uniforms.uSoftThreshold, 0.0)
-        this.#fullscreenQuad.draw(gl, program)
-
-        gl.disable(gl.BLEND)
-        gl.enable(gl.DEPTH_TEST)
-    }
-
-
-    #renderBloomPass (gl, sceneTexture) {
-        const bw = Math.ceil(gl.canvas.width / 2)
-        const bh = Math.ceil(gl.canvas.height / 2)
-
-        this.#ensureBloomFBOs(gl, bw, bh)
-
-        gl.disable(gl.DEPTH_TEST)
-
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#bloomExtractFBO)
-        gl.viewport(0, 0, bw, bh)
-        const extract = this.#bloomExtractProgram
-        gl.useProgram(extract.program)
-        gl.activeTexture(gl.TEXTURE0)
-        gl.bindTexture(gl.TEXTURE_2D, sceneTexture)
-        gl.uniform1i(extract.uniforms.uSceneColor, 0)
-        gl.uniform1f(extract.uniforms.uThreshold, this.#bloomThreshold)
-        gl.uniform1f(extract.uniforms.uSoftThreshold, this.#bloomSoftThreshold)
-        this.#fullscreenQuad.draw(gl, extract)
-
-        const blur = this.#bloomBlurProgram
-        gl.useProgram(blur.program)
-        gl.uniform2f(blur.uniforms.uTexelSize, 1 / bw, 1 / bh)
-
-        let readTex = this.#bloomExtractTexture
-        for (let i = 0; i < this.#bloomPasses; i++) {
-            gl.bindFramebuffer(gl.FRAMEBUFFER, this.#bloomPingFBO)
-            gl.activeTexture(gl.TEXTURE0)
-            gl.bindTexture(gl.TEXTURE_2D, readTex)
-            gl.uniform1i(blur.uniforms.uTexture, 0)
-            gl.uniform2f(blur.uniforms.uDirection, 1.0, 0.0)
-            this.#fullscreenQuad.draw(gl, blur)
-
-            gl.bindFramebuffer(gl.FRAMEBUFFER, this.#bloomPongFBO)
-            gl.activeTexture(gl.TEXTURE0)
-            gl.bindTexture(gl.TEXTURE_2D, this.#bloomPingTexture)
-            gl.uniform1i(blur.uniforms.uTexture, 0)
-            gl.uniform2f(blur.uniforms.uDirection, 0.0, 1.0)
-            this.#fullscreenQuad.draw(gl, blur)
-
-            readTex = this.#bloomPongTexture
-        }
-
-        gl.enable(gl.DEPTH_TEST)
-    }
-
-
-    #bloomFBOWidth = 0
-
-    #ensureBloomFBOs (gl, width, height) {
-        if (this.#bloomExtractFBO && this.#bloomFBOWidth === width) {
-            return
-        }
-        if (this.#bloomExtractFBO) {
-            gl.deleteFramebuffer(this.#bloomExtractFBO)
-            gl.deleteTexture(this.#bloomExtractTexture)
-            gl.deleteFramebuffer(this.#bloomPingFBO)
-            gl.deleteTexture(this.#bloomPingTexture)
-            gl.deleteFramebuffer(this.#bloomPongFBO)
-            gl.deleteTexture(this.#bloomPongTexture)
-        }
-
-        this.#bloomExtractTexture = createScreenTexture(gl, width, height)
-        this.#bloomExtractFBO = gl.createFramebuffer()
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#bloomExtractFBO)
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#bloomExtractTexture, 0)
-
-        this.#bloomPingTexture = createScreenTexture(gl, width, height)
-        this.#bloomPingFBO = gl.createFramebuffer()
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#bloomPingFBO)
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#bloomPingTexture, 0)
-
-        this.#bloomPongTexture = createScreenTexture(gl, width, height)
-        this.#bloomPongFBO = gl.createFramebuffer()
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#bloomPongFBO)
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#bloomPongTexture, 0)
-
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null)
-        this.#bloomFBOWidth = width
-    }
-
-
-    #renderVolumetricFogPass (gl, sceneTexture, numLights) {
-        const fw = Math.ceil(gl.canvas.width / 2)
-        const fh = Math.ceil(gl.canvas.height / 2)
-
-        this.#ensureFogFBO(gl, fw, fh)
-
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#fogFBO)
-        gl.viewport(0, 0, fw, fh)
-        gl.disable(gl.DEPTH_TEST)
-
-        const program = this.#volumetricFogProgram
-        gl.useProgram(program.program)
-
-        gl.activeTexture(gl.TEXTURE0)
-        gl.bindTexture(gl.TEXTURE_2D, this.#gBuffer.depthTexture)
-        gl.uniform1i(program.uniforms.uDepth, 0)
-
-        gl.activeTexture(gl.TEXTURE1)
-        gl.bindTexture(gl.TEXTURE_2D, this.#lightDataTexture.texture)
-        gl.uniform1i(program.uniforms.uLightData, 1)
-
-        gl.uniformMatrix4fv(program.uniforms.uInverseViewProjection, false, this.#inverseVP.elements)
-        gl.uniform3f(program.uniforms.uCameraPosition, this.#camera3d.position.x, this.#camera3d.position.y, this.#camera3d.position.z)
-        gl.uniform1i(program.uniforms.uNumLights, numLights)
-        gl.uniform1f(program.uniforms.uTime, this.#fogTime)
-
-        gl.uniform1f(program.uniforms.uFogDensity, this.#fogDensity)
-        gl.uniform1f(program.uniforms.uFogHeightFalloff, this.#fogHeightFalloff)
-        gl.uniform1f(program.uniforms.uFogBaseHeight, this.#fogBaseHeight)
-        gl.uniform1f(program.uniforms.uFogNoiseScale, this.#fogNoiseScale)
-        gl.uniform1f(program.uniforms.uFogNoiseStrength, this.#fogNoiseStrength)
-        gl.uniform2fv(program.uniforms.uFogWindDirection, this.#fogWindDirection)
-        gl.uniform1f(program.uniforms.uFogWindSpeed, this.#fogWindSpeed)
-        gl.uniform1f(program.uniforms.uFogScatterAnisotropy, this.#fogScatterAnisotropy)
-        gl.uniform3fv(program.uniforms.uFogColor, this.#fogColor)
-        gl.uniform1i(program.uniforms.uFogSteps, this.#fogSteps)
-        gl.uniform1f(program.uniforms.uFogMaxDistance, this.#fogMaxDistance)
-        gl.uniform1f(program.uniforms.uFogStartDistance, this.#fogStartDistance)
-
-        this.#fullscreenQuad.draw(gl, program)
-
-        const fullW = gl.canvas.width
-        const fullH = gl.canvas.height
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#fogBlurFBO)
-        gl.viewport(0, 0, fullW, fullH)
-
-        const blur = this.#fogBlurProgram
-        gl.useProgram(blur.program)
-        gl.activeTexture(gl.TEXTURE0)
-        gl.bindTexture(gl.TEXTURE_2D, this.#fogTexture)
-        gl.uniform1i(blur.uniforms.uFogTexture, 0)
-        gl.activeTexture(gl.TEXTURE1)
-        gl.bindTexture(gl.TEXTURE_2D, sceneTexture)
-        gl.uniform1i(blur.uniforms.uSceneColor, 1)
-        gl.activeTexture(gl.TEXTURE2)
-        gl.bindTexture(gl.TEXTURE_2D, this.#gBuffer.depthTexture)
-        gl.uniform1i(blur.uniforms.uDepth, 2)
-        gl.uniform2f(blur.uniforms.uTexelSize, 1 / fullW, 1 / fullH)
-        this.#fullscreenQuad.draw(gl, blur)
-
-        gl.enable(gl.DEPTH_TEST)
-    }
-
-
-    #ensureFogFBO (gl, width, height) {
-        if (this.#fogFBO && this.#outputWidth === width && this.#outputHeight === height) {
-            return
-        }
-
-        if (this.#fogFBO) {
-            gl.deleteFramebuffer(this.#fogFBO)
-            gl.deleteTexture(this.#fogTexture)
-            gl.deleteFramebuffer(this.#fogBlurFBO)
-            gl.deleteTexture(this.#fogBlurTexture)
-        }
-
-        this.#fogTexture = createHdrTexture(gl, width, height)
-        this.#fogFBO = gl.createFramebuffer()
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#fogFBO)
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#fogTexture, 0)
-
-        this.#fogBlurTexture = createScreenTexture(gl, gl.canvas.width, gl.canvas.height)
-        this.#fogBlurFBO = gl.createFramebuffer()
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#fogBlurFBO)
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#fogBlurTexture, 0)
-
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null)
-    }
-
-
-    #renderOutlinePass (gl, sceneTexture) {
-        const w = gl.canvas.width
-        const h = gl.canvas.height
-
-        if (!this.#outlineFBO) {
-            this.#outlineTexture = createScreenTexture(gl, w, h)
-            this.#outlineFBO = gl.createFramebuffer()
-            gl.bindFramebuffer(gl.FRAMEBUFFER, this.#outlineFBO)
-            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#outlineTexture, 0)
-            gl.bindFramebuffer(gl.FRAMEBUFFER, null)
-        }
-
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#outlineFBO)
-        gl.viewport(0, 0, w, h)
-        gl.disable(gl.DEPTH_TEST)
-
-        const program = this.#outlineProgram
-        gl.useProgram(program.program)
-
-        gl.activeTexture(gl.TEXTURE0)
-        gl.bindTexture(gl.TEXTURE_2D, sceneTexture)
-        gl.uniform1i(program.uniforms.uSceneColor, 0)
-        gl.activeTexture(gl.TEXTURE1)
-        gl.bindTexture(gl.TEXTURE_2D, this.#gBuffer.depthTexture)
-        gl.uniform1i(program.uniforms.uDepth, 1)
-        gl.activeTexture(gl.TEXTURE2)
-        gl.bindTexture(gl.TEXTURE_2D, this.#gBuffer.normalTexture)
-        gl.uniform1i(program.uniforms.uGNormal, 2)
-        gl.uniform2f(program.uniforms.uTexelSize, 1 / w, 1 / h)
-        gl.uniform3fv(program.uniforms.uOutlineColor, this.#outlineColor)
-        gl.uniform1f(program.uniforms.uDepthThreshold, this.#depthThreshold)
-        gl.uniform1f(program.uniforms.uNormalThreshold, this.#normalThreshold)
-
-        this.#fullscreenQuad.draw(gl, program)
-
-        gl.enable(gl.DEPTH_TEST)
-    }
 
 
     #blitToScreen (gl, texture) {
@@ -1433,7 +1054,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
         gl.disable(gl.DEPTH_TEST)
 
-        const program = this.#smaaBlendProgram
+        const program = this.#smaa.blendProgram
         gl.useProgram(program.program)
         gl.activeTexture(gl.TEXTURE0)
         gl.bindTexture(gl.TEXTURE_2D, texture)
@@ -1448,67 +1069,12 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     }
 
 
-    #renderSmaaPass (gl, inputTexture) {
-        const w = gl.canvas.width
-        const h = gl.canvas.height
-        const tx = 1 / w
-        const ty = 1 / h
-
-        gl.disable(gl.DEPTH_TEST)
-
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#smaaEdgesFBO)
-        gl.viewport(0, 0, w, h)
-        gl.clearColor(0.0, 0.0, 0.0, 0.0)
-        gl.clear(gl.COLOR_BUFFER_BIT)
-        const edgeProg = this.#smaaEdgeProgram
-        gl.useProgram(edgeProg.program)
-        gl.activeTexture(gl.TEXTURE0)
-        gl.bindTexture(gl.TEXTURE_2D, inputTexture)
-        gl.uniform1i(edgeProg.uniforms.uColorTexture, 0)
-        gl.uniform2f(edgeProg.uniforms.uTexelSize, tx, ty)
-        this.#fullscreenQuad.draw(gl, edgeProg)
-
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#smaaWeightsFBO)
-        gl.viewport(0, 0, w, h)
-        gl.clear(gl.COLOR_BUFFER_BIT)
-        const weightProg = this.#smaaWeightProgram
-        gl.useProgram(weightProg.program)
-        gl.activeTexture(gl.TEXTURE0)
-        gl.bindTexture(gl.TEXTURE_2D, this.#smaaEdgesTexture)
-        gl.uniform1i(weightProg.uniforms.uEdgesTexture, 0)
-        gl.activeTexture(gl.TEXTURE1)
-        gl.bindTexture(gl.TEXTURE_2D, this.#smaaAreaTexture)
-        gl.uniform1i(weightProg.uniforms.uAreaTexture, 1)
-        gl.activeTexture(gl.TEXTURE2)
-        gl.bindTexture(gl.TEXTURE_2D, this.#smaaSearchTexture)
-        gl.uniform1i(weightProg.uniforms.uSearchTexture, 2)
-        gl.uniform2f(weightProg.uniforms.uTexelSize, tx, ty)
-        gl.uniform2f(weightProg.uniforms.uViewportSize, w, h)
-        this.#fullscreenQuad.draw(gl, weightProg)
-
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#smaaOutputFBO)
-        gl.viewport(0, 0, w, h)
-        const blendProg = this.#smaaBlendProgram
-        gl.useProgram(blendProg.program)
-        gl.activeTexture(gl.TEXTURE0)
-        gl.bindTexture(gl.TEXTURE_2D, inputTexture)
-        gl.uniform1i(blendProg.uniforms.uColorTexture, 0)
-        gl.activeTexture(gl.TEXTURE1)
-        gl.bindTexture(gl.TEXTURE_2D, this.#smaaWeightsTexture)
-        gl.uniform1i(blendProg.uniforms.uBlendTexture, 1)
-        gl.uniform2f(blendProg.uniforms.uTexelSize, tx, ty)
-        this.#fullscreenQuad.draw(gl, blendProg)
-
-        gl.enable(gl.DEPTH_TEST)
-    }
-
-
-    #ensureSmaaFBOs (gl, width, height) {
+    #ensureOutputFBO (gl, width, height) {
         if (this.#outputFBO && this.#outputWidth === width && this.#outputHeight === height) {
             return
         }
 
-        this.#deleteSmaaFBOs(gl)
+        this.#deleteOutputFBO(gl)
 
         this.#outputTexture = createScreenTexture(gl, width, height)
         const depthRB = gl.createRenderbuffer()
@@ -1519,21 +1085,6 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#outputTexture, 0)
         gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthRB)
 
-        this.#smaaEdgesTexture = createScreenTexture(gl, width, height)
-        this.#smaaEdgesFBO = gl.createFramebuffer()
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#smaaEdgesFBO)
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#smaaEdgesTexture, 0)
-
-        this.#smaaWeightsTexture = createScreenTexture(gl, width, height)
-        this.#smaaWeightsFBO = gl.createFramebuffer()
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#smaaWeightsFBO)
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#smaaWeightsTexture, 0)
-
-        this.#smaaOutputTexture = createScreenTexture(gl, width, height)
-        this.#smaaOutputFBO = gl.createFramebuffer()
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#smaaOutputFBO)
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#smaaOutputTexture, 0)
-
         gl.bindFramebuffer(gl.FRAMEBUFFER, null)
         gl.bindRenderbuffer(gl.RENDERBUFFER, null)
 
@@ -1542,63 +1093,13 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     }
 
 
-    #deleteSmaaFBOs (gl) {
+    #deleteOutputFBO (gl) {
         if (this.#outputFBO) {
             gl.deleteFramebuffer(this.#outputFBO)
             gl.deleteTexture(this.#outputTexture)
             this.#outputFBO = null
             this.#outputTexture = null
         }
-        if (this.#smaaEdgesFBO) {
-            gl.deleteFramebuffer(this.#smaaEdgesFBO)
-            gl.deleteTexture(this.#smaaEdgesTexture)
-            this.#smaaEdgesFBO = null
-            this.#smaaEdgesTexture = null
-        }
-        if (this.#smaaWeightsFBO) {
-            gl.deleteFramebuffer(this.#smaaWeightsFBO)
-            gl.deleteTexture(this.#smaaWeightsTexture)
-            this.#smaaWeightsFBO = null
-            this.#smaaWeightsTexture = null
-        }
-        if (this.#smaaOutputFBO) {
-            gl.deleteFramebuffer(this.#smaaOutputFBO)
-            gl.deleteTexture(this.#smaaOutputTexture)
-            this.#smaaOutputFBO = null
-            this.#smaaOutputTexture = null
-        }
-    }
-
-
-    #loadSmaaTextures (gl) {
-        const loadImage = (src) => {
-            const img = new Image()
-            img.src = src
-            return new Promise(resolve => {
-                img.onload = () => resolve(img)
-            })
-        }
-
-        Promise.all([loadImage(SMAA_AREA_TEXTURE), loadImage(SMAA_SEARCH_TEXTURE)]).then(([areaImg, searchImg]) => {
-            this.#smaaAreaTexture = gl.createTexture()
-            gl.bindTexture(gl.TEXTURE_2D, this.#smaaAreaTexture)
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, areaImg)
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-
-            this.#smaaSearchTexture = gl.createTexture()
-            gl.bindTexture(gl.TEXTURE_2D, this.#smaaSearchTexture)
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, searchImg)
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-
-            gl.bindTexture(gl.TEXTURE_2D, null)
-            this.#smaaReady = true
-        })
     }
 
 
@@ -1663,68 +1164,20 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
             this.#decalQuadMesh = null
         }
         if (this.context?.gl) {
-            this.#deleteSmaaFBOs(this.context.gl)
-        }
-        if (this.#smaaAreaTexture) {
-            this.context?.gl?.deleteTexture(this.#smaaAreaTexture)
-            this.#smaaAreaTexture = null
-        }
-        if (this.#smaaSearchTexture) {
-            this.context?.gl?.deleteTexture(this.#smaaSearchTexture)
-            this.#smaaSearchTexture = null
+            this.#deleteOutputFBO(this.context.gl)
+            this.#smaa.dispose(this.context.gl)
         }
         this.#meshProgram = null
         this.#depthProgram = null
         this.#cubeDepthProgram = null
         this.#gbufferProgram = null
         this.#lightingProgram = null
-        this.#smaaEdgeProgram = null
-        this.#smaaWeightProgram = null
-        this.#smaaBlendProgram = null
-        this.#volumetricFogProgram = null
-        this.#fogBlurProgram = null
-        this.#outlineProgram = null
-        if (this.#outlineFBO) {
-            this.context?.gl?.deleteFramebuffer(this.#outlineFBO)
-            this.context?.gl?.deleteTexture(this.#outlineTexture)
-            this.#outlineFBO = null
-            this.#outlineTexture = null
-        }
-        this.#ssaoProgram = null
-        this.#ssaoBlurProgram = null
-        this.#bloomExtractProgram = null
-        this.#bloomBlurProgram = null
-        this.#bloomCompositeProgram = null
-        if (this.#bloomExtractFBO) {
-            this.context?.gl?.deleteFramebuffer(this.#bloomExtractFBO)
-            this.context?.gl?.deleteTexture(this.#bloomExtractTexture)
-            this.context?.gl?.deleteFramebuffer(this.#bloomPingFBO)
-            this.context?.gl?.deleteTexture(this.#bloomPingTexture)
-            this.context?.gl?.deleteFramebuffer(this.#bloomPongFBO)
-            this.context?.gl?.deleteTexture(this.#bloomPongTexture)
-            this.#bloomExtractFBO = null
-            this.#bloomPingFBO = null
-            this.#bloomPongFBO = null
-        }
-        if (this.#ssaoFBO) {
-            this.context?.gl?.deleteFramebuffer(this.#ssaoFBO)
-            this.context?.gl?.deleteTexture(this.#ssaoTexture)
-            this.context?.gl?.deleteFramebuffer(this.#ssaoBlurFBO)
-            this.context?.gl?.deleteTexture(this.#ssaoBlurTexture)
-            this.#ssaoFBO = null
-            this.#ssaoTexture = null
-            this.#ssaoBlurFBO = null
-            this.#ssaoBlurTexture = null
-        }
-        if (this.#fogFBO) {
-            this.context?.gl?.deleteFramebuffer(this.#fogFBO)
-            this.context?.gl?.deleteTexture(this.#fogTexture)
-            this.context?.gl?.deleteFramebuffer(this.#fogBlurFBO)
-            this.context?.gl?.deleteTexture(this.#fogBlurTexture)
-            this.#fogFBO = null
-            this.#fogTexture = null
-            this.#fogBlurFBO = null
-            this.#fogBlurTexture = null
+        if (this.context?.gl) {
+            this.#cinematic.dispose(this.context.gl)
+            this.#outline.dispose(this.context.gl)
+            this.#ssao.dispose(this.context.gl)
+            this.#bloom.dispose(this.context.gl)
+            this.#volumetricFog.dispose(this.context.gl)
         }
         this.#camera3d = null
         this.#shadowMap = null
@@ -2032,53 +1485,5 @@ function createDecalQuad (gl) {
 }
 
 
-function createHdrTexture (gl, width, height) {
-    const texture = gl.createTexture()
-    gl.bindTexture(gl.TEXTURE_2D, texture)
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, width, height, 0, gl.RGBA, gl.HALF_FLOAT, null)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-    gl.bindTexture(gl.TEXTURE_2D, null)
-    return texture
-}
 
 
-function createPaperTexture (gl) {
-    const size = 256
-    const data = new Uint8Array(size * size)
-    let seed = 1
-    const rand = () => {
-        seed = (seed * 16807) % 2147483647
-        return seed / 2147483647
-    }
-    for (let i = 0; i < size * size; i++) {
-        const r1 = rand()
-        const r2 = rand()
-        const value = 0.7 + (r1 - 0.5) * 0.25 + (r2 - 0.5) * 0.15
-        data[i] = Math.max(0, Math.min(255, value * 255))
-    }
-    const texture = gl.createTexture()
-    gl.bindTexture(gl.TEXTURE_2D, texture)
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, size, size, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, data)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
-    gl.bindTexture(gl.TEXTURE_2D, null)
-    return texture
-}
-
-
-function createScreenTexture (gl, width, height) {
-    const texture = gl.createTexture()
-    gl.bindTexture(gl.TEXTURE_2D, texture)
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-    gl.bindTexture(gl.TEXTURE_2D, null)
-    return texture
-}
