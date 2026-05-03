@@ -68,6 +68,9 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     #volumetricFogProgram = null
     #volumetricFogEnabled = false
     #toonLevels = 0
+    #rimPower = 3.0
+    #rimIntensity = 0.0
+    #rimColor = [1.0, 1.0, 1.0]
     #outlineProgram = null
     #outlineEnabled = false
     #outlineFBO = null
@@ -109,6 +112,8 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     #brightness = 1.0
     #contrast = 1.0
     #grainIntensity = 0.0
+    #paperIntensity = 0.0
+    #paperTexture = null
     #fogBlurProgram = null
     #fogFBO = null
     #fogTexture = null
@@ -297,6 +302,31 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     }
 
 
+    get rimPower () {
+        return this.#rimPower
+    }
+
+    set rimPower (v) {
+        this.#rimPower = v
+    }
+
+    get rimIntensity () {
+        return this.#rimIntensity
+    }
+
+    set rimIntensity (v) {
+        this.#rimIntensity = v
+    }
+
+    get rimColor () {
+        return this.#rimColor
+    }
+
+    set rimColor (v) {
+        this.#rimColor = v
+    }
+
+
     get toonLevels () {
         return this.#toonLevels
     }
@@ -435,6 +465,15 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     set contrast (v) {
         this.#contrast = v
     }
+
+    get paperIntensity () {
+        return this.#paperIntensity
+    }
+
+    set paperIntensity (v) {
+        this.#paperIntensity = v
+    }
+
 
     get grainIntensity () {
         return this.#grainIntensity
@@ -608,6 +647,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         this.#loadSmaaTextures(context.gl)
         this.#fullscreenQuad = new FullscreenQuad(context.gl)
         this.#decalQuadMesh = createDecalQuad(context.gl)
+        this.#paperTexture = createPaperTexture(context.gl)
     }
 
 
@@ -929,6 +969,9 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         gl.uniform3fv(program.uniforms.uLightDirection, this.#lightDirection)
         gl.uniform1f(program.uniforms.uDirectionalIntensity, this.#directionalIntensity)
         gl.uniform1f(program.uniforms.uToonLevels, this.#toonLevels)
+        gl.uniform1f(program.uniforms.uRimPower, this.#rimPower)
+        gl.uniform1f(program.uniforms.uRimIntensity, this.#rimIntensity)
+        gl.uniform3fv(program.uniforms.uRimColor, this.#rimColor)
         gl.uniform3fv(program.uniforms.uAmbientSky, this.#ambientSky)
         gl.uniform3fv(program.uniforms.uAmbientGround, this.#ambientGround)
         gl.uniform1f(program.uniforms.uFogNear, this.#fogNear)
@@ -1107,6 +1150,10 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         gl.uniform1f(program.uniforms.uBrightness, this.#brightness)
         gl.uniform1f(program.uniforms.uContrast, this.#contrast)
         gl.uniform1f(program.uniforms.uGrainIntensity, this.#grainIntensity)
+        gl.uniform1f(program.uniforms.uPaperIntensity, this.#paperIntensity)
+        gl.activeTexture(gl.TEXTURE1)
+        gl.bindTexture(gl.TEXTURE_2D, this.#paperTexture)
+        gl.uniform1i(program.uniforms.uPaperTexture, 1)
 
         this.#fullscreenQuad.draw(gl, program)
 
@@ -1960,6 +2007,32 @@ function createHdrTexture (gl, width, height) {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+    gl.bindTexture(gl.TEXTURE_2D, null)
+    return texture
+}
+
+
+function createPaperTexture (gl) {
+    const size = 256
+    const data = new Uint8Array(size * size)
+    let seed = 1
+    const rand = () => {
+        seed = (seed * 16807) % 2147483647
+        return seed / 2147483647
+    }
+    for (let i = 0; i < size * size; i++) {
+        const r1 = rand()
+        const r2 = rand()
+        const value = 0.7 + (r1 - 0.5) * 0.25 + (r2 - 0.5) * 0.15
+        data[i] = Math.max(0, Math.min(255, value * 255))
+    }
+    const texture = gl.createTexture()
+    gl.bindTexture(gl.TEXTURE_2D, texture)
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, size, size, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, data)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
     gl.bindTexture(gl.TEXTURE_2D, null)
     return texture
 }

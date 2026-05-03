@@ -24,6 +24,8 @@ uniform float uBrightness;
 uniform float uContrast;
 
 uniform float uGrainIntensity;
+uniform sampler2D uPaperTexture;
+uniform float uPaperIntensity;
 
 in vec2 vTexCoord;
 out vec4 fragColor;
@@ -53,6 +55,11 @@ void main() {
 
     color += grain(gl_FragCoord.xy, uTime) * uGrainIntensity;
 
+    if (uPaperIntensity > 0.0) {
+        float paper = texture(uPaperTexture, vTexCoord * 3.0).r;
+        color *= mix(1.0, paper, uPaperIntensity);
+    }
+
     fragColor = vec4(color, 1.0);
 }
 `
@@ -70,7 +77,9 @@ export const CINEMATIC_SHADER_DEF = {
         'uTemperature',
         'uBrightness',
         'uContrast',
-        'uGrainIntensity'
+        'uGrainIntensity',
+        'uPaperTexture',
+        'uPaperIntensity'
     ],
     attributes: ['aPosition', 'aTexCoord']
 }

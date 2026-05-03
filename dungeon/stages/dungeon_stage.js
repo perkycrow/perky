@@ -75,8 +75,11 @@ export default class DungeonStage extends Stage {
         this.meshRenderer.cinematicEnabled = true
         this.meshRenderer.temperature = -0.3
         this.meshRenderer.saturation = 0.9
-        this.meshRenderer.toonLevels = 3
+        this.meshRenderer.toonLevels = 5
         this.meshRenderer.outlineEnabled = true
+        this.meshRenderer.rimIntensity = 0.4
+        this.meshRenderer.rimColor = [0.8, 0.85, 1.0]
+        this.meshRenderer.paperIntensity = 0.15
 
         this.scene = new Object3D()
         layer.setContent(this.scene)

@@ -28,6 +28,9 @@ uniform float uDirectionalIntensity;
 uniform vec3 uAmbientSky;
 uniform vec3 uAmbientGround;
 uniform float uToonLevels;
+uniform float uRimPower;
+uniform float uRimIntensity;
+uniform vec3 uRimColor;
 
 uniform float uFogNear;
 uniform float uFogFar;
@@ -240,7 +243,10 @@ void main() {
         if (specular > 0.0 && diffuse > 0.0) {
             vec3 halfDir = normalize(dirLight + viewDir);
             float specAngle = max(dot(normal, halfDir), 0.0);
-            lit += vec3(specular * specNorm * pow(specAngle, shininess)) * shadow * uDirectionalIntensity;
+            float specValue = uToonLevels > 1.5
+                ? step(0.5, specAngle) * specular
+                : specular * specNorm * pow(specAngle, shininess);
+            lit += vec3(specValue) * shadow * uDirectionalIntensity;
         }
 
         for (int i = 0; i < uNumLights; i++) {
@@ -267,11 +273,22 @@ void main() {
             if (specular > 0.0 && nDotL > 0.0) {
                 vec3 halfVec = normalize(lightDir + viewDir);
                 float specAngle = max(dot(normal, halfVec), 0.0);
-                lit += colRad.xyz * posInt.w * specular * specNorm * pow(specAngle, shininess) * attenuation * pointShadow;
+                float specPL = uToonLevels > 1.5
+                    ? step(0.5, specAngle) * specular
+                    : specular * specNorm * pow(specAngle, shininess);
+                lit += colRad.xyz * posInt.w * specPL * attenuation * pointShadow;
             }
         }
 
         lit += fresnel * ambient * 0.3;
+
+        if (uRimIntensity > 0.0) {
+            float rim = 1.0 - max(dot(viewDir, normal), 0.0);
+            rim = uToonLevels > 1.5
+                ? step(0.6, rim) * uRimIntensity
+                : pow(rim, uRimPower) * uRimIntensity;
+            lit += rim * uRimColor;
+        }
     }
 
     vec3 color = lit + baseColor * emissive;
@@ -304,6 +321,9 @@ export const LIGHTING_SHADER_DEF = {
         'uLightDirection',
         'uDirectionalIntensity',
         'uToonLevels',
+        'uRimPower',
+        'uRimIntensity',
+        'uRimColor',
         'uAmbientSky',
         'uAmbientGround',
         'uFogNear',
