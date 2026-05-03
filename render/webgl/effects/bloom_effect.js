@@ -23,37 +23,46 @@ export default class BloomEffect {
         return this.#enabled
     }
 
+
     set enabled (v) {
         this.#enabled = v
     }
+
 
     get threshold () {
         return this.#threshold
     }
 
+
     set threshold (v) {
         this.#threshold = v
     }
+
 
     get softThreshold () {
         return this.#softThreshold
     }
 
+
     set softThreshold (v) {
         this.#softThreshold = v
     }
+
 
     get intensity () {
         return this.#intensity
     }
 
+
     set intensity (v) {
         this.#intensity = v
     }
 
+
     get passes () {
         return this.#passes
     }
+
 
     set passes (v) {
         this.#passes = v

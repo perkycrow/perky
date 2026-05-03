@@ -19,29 +19,61 @@ function createMockGL () {
         UNSIGNED_SHORT: 0x1403,
         calls,
         canvas: {width: 800, height: 600},
-        enable () { calls.push('enable') },
-        disable () { calls.push('disable') },
-        depthFunc () { calls.push('depthFunc') },
-        useProgram () { calls.push('useProgram') },
-        uniformMatrix4fv () { calls.push('uniformMatrix4fv') },
-        uniform1f () { calls.push('uniform1f') },
-        uniform1i () { calls.push('uniform1i') },
-        uniform2f () { calls.push('uniform2f') },
-        uniform3f () { calls.push('uniform3f') },
-        uniform3fv () { calls.push('uniform3fv') },
-        activeTexture () { calls.push('activeTexture') },
-        bindTexture () { calls.push('bindTexture') },
-        viewport () { calls.push('viewport') },
-        createBuffer () { return 'buf' },
+        enable () {
+            calls.push('enable')
+        },
+        disable () {
+            calls.push('disable')
+        },
+        depthFunc () {
+            calls.push('depthFunc')
+        },
+        useProgram () {
+            calls.push('useProgram')
+        },
+        uniformMatrix4fv () {
+            calls.push('uniformMatrix4fv')
+        },
+        uniform1f () {
+            calls.push('uniform1f')
+        },
+        uniform1i () {
+            calls.push('uniform1i')
+        },
+        uniform2f () {
+            calls.push('uniform2f')
+        },
+        uniform3f () {
+            calls.push('uniform3f')
+        },
+        uniform3fv () {
+            calls.push('uniform3fv')
+        },
+        activeTexture () {
+            calls.push('activeTexture')
+        },
+        bindTexture () {
+            calls.push('bindTexture')
+        },
+        viewport () {
+            calls.push('viewport')
+        },
+        createBuffer () {
+            return 'buf'
+        },
         bindBuffer () {},
         bufferData () {},
         deleteBuffer () {},
-        createVertexArray () { return 'vao' },
+        createVertexArray () {
+            return 'vao'
+        },
         bindVertexArray () {},
         deleteVertexArray () {},
         enableVertexAttribArray () {},
         vertexAttribPointer () {},
-        drawElements () { calls.push('drawElements') }
+        drawElements () {
+            calls.push('drawElements')
+        }
     }
 }
 
@@ -52,10 +84,19 @@ function createMockShaderRegistry () {
             return {
                 program: 'sprite3dProgram',
                 uniforms: {
-                    uProjection: 0, uView: 1, uCenter: 2, uSize: 3,
-                    uAnchor: 4, uTexture: 5, uHasTexture: 6,
-                    uMaterialColor: 7, uRoughness: 8, uSpecular: 9,
-                    uUnlit: 10, uMaterialEmissive: 11, uAlphaThreshold: 12
+                    uProjection: 0,
+                    uView: 1,
+                    uCenter: 2,
+                    uSize: 3,
+                    uAnchor: 4,
+                    uTexture: 5,
+                    uHasTexture: 6,
+                    uMaterialColor: 7,
+                    uRoughness: 8,
+                    uSpecular: 9,
+                    uUnlit: 10,
+                    uMaterialEmissive: 11,
+                    uAlphaThreshold: 12
                 },
                 attributes: {aPosition: 0, aTexCoord: 2}
             }
@@ -66,8 +107,12 @@ function createMockShaderRegistry () {
 
 function createMockTextureManager () {
     return {
-        acquire () { return 'glTexture' },
-        release () { return true }
+        acquire () {
+            return 'glTexture'
+        },
+        release () {
+            return true
+        }
     }
 }
 
@@ -167,8 +212,12 @@ describe('flushToGBuffer', () => {
         let gBufferResumed = false
         let gBufferEnded = false
         renderer.gBuffer = {
-            resume () { gBufferResumed = true },
-            end () { gBufferEnded = true }
+            resume () {
+                gBufferResumed = true
+            },
+            end () {
+                gBufferEnded = true
+            }
         }
 
         const sprite = new Sprite3D({texture: {id: 'tex'}, width: 2, height: 3})

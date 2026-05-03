@@ -4,18 +4,36 @@ import BloomEffect from './bloom_effect.js'
 function createMockGL () {
     const calls = []
     return {
-        TEXTURE_2D: 0x0DE1, TEXTURE0: 0x84C0, FRAMEBUFFER: 0x8D40,
-        COLOR_ATTACHMENT0: 0x8CE0, DEPTH_TEST: 0x0B71, BLEND: 0x0BE2,
-        CONSTANT_COLOR: 0x8001, ONE: 1,
-        RGBA8: 0x8058, RGBA: 0x1908, UNSIGNED_BYTE: 0x1401,
-        LINEAR: 0x2601, CLAMP_TO_EDGE: 0x812F,
-        TEXTURE_MIN_FILTER: 0x2801, TEXTURE_MAG_FILTER: 0x2800,
-        TEXTURE_WRAP_S: 0x2802, TEXTURE_WRAP_T: 0x2803,
+        TEXTURE_2D: 0x0DE1,
+        TEXTURE0: 0x84C0,
+        FRAMEBUFFER: 0x8D40,
+        COLOR_ATTACHMENT0: 0x8CE0,
+        DEPTH_TEST: 0x0B71,
+        BLEND: 0x0BE2,
+        CONSTANT_COLOR: 0x8001,
+        ONE: 1,
+        RGBA8: 0x8058,
+        RGBA: 0x1908,
+        UNSIGNED_BYTE: 0x1401,
+        LINEAR: 0x2601,
+        CLAMP_TO_EDGE: 0x812F,
+        TEXTURE_MIN_FILTER: 0x2801,
+        TEXTURE_MAG_FILTER: 0x2800,
+        TEXTURE_WRAP_S: 0x2802,
+        TEXTURE_WRAP_T: 0x2803,
         calls,
-        createTexture () { return 'bloomTex' },
-        createFramebuffer () { return 'bloomFBO' },
-        deleteTexture (t) { calls.push({fn: 'deleteTexture', args: [t]}) },
-        deleteFramebuffer (f) { calls.push({fn: 'deleteFramebuffer', args: [f]}) },
+        createTexture () {
+            return 'bloomTex'
+        },
+        createFramebuffer () {
+            return 'bloomFBO'
+        },
+        deleteTexture (t) {
+            calls.push({fn: 'deleteTexture', args: [t]})
+        },
+        deleteFramebuffer (f) {
+            calls.push({fn: 'deleteFramebuffer', args: [f]})
+        },
         bindTexture () {},
         texImage2D () {},
         texParameteri () {},
@@ -39,13 +57,19 @@ function createMockShaderRegistry () {
     const mockProgram = {
         program: 'bloomProgram',
         uniforms: {
-            uSceneColor: 0, uThreshold: 1, uSoftThreshold: 2,
-            uTexture: 3, uTexelSize: 4, uDirection: 5
+            uSceneColor: 0,
+            uThreshold: 1,
+            uSoftThreshold: 2,
+            uTexture: 3,
+            uTexelSize: 4,
+            uDirection: 5
         },
         attributes: {aPosition: 0, aTexCoord: 1}
     }
     return {
-        register () { return mockProgram }
+        register () {
+            return mockProgram
+        }
     }
 }
 

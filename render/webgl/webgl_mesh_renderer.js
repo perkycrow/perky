@@ -102,6 +102,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         return this.#directionalIntensity
     }
 
+
     set directionalIntensity (v) {
         this.#directionalIntensity = v
     }
@@ -231,6 +232,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         return this.#sprite3dRenderer
     }
 
+
     set sprite3dRenderer (value) {
         this.#sprite3dRenderer = value
     }
@@ -240,9 +242,11 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         return this.#smaa
     }
 
+
     get smaaEnabled () {
         return this.#smaa.enabled
     }
+
 
     set smaaEnabled (value) {
         this.#smaa.enabled = value
@@ -253,21 +257,26 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         return this.#rimPower
     }
 
+
     set rimPower (v) {
         this.#rimPower = v
     }
+
 
     get rimIntensity () {
         return this.#rimIntensity
     }
 
+
     set rimIntensity (v) {
         this.#rimIntensity = v
     }
 
+
     get rimColor () {
         return this.#rimColor
     }
+
 
     set rimColor (v) {
         this.#rimColor = v
@@ -278,6 +287,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         return this.#toonBlend
     }
 
+
     set toonBlend (v) {
         this.#toonBlend = v
     }
@@ -287,49 +297,61 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         return this.#toonLevels
     }
 
+
     set toonLevels (v) {
         this.#toonLevels = v
     }
+
 
     get outline () {
         return this.#outline
     }
 
+
     get outlineEnabled () {
         return this.#outline.enabled
     }
+
 
     set outlineEnabled (v) {
         this.#outline.enabled = v
     }
 
+
     get outlineColor () {
         return this.#outline.color
     }
+
 
     set outlineColor (v) {
         this.#outline.color = v
     }
 
+
     get depthThreshold () {
         return this.#outline.depthThreshold
     }
+
 
     set depthThreshold (v) {
         this.#outline.depthThreshold = v
     }
 
+
     get normalThreshold () {
         return this.#outline.normalThreshold
     }
+
 
     set normalThreshold (v) {
         this.#outline.normalThreshold = v
     }
 
+
     get outlineWobble () {
         return this.#outline.wobble
     }
+
 
     set outlineWobble (v) {
         this.#outline.wobble = v
@@ -340,6 +362,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         return this.#lightBlobiness
     }
 
+
     set lightBlobiness (v) {
         this.#lightBlobiness = v
     }
@@ -348,6 +371,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     get shadowSoftness () {
         return this.#shadowSoftness
     }
+
 
     set shadowSoftness (v) {
         this.#shadowSoftness = v
@@ -358,33 +382,41 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         return this.#ssao
     }
 
+
     get ssaoEnabled () {
         return this.#ssao.enabled
     }
+
 
     set ssaoEnabled (v) {
         this.#ssao.enabled = v
     }
 
+
     get ssaoRadius () {
         return this.#ssao.radius
     }
+
 
     set ssaoRadius (v) {
         this.#ssao.radius = v
     }
 
+
     get ssaoBias () {
         return this.#ssao.bias
     }
+
 
     set ssaoBias (v) {
         this.#ssao.bias = v
     }
 
+
     get ssaoIntensity () {
         return this.#ssao.intensity
     }
+
 
     set ssaoIntensity (v) {
         this.#ssao.intensity = v
@@ -400,61 +432,76 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         return this.#cinematic.enabled
     }
 
+
     set cinematicEnabled (v) {
         this.#cinematic.enabled = v
     }
+
 
     get vignetteIntensity () {
         return this.#cinematic.vignetteIntensity
     }
 
+
     set vignetteIntensity (v) {
         this.#cinematic.vignetteIntensity = v
     }
+
 
     get vignetteSmoothness () {
         return this.#cinematic.vignetteSmoothness
     }
 
+
     set vignetteSmoothness (v) {
         this.#cinematic.vignetteSmoothness = v
     }
+
 
     get saturation () {
         return this.#cinematic.saturation
     }
 
+
     set saturation (v) {
         this.#cinematic.saturation = v
     }
+
 
     get temperature () {
         return this.#cinematic.temperature
     }
 
+
     set temperature (v) {
         this.#cinematic.temperature = v
     }
+
 
     get brightness () {
         return this.#cinematic.brightness
     }
 
+
     set brightness (v) {
         this.#cinematic.brightness = v
     }
+
 
     get contrast () {
         return this.#cinematic.contrast
     }
 
+
     set contrast (v) {
         this.#cinematic.contrast = v
     }
 
+
     get colorLevels () {
         return this.#cinematic.colorLevels
     }
+
 
     set colorLevels (v) {
         this.#cinematic.colorLevels = v
@@ -465,6 +512,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         return this.#cinematic.paperIntensity
     }
 
+
     set paperIntensity (v) {
         this.#cinematic.paperIntensity = v
     }
@@ -473,6 +521,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     get grainIntensity () {
         return this.#cinematic.grainIntensity
     }
+
 
     set grainIntensity (v) {
         this.#cinematic.grainIntensity = v
@@ -483,33 +532,41 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         return this.#bloom
     }
 
+
     get bloomEnabled () {
         return this.#bloom.enabled
     }
+
 
     set bloomEnabled (v) {
         this.#bloom.enabled = v
     }
 
+
     get bloomThreshold () {
         return this.#bloom.threshold
     }
+
 
     set bloomThreshold (v) {
         this.#bloom.threshold = v
     }
 
+
     get bloomIntensity () {
         return this.#bloom.intensity
     }
+
 
     set bloomIntensity (v) {
         this.#bloom.intensity = v
     }
 
+
     get bloomPasses () {
         return this.#bloom.passes
     }
+
 
     set bloomPasses (v) {
         this.#bloom.passes = v
@@ -520,105 +577,131 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         return this.#volumetricFog
     }
 
+
     get volumetricFogEnabled () {
         return this.#volumetricFog.enabled
     }
+
 
     set volumetricFogEnabled (value) {
         this.#volumetricFog.enabled = value
     }
 
+
     get fogDensity () {
         return this.#volumetricFog.density
     }
+
 
     set fogDensity (v) {
         this.#volumetricFog.density = v
     }
 
+
     get fogHeightFalloff () {
         return this.#volumetricFog.heightFalloff
     }
+
 
     set fogHeightFalloff (v) {
         this.#volumetricFog.heightFalloff = v
     }
 
+
     get fogBaseHeight () {
         return this.#volumetricFog.baseHeight
     }
+
 
     set fogBaseHeight (v) {
         this.#volumetricFog.baseHeight = v
     }
 
+
     get fogNoiseScale () {
         return this.#volumetricFog.noiseScale
     }
+
 
     set fogNoiseScale (v) {
         this.#volumetricFog.noiseScale = v
     }
 
+
     get fogNoiseStrength () {
         return this.#volumetricFog.noiseStrength
     }
+
 
     set fogNoiseStrength (v) {
         this.#volumetricFog.noiseStrength = v
     }
 
+
     get fogWindDirection () {
         return this.#volumetricFog.windDirection
     }
+
 
     set fogWindDirection (v) {
         this.#volumetricFog.windDirection = v
     }
 
+
     get fogWindSpeed () {
         return this.#volumetricFog.windSpeed
     }
+
 
     set fogWindSpeed (v) {
         this.#volumetricFog.windSpeed = v
     }
 
+
     get fogScatterAnisotropy () {
         return this.#volumetricFog.scatterAnisotropy
     }
+
 
     set fogScatterAnisotropy (v) {
         this.#volumetricFog.scatterAnisotropy = v
     }
 
+
     get fogSteps () {
         return this.#volumetricFog.steps
     }
+
 
     set fogSteps (v) {
         this.#volumetricFog.steps = v
     }
 
+
     get fogMaxDistance () {
         return this.#volumetricFog.maxDistance
     }
+
 
     set fogMaxDistance (v) {
         this.#volumetricFog.maxDistance = v
     }
 
+
     get fogStartDistance () {
         return this.#volumetricFog.startDistance
     }
+
 
     set fogStartDistance (v) {
         this.#volumetricFog.startDistance = v
     }
 
+
     get fogTime () {
         return this.#volumetricFog.time
     }
+
 
     set fogTime (v) {
         this.#volumetricFog.time = v
@@ -1061,16 +1144,6 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     }
 
 
-
-
-
-
-
-
-
-
-
-
     #blitToScreen (gl, texture) {
         gl.bindFramebuffer(gl.FRAMEBUFFER, null)
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
@@ -1505,7 +1578,3 @@ function createDecalQuad (gl) {
     })
     return new Mesh({gl, geometry: geo})
 }
-
-
-
-

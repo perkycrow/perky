@@ -17,37 +17,46 @@ export default class OutlineEffect {
         return this.#enabled
     }
 
+
     set enabled (v) {
         this.#enabled = v
     }
+
 
     get color () {
         return this.#color
     }
 
+
     set color (v) {
         this.#color = v
     }
+
 
     get depthThreshold () {
         return this.#depthThreshold
     }
 
+
     set depthThreshold (v) {
         this.#depthThreshold = v
     }
+
 
     get normalThreshold () {
         return this.#normalThreshold
     }
 
+
     set normalThreshold (v) {
         this.#normalThreshold = v
     }
 
+
     get wobble () {
         return this.#wobble
     }
+
 
     set wobble (v) {
         this.#wobble = v

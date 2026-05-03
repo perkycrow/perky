@@ -19,33 +19,41 @@ export default class SsaoEffect {
         return this.#enabled
     }
 
+
     set enabled (v) {
         this.#enabled = v
     }
+
 
     get radius () {
         return this.#radius
     }
 
+
     set radius (v) {
         this.#radius = v
     }
+
 
     get bias () {
         return this.#bias
     }
 
+
     set bias (v) {
         this.#bias = v
     }
+
 
     get intensity () {
         return this.#intensity
     }
 
+
     set intensity (v) {
         this.#intensity = v
     }
+
 
     get outputTexture () {
         return this.#blurTexture

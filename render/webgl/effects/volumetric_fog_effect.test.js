@@ -4,18 +4,37 @@ import VolumetricFogEffect from './volumetric_fog_effect.js'
 function createMockGL () {
     const calls = []
     return {
-        TEXTURE_2D: 0x0DE1, TEXTURE0: 0x84C0, TEXTURE1: 0x84C1, TEXTURE2: 0x84C2,
-        FRAMEBUFFER: 0x8D40, COLOR_ATTACHMENT0: 0x8CE0, DEPTH_TEST: 0x0B71,
-        RGBA8: 0x8058, RGBA16F: 0x881A, RGBA: 0x1908,
-        UNSIGNED_BYTE: 0x1401, HALF_FLOAT: 0x140B,
-        LINEAR: 0x2601, CLAMP_TO_EDGE: 0x812F,
-        TEXTURE_MIN_FILTER: 0x2801, TEXTURE_MAG_FILTER: 0x2800,
-        TEXTURE_WRAP_S: 0x2802, TEXTURE_WRAP_T: 0x2803,
+        TEXTURE_2D: 0x0DE1,
+        TEXTURE0: 0x84C0,
+        TEXTURE1: 0x84C1,
+        TEXTURE2: 0x84C2,
+        FRAMEBUFFER: 0x8D40,
+        COLOR_ATTACHMENT0: 0x8CE0,
+        DEPTH_TEST: 0x0B71,
+        RGBA8: 0x8058,
+        RGBA16F: 0x881A,
+        RGBA: 0x1908,
+        UNSIGNED_BYTE: 0x1401,
+        HALF_FLOAT: 0x140B,
+        LINEAR: 0x2601,
+        CLAMP_TO_EDGE: 0x812F,
+        TEXTURE_MIN_FILTER: 0x2801,
+        TEXTURE_MAG_FILTER: 0x2800,
+        TEXTURE_WRAP_S: 0x2802,
+        TEXTURE_WRAP_T: 0x2803,
         calls,
-        createTexture () { return 'fogTex' },
-        createFramebuffer () { return 'fogFBO' },
-        deleteTexture (t) { calls.push({fn: 'deleteTexture', args: [t]}) },
-        deleteFramebuffer (f) { calls.push({fn: 'deleteFramebuffer', args: [f]}) },
+        createTexture () {
+            return 'fogTex'
+        },
+        createFramebuffer () {
+            return 'fogFBO'
+        },
+        deleteTexture (t) {
+            calls.push({fn: 'deleteTexture', args: [t]})
+        },
+        deleteFramebuffer (f) {
+            calls.push({fn: 'deleteFramebuffer', args: [f]})
+        },
         bindTexture () {},
         texImage2D () {},
         texParameteri () {},
@@ -41,19 +60,34 @@ function createMockShaderRegistry () {
     const mockProgram = {
         program: 'fogProgram',
         uniforms: {
-            uDepth: 0, uLightData: 1, uInverseViewProjection: 2,
-            uCameraPosition: 3, uNumLights: 4, uTime: 5,
-            uFogDensity: 6, uFogHeightFalloff: 7, uFogBaseHeight: 8,
-            uFogNoiseScale: 9, uFogNoiseStrength: 10,
-            uFogWindDirection: 11, uFogWindSpeed: 12,
-            uFogScatterAnisotropy: 13, uFogColor: 14,
-            uFogSteps: 15, uFogMaxDistance: 16, uFogStartDistance: 17,
-            uFogTexture: 18, uSceneColor: 19, uTexelSize: 20
+            uDepth: 0,
+            uLightData: 1,
+            uInverseViewProjection: 2,
+            uCameraPosition: 3,
+            uNumLights: 4,
+            uTime: 5,
+            uFogDensity: 6,
+            uFogHeightFalloff: 7,
+            uFogBaseHeight: 8,
+            uFogNoiseScale: 9,
+            uFogNoiseStrength: 10,
+            uFogWindDirection: 11,
+            uFogWindSpeed: 12,
+            uFogScatterAnisotropy: 13,
+            uFogColor: 14,
+            uFogSteps: 15,
+            uFogMaxDistance: 16,
+            uFogStartDistance: 17,
+            uFogTexture: 18,
+            uSceneColor: 19,
+            uTexelSize: 20
         },
         attributes: {aPosition: 0, aTexCoord: 1}
     }
     return {
-        register () { return mockProgram }
+        register () {
+            return mockProgram
+        }
     }
 }
 

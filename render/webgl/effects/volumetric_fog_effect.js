@@ -26,44 +26,134 @@ export default class VolumetricFogEffect {
     #startDistance = 3
     #time = 0
 
-    get enabled () { return this.#enabled }
-    set enabled (v) { this.#enabled = v }
+    get enabled () {
+        return this.#enabled
+    }
 
-    get density () { return this.#density }
-    set density (v) { this.#density = v }
 
-    get heightFalloff () { return this.#heightFalloff }
-    set heightFalloff (v) { this.#heightFalloff = v }
+    set enabled (v) {
+        this.#enabled = v
+    }
 
-    get baseHeight () { return this.#baseHeight }
-    set baseHeight (v) { this.#baseHeight = v }
 
-    get noiseScale () { return this.#noiseScale }
-    set noiseScale (v) { this.#noiseScale = v }
+    get density () {
+        return this.#density
+    }
 
-    get noiseStrength () { return this.#noiseStrength }
-    set noiseStrength (v) { this.#noiseStrength = v }
 
-    get windDirection () { return this.#windDirection }
-    set windDirection (v) { this.#windDirection = v }
+    set density (v) {
+        this.#density = v
+    }
 
-    get windSpeed () { return this.#windSpeed }
-    set windSpeed (v) { this.#windSpeed = v }
 
-    get scatterAnisotropy () { return this.#scatterAnisotropy }
-    set scatterAnisotropy (v) { this.#scatterAnisotropy = v }
+    get heightFalloff () {
+        return this.#heightFalloff
+    }
 
-    get steps () { return this.#steps }
-    set steps (v) { this.#steps = v }
 
-    get maxDistance () { return this.#maxDistance }
-    set maxDistance (v) { this.#maxDistance = v }
+    set heightFalloff (v) {
+        this.#heightFalloff = v
+    }
 
-    get startDistance () { return this.#startDistance }
-    set startDistance (v) { this.#startDistance = v }
 
-    get time () { return this.#time }
-    set time (v) { this.#time = v }
+    get baseHeight () {
+        return this.#baseHeight
+    }
+
+
+    set baseHeight (v) {
+        this.#baseHeight = v
+    }
+
+
+    get noiseScale () {
+        return this.#noiseScale
+    }
+
+
+    set noiseScale (v) {
+        this.#noiseScale = v
+    }
+
+
+    get noiseStrength () {
+        return this.#noiseStrength
+    }
+
+
+    set noiseStrength (v) {
+        this.#noiseStrength = v
+    }
+
+
+    get windDirection () {
+        return this.#windDirection
+    }
+
+
+    set windDirection (v) {
+        this.#windDirection = v
+    }
+
+
+    get windSpeed () {
+        return this.#windSpeed
+    }
+
+
+    set windSpeed (v) {
+        this.#windSpeed = v
+    }
+
+
+    get scatterAnisotropy () {
+        return this.#scatterAnisotropy
+    }
+
+
+    set scatterAnisotropy (v) {
+        this.#scatterAnisotropy = v
+    }
+
+
+    get steps () {
+        return this.#steps
+    }
+
+
+    set steps (v) {
+        this.#steps = v
+    }
+
+
+    get maxDistance () {
+        return this.#maxDistance
+    }
+
+
+    set maxDistance (v) {
+        this.#maxDistance = v
+    }
+
+
+    get startDistance () {
+        return this.#startDistance
+    }
+
+
+    set startDistance (v) {
+        this.#startDistance = v
+    }
+
+
+    get time () {
+        return this.#time
+    }
+
+
+    set time (v) {
+        this.#time = v
+    }
 
 
     init (shaderRegistry) {

@@ -16,35 +16,104 @@ export default class CinematicEffect {
     #paperIntensity = 0.0
     #paperTexture = null
 
-    get enabled () { return this.#enabled }
-    set enabled (v) { this.#enabled = v }
+    get enabled () {
+        return this.#enabled
+    }
 
-    get vignetteIntensity () { return this.#vignetteIntensity }
-    set vignetteIntensity (v) { this.#vignetteIntensity = v }
 
-    get vignetteSmoothness () { return this.#vignetteSmoothness }
-    set vignetteSmoothness (v) { this.#vignetteSmoothness = v }
+    set enabled (v) {
+        this.#enabled = v
+    }
 
-    get saturation () { return this.#saturation }
-    set saturation (v) { this.#saturation = v }
 
-    get temperature () { return this.#temperature }
-    set temperature (v) { this.#temperature = v }
+    get vignetteIntensity () {
+        return this.#vignetteIntensity
+    }
 
-    get brightness () { return this.#brightness }
-    set brightness (v) { this.#brightness = v }
 
-    get contrast () { return this.#contrast }
-    set contrast (v) { this.#contrast = v }
+    set vignetteIntensity (v) {
+        this.#vignetteIntensity = v
+    }
 
-    get grainIntensity () { return this.#grainIntensity }
-    set grainIntensity (v) { this.#grainIntensity = v }
 
-    get colorLevels () { return this.#colorLevels }
-    set colorLevels (v) { this.#colorLevels = v }
+    get vignetteSmoothness () {
+        return this.#vignetteSmoothness
+    }
 
-    get paperIntensity () { return this.#paperIntensity }
-    set paperIntensity (v) { this.#paperIntensity = v }
+
+    set vignetteSmoothness (v) {
+        this.#vignetteSmoothness = v
+    }
+
+
+    get saturation () {
+        return this.#saturation
+    }
+
+
+    set saturation (v) {
+        this.#saturation = v
+    }
+
+
+    get temperature () {
+        return this.#temperature
+    }
+
+
+    set temperature (v) {
+        this.#temperature = v
+    }
+
+
+    get brightness () {
+        return this.#brightness
+    }
+
+
+    set brightness (v) {
+        this.#brightness = v
+    }
+
+
+    get contrast () {
+        return this.#contrast
+    }
+
+
+    set contrast (v) {
+        this.#contrast = v
+    }
+
+
+    get grainIntensity () {
+        return this.#grainIntensity
+    }
+
+
+    set grainIntensity (v) {
+        this.#grainIntensity = v
+    }
+
+
+    get colorLevels () {
+        return this.#colorLevels
+    }
+
+
+    set colorLevels (v) {
+        this.#colorLevels = v
+    }
+
+
+    get paperIntensity () {
+        return this.#paperIntensity
+    }
+
+
+    set paperIntensity (v) {
+        this.#paperIntensity = v
+    }
 
 
     init (shaderRegistry, gl) {

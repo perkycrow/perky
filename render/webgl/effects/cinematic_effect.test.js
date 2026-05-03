@@ -25,17 +25,39 @@ function createMockGL () {
         deleteTexture (tex) {
             calls.push({fn: 'deleteTexture', args: [tex]})
         },
-        bindTexture () { calls.push('bindTexture') },
-        texImage2D () { calls.push('texImage2D') },
-        texParameteri () { calls.push('texParameteri') },
-        useProgram () { calls.push('useProgram') },
-        bindFramebuffer () { calls.push('bindFramebuffer') },
-        viewport () { calls.push('viewport') },
-        enable () { calls.push('enable') },
-        disable () { calls.push('disable') },
-        activeTexture () { calls.push('activeTexture') },
-        uniform1i () { calls.push('uniform1i') },
-        uniform1f () { calls.push('uniform1f') }
+        bindTexture () {
+            calls.push('bindTexture')
+        },
+        texImage2D () {
+            calls.push('texImage2D')
+        },
+        texParameteri () {
+            calls.push('texParameteri')
+        },
+        useProgram () {
+            calls.push('useProgram')
+        },
+        bindFramebuffer () {
+            calls.push('bindFramebuffer')
+        },
+        viewport () {
+            calls.push('viewport')
+        },
+        enable () {
+            calls.push('enable')
+        },
+        disable () {
+            calls.push('disable')
+        },
+        activeTexture () {
+            calls.push('activeTexture')
+        },
+        uniform1i () {
+            calls.push('uniform1i')
+        },
+        uniform1f () {
+            calls.push('uniform1f')
+        }
     }
 }
 
@@ -44,15 +66,25 @@ function createMockShaderRegistry () {
     const mockProgram = {
         program: 'cinematicProgram',
         uniforms: {
-            uSceneColor: 0, uTime: 1, uVignetteIntensity: 2,
-            uVignetteSmoothness: 3, uSaturation: 4, uTemperature: 5,
-            uBrightness: 6, uContrast: 7, uGrainIntensity: 8,
-            uPaperIntensity: 9, uColorLevels: 10, uPaperTexture: 11
+            uSceneColor: 0,
+            uTime: 1,
+            uVignetteIntensity: 2,
+            uVignetteSmoothness: 3,
+            uSaturation: 4,
+            uTemperature: 5,
+            uBrightness: 6,
+            uContrast: 7,
+            uGrainIntensity: 8,
+            uPaperIntensity: 9,
+            uColorLevels: 10,
+            uPaperTexture: 11
         },
         attributes: {aPosition: 0, aTexCoord: 1}
     }
     return {
-        register () { return mockProgram },
+        register () {
+            return mockProgram
+        },
         mockProgram
     }
 }
@@ -129,7 +161,9 @@ test('render draws fullscreen quad', () => {
 
     let drawn = false
     const ctx = createMockCtx()
-    ctx.fullscreenQuad.draw = () => { drawn = true }
+    ctx.fullscreenQuad.draw = () => {
+        drawn = true
+    }
 
     gl.calls.length = 0
     effect.render(gl, ctx, 'sceneTexture', 1.5)

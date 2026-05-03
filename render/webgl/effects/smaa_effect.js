@@ -25,13 +25,16 @@ export default class SmaaEffect {
         return this.#enabled
     }
 
+
     set enabled (v) {
         this.#enabled = v
     }
 
+
     get ready () {
         return this.#ready
     }
+
 
     get blendProgram () {
         return this.#blendProgram

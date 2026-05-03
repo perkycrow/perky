@@ -21,15 +21,29 @@ function createMockGL () {
         TEXTURE_WRAP_S: 0x2802,
         TEXTURE_WRAP_T: 0x2803,
         calls,
-        createTexture () { return 'outlineTex' },
-        createFramebuffer () { return 'outlineFBO' },
-        deleteTexture (t) { calls.push({fn: 'deleteTexture', args: [t]}) },
-        deleteFramebuffer (f) { calls.push({fn: 'deleteFramebuffer', args: [f]}) },
-        bindTexture () { calls.push('bindTexture') },
+        createTexture () {
+            return 'outlineTex'
+        },
+        createFramebuffer () {
+            return 'outlineFBO'
+        },
+        deleteTexture (t) {
+            calls.push({fn: 'deleteTexture', args: [t]})
+        },
+        deleteFramebuffer (f) {
+            calls.push({fn: 'deleteFramebuffer', args: [f]})
+        },
+        bindTexture () {
+            calls.push('bindTexture')
+        },
         texImage2D () {},
         texParameteri () {},
-        useProgram () { calls.push('useProgram') },
-        bindFramebuffer () { calls.push('bindFramebuffer') },
+        useProgram () {
+            calls.push('useProgram')
+        },
+        bindFramebuffer () {
+            calls.push('bindFramebuffer')
+        },
         framebufferTexture2D () {},
         viewport () {},
         enable () {},
@@ -49,9 +63,13 @@ function createMockShaderRegistry () {
             return {
                 program: 'outlineProgram',
                 uniforms: {
-                    uSceneColor: 0, uDepth: 1, uGNormal: 2,
-                    uTexelSize: 3, uOutlineColor: 4,
-                    uDepthThreshold: 5, uNormalThreshold: 6
+                    uSceneColor: 0,
+                    uDepth: 1,
+                    uGNormal: 2,
+                    uTexelSize: 3,
+                    uOutlineColor: 4,
+                    uDepthThreshold: 5,
+                    uNormalThreshold: 6
                 },
                 attributes: {aPosition: 0, aTexCoord: 1}
             }

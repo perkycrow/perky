@@ -891,7 +891,6 @@ export default class DungeonStage extends Stage {
     }
 
 
-
     #updateDebugOverlay () {
         if (!this.debugOverlay || !this.player) {
             return

@@ -21,13 +21,16 @@ export default class WebGLSprite3DRenderer extends WebGLObjectRenderer {
         return this.#camera3d
     }
 
+
     set camera3d (camera) {
         this.#camera3d = camera
     }
 
+
     get gBuffer () {
         return this.#gBuffer
     }
+
 
     set gBuffer (value) {
         this.#gBuffer = value

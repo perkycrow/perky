@@ -101,22 +101,31 @@ async function loadGlbOverrides (store, overrides) {
         }
 
         const config = JSON.parse(await jsonFile.blob.text())
-        const modifications = []
-
-        for (const mod of config.modifications || []) {
-            if (mod.type === 'texture_swap') {
-                const imageFile = resource.files.find(f => f.name === mod.texture)
-                if (imageFile) {
-                    const image = await blobToImage(imageFile.blob)
-                    modifications.push({...mod, image})
-                }
-            } else {
-                modifications.push(mod)
-            }
-        }
-
+        const modifications = await resolveGlbModifications(config, resource.files)
         overrides.push({id: meta.id, source: {modifications}})
     }
+}
+
+
+async function resolveGlbModifications (config, files) {
+    const modifications = []
+
+    for (const mod of config.modifications || []) {
+        if (mod.type !== 'texture_swap') {
+            modifications.push(mod)
+            continue
+        }
+
+        const imageFile = files.find(f => f.name === mod.texture)
+        if (!imageFile) {
+            continue
+        }
+
+        const image = await blobToImage(imageFile.blob)
+        modifications.push({...mod, image})
+    }
+
+    return modifications
 }
 
 
