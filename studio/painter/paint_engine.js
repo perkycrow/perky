@@ -40,7 +40,7 @@ const DEFAULT_BRUSH = {
     hardness: 0.8,
     opacity: 1.0,
     flow: 0.8,
-    spacing: 0.15,
+    spacing: 0.05,
     smoothing: 0.9,
     color: [0, 0, 0, 1]
 }
@@ -104,7 +104,7 @@ export default class PaintEngine {
         const smoothed = smoothPoint(this.#smoothedPoint, {x, y, pressure}, this.#brush.smoothing)
         this.#smoothedPoint = smoothed
 
-        const step = this.#brush.size * this.#brush.spacing
+        const step = Math.max(this.#brush.size * this.#brush.spacing, 2)
         const result = interpolateStroke(this.#lastPoint, smoothed, step, this.#remainder)
 
         for (const s of result.stamps) {
