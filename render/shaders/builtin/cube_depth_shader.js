@@ -23,11 +23,10 @@ uniform float uFar;
 
 in vec3 vWorldPosition;
 
-out vec4 fragColor;
+out float fragColor;
 
 void main() {
-    float dist = length(vWorldPosition - uLightPosition);
-    fragColor = vec4(dist / uFar, 0.0, 0.0, 1.0);
+    fragColor = length(vWorldPosition - uLightPosition) / uFar;
 }
 `
 
