@@ -193,7 +193,8 @@ float calcPointShadow (vec3 lightPos, vec3 worldPos, vec3 normal) {
 
 float toonify (float value) {
     if (uToonLevels < 1.5) return value;
-    return floor(value * uToonLevels + 0.5) / uToonLevels;
+    float quantized = floor(value * uToonLevels) / uToonLevels;
+    return mix(value, quantized, 0.25);
 }
 
 
@@ -232,7 +233,7 @@ void main() {
         float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), 4.0) * (1.0 - roughness);
 
         vec3 dirLight = normalize(uLightDirection);
-        float diffuse = toonify(max(dot(normal, dirLight), 0.0)) * uDirectionalIntensity;
+        float diffuse = max(dot(normal, dirLight), 0.0) * uDirectionalIntensity;
         float shadow = diffuse > 0.0 ? calcShadow(worldPos, normal, dirLight) : 1.0;
         float hemiFactor = normal.y * 0.5 + 0.5;
         vec3 ambient = mix(uAmbientGround, uAmbientSky, hemiFactor);
@@ -240,13 +241,10 @@ void main() {
         float ssao = uHasSSAO > 0.5 ? texture(uSSAO, vTexCoord).r : 1.0;
         lit = baseColor * (ambient * occlusion * ssao + diffuse * shadow);
 
-        if (specular > 0.0 && diffuse > 0.0) {
+        if (specular > 0.0 && diffuse > 0.0 && uToonLevels < 1.5) {
             vec3 halfDir = normalize(dirLight + viewDir);
             float specAngle = max(dot(normal, halfDir), 0.0);
-            float specValue = uToonLevels > 1.5
-                ? step(0.5, specAngle) * specular
-                : specular * specNorm * pow(specAngle, shininess);
-            lit += vec3(specValue) * shadow * uDirectionalIntensity;
+            lit += vec3(specular * specNorm * pow(specAngle, shininess)) * shadow * uDirectionalIntensity;
         }
 
         for (int i = 0; i < uNumLights; i++) {
@@ -267,16 +265,14 @@ void main() {
 
             float pointShadow = calcPointShadow(posInt.xyz, worldPos, normal);
 
-            float nDotL = toonify(max(dot(normal, lightDir), 0.0));
-            lit += baseColor * colRad.xyz * posInt.w * nDotL * attenuation * pointShadow / 3.14159;
+            float nDotL = max(dot(normal, lightDir), 0.0);
+            float lightContrib = toonify(nDotL * attenuation);
+            lit += baseColor * colRad.xyz * posInt.w * lightContrib * pointShadow / 3.14159;
 
-            if (specular > 0.0 && nDotL > 0.0) {
+            if (specular > 0.0 && nDotL > 0.0 && uToonLevels < 1.5) {
                 vec3 halfVec = normalize(lightDir + viewDir);
                 float specAngle = max(dot(normal, halfVec), 0.0);
-                float specPL = uToonLevels > 1.5
-                    ? step(0.5, specAngle) * specular
-                    : specular * specNorm * pow(specAngle, shininess);
-                lit += colRad.xyz * posInt.w * specPL * attenuation * pointShadow;
+                lit += colRad.xyz * posInt.w * specular * specNorm * pow(specAngle, shininess) * attenuation * pointShadow;
             }
         }
 

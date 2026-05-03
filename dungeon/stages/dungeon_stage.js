@@ -51,8 +51,8 @@ export default class DungeonStage extends Stage {
 
         this.meshRenderer.lightDirection = [0.3, 0.9, 0.2]
         this.meshRenderer.directionalIntensity = 0.0
-        this.meshRenderer.ambientSky = [0.02, 0.02, 0.025]
-        this.meshRenderer.ambientGround = [0.02, 0.02, 0.025]
+        this.meshRenderer.ambientSky = [0.035, 0.035, 0.04]
+        this.meshRenderer.ambientGround = [0.035, 0.035, 0.04]
         this.meshRenderer.fogNear = 8
         this.meshRenderer.fogFar = 30
         this.meshRenderer.fogColor = [0.01, 0.01, 0.02]
@@ -75,10 +75,10 @@ export default class DungeonStage extends Stage {
         this.meshRenderer.cinematicEnabled = true
         this.meshRenderer.temperature = -0.3
         this.meshRenderer.saturation = 0.9
-        this.meshRenderer.toonLevels = 5
+        this.meshRenderer.toonLevels = 10
         this.meshRenderer.outlineEnabled = true
-        this.meshRenderer.rimIntensity = 0.4
-        this.meshRenderer.rimColor = [0.8, 0.85, 1.0]
+        this.meshRenderer.rimIntensity = 0.0
+        this.meshRenderer.rimColor = [0.6, 0.65, 0.8]
         this.meshRenderer.paperIntensity = 0.15
 
         this.scene = new Object3D()
