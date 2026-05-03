@@ -75,6 +75,8 @@ export default class DungeonStage extends Stage {
         this.meshRenderer.cinematicEnabled = true
         this.meshRenderer.temperature = -0.3
         this.meshRenderer.saturation = 0.9
+        this.meshRenderer.toonLevels = 3
+        this.meshRenderer.outlineEnabled = true
 
         this.scene = new Object3D()
         layer.setContent(this.scene)
@@ -772,6 +774,26 @@ export default class DungeonStage extends Stage {
             cineBtn.textContent = 'CINE: ' + (this.meshRenderer.cinematicEnabled ? 'ON' : 'OFF')
         })
         document.body.appendChild(cineBtn)
+
+        const toonBtn = document.createElement('button')
+        toonBtn.textContent = 'TOON: ON'
+        Object.assign(toonBtn.style, {
+            position: 'fixed',
+            top: '160px',
+            right: '10px',
+            zIndex: '9999',
+            fontFamily: 'monospace',
+            fontSize: '13px',
+            padding: '4px 8px',
+            cursor: 'pointer'
+        })
+        toonBtn.addEventListener('click', () => {
+            const on = this.meshRenderer.toonLevels > 0
+            this.meshRenderer.toonLevels = on ? 0 : 3
+            this.meshRenderer.outlineEnabled = !on
+            toonBtn.textContent = 'TOON: ' + (on ? 'OFF' : 'ON')
+        })
+        document.body.appendChild(toonBtn)
 
         this.#createFogPanel()
     }

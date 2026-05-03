@@ -13,6 +13,7 @@ import {VOLUMETRIC_FOG_SHADER_DEF, FOG_BLUR_SHADER_DEF} from '../shaders/builtin
 import {SSAO_SHADER_DEF, SSAO_BLUR_SHADER_DEF} from '../shaders/builtin/ssao_shader.js'
 import {BLOOM_EXTRACT_SHADER_DEF, BLOOM_BLUR_SHADER_DEF, BLOOM_COMPOSITE_SHADER_DEF} from '../shaders/builtin/bloom_shader.js'
 import {CINEMATIC_SHADER_DEF} from '../shaders/builtin/cinematic_shader.js'
+import {OUTLINE_SHADER_DEF} from '../shaders/builtin/outline_shader.js'
 import {SMAA_AREA_TEXTURE, SMAA_SEARCH_TEXTURE} from '../smaa_lookup_textures.js'
 import LightDataTexture from '../light_data_texture.js'
 import FullscreenQuad from '../postprocessing/fullscreen_quad.js'
@@ -66,6 +67,14 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     #fogColor = [0.0, 0.0, 0.0]
     #volumetricFogProgram = null
     #volumetricFogEnabled = false
+    #toonLevels = 0
+    #outlineProgram = null
+    #outlineEnabled = false
+    #outlineFBO = null
+    #outlineTexture = null
+    #outlineColor = [0.0, 0.0, 0.0]
+    #depthThreshold = 0.001
+    #normalThreshold = 0.3
     #shadowSoftness = 0.7
     #ssaoProgram = null
     #ssaoBlurProgram = null
@@ -285,6 +294,47 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
 
     set smaaEnabled (value) {
         this.#smaaEnabled = value
+    }
+
+
+    get toonLevels () {
+        return this.#toonLevels
+    }
+
+    set toonLevels (v) {
+        this.#toonLevels = v
+    }
+
+    get outlineEnabled () {
+        return this.#outlineEnabled
+    }
+
+    set outlineEnabled (v) {
+        this.#outlineEnabled = v
+    }
+
+    get outlineColor () {
+        return this.#outlineColor
+    }
+
+    set outlineColor (v) {
+        this.#outlineColor = v
+    }
+
+    get depthThreshold () {
+        return this.#depthThreshold
+    }
+
+    set depthThreshold (v) {
+        this.#depthThreshold = v
+    }
+
+    get normalThreshold () {
+        return this.#normalThreshold
+    }
+
+    set normalThreshold (v) {
+        this.#normalThreshold = v
     }
 
 
@@ -550,6 +600,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         this.#bloomBlurProgram = context.shaderRegistry.register('bloomBlur', BLOOM_BLUR_SHADER_DEF)
         this.#bloomCompositeProgram = context.shaderRegistry.register('bloomComposite', BLOOM_COMPOSITE_SHADER_DEF)
         this.#cinematicProgram = context.shaderRegistry.register('cinematic', CINEMATIC_SHADER_DEF)
+        this.#outlineProgram = context.shaderRegistry.register('outline', OUTLINE_SHADER_DEF)
         this.#smaaEdgeProgram = context.shaderRegistry.register('smaaEdge', SMAA_EDGE_SHADER_DEF)
         this.#smaaWeightProgram = context.shaderRegistry.register('smaaWeight', SMAA_WEIGHT_SHADER_DEF)
         this.#smaaBlendProgram = context.shaderRegistry.register('smaaBlend', SMAA_BLEND_SHADER_DEF)
@@ -877,6 +928,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
 
         gl.uniform3fv(program.uniforms.uLightDirection, this.#lightDirection)
         gl.uniform1f(program.uniforms.uDirectionalIntensity, this.#directionalIntensity)
+        gl.uniform1f(program.uniforms.uToonLevels, this.#toonLevels)
         gl.uniform3fv(program.uniforms.uAmbientSky, this.#ambientSky)
         gl.uniform3fv(program.uniforms.uAmbientGround, this.#ambientGround)
         gl.uniform1f(program.uniforms.uFogNear, this.#fogNear)
@@ -940,6 +992,11 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         if (this.#smaaEnabled && this.#smaaReady) {
             this.#renderSmaaPass(gl, sceneTexture)
             sceneTexture = this.#smaaOutputTexture
+        }
+
+        if (this.#outlineEnabled) {
+            this.#renderOutlinePass(gl, sceneTexture)
+            sceneTexture = this.#outlineTexture
         }
 
         if (this.#volumetricFogEnabled) {
@@ -1252,6 +1309,45 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     }
 
 
+    #renderOutlinePass (gl, sceneTexture) {
+        const w = gl.canvas.width
+        const h = gl.canvas.height
+
+        if (!this.#outlineFBO) {
+            this.#outlineTexture = createScreenTexture(gl, w, h)
+            this.#outlineFBO = gl.createFramebuffer()
+            gl.bindFramebuffer(gl.FRAMEBUFFER, this.#outlineFBO)
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#outlineTexture, 0)
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+        }
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#outlineFBO)
+        gl.viewport(0, 0, w, h)
+        gl.disable(gl.DEPTH_TEST)
+
+        const program = this.#outlineProgram
+        gl.useProgram(program.program)
+
+        gl.activeTexture(gl.TEXTURE0)
+        gl.bindTexture(gl.TEXTURE_2D, sceneTexture)
+        gl.uniform1i(program.uniforms.uSceneColor, 0)
+        gl.activeTexture(gl.TEXTURE1)
+        gl.bindTexture(gl.TEXTURE_2D, this.#gBuffer.depthTexture)
+        gl.uniform1i(program.uniforms.uDepth, 1)
+        gl.activeTexture(gl.TEXTURE2)
+        gl.bindTexture(gl.TEXTURE_2D, this.#gBuffer.normalTexture)
+        gl.uniform1i(program.uniforms.uGNormal, 2)
+        gl.uniform2f(program.uniforms.uTexelSize, 1 / w, 1 / h)
+        gl.uniform3fv(program.uniforms.uOutlineColor, this.#outlineColor)
+        gl.uniform1f(program.uniforms.uDepthThreshold, this.#depthThreshold)
+        gl.uniform1f(program.uniforms.uNormalThreshold, this.#normalThreshold)
+
+        this.#fullscreenQuad.draw(gl, program)
+
+        gl.enable(gl.DEPTH_TEST)
+    }
+
+
     #blitToScreen (gl, texture) {
         gl.bindFramebuffer(gl.FRAMEBUFFER, null)
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
@@ -1507,6 +1603,13 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         this.#smaaBlendProgram = null
         this.#volumetricFogProgram = null
         this.#fogBlurProgram = null
+        this.#outlineProgram = null
+        if (this.#outlineFBO) {
+            this.context?.gl?.deleteFramebuffer(this.#outlineFBO)
+            this.context?.gl?.deleteTexture(this.#outlineTexture)
+            this.#outlineFBO = null
+            this.#outlineTexture = null
+        }
         this.#ssaoProgram = null
         this.#ssaoBlurProgram = null
         this.#bloomExtractProgram = null

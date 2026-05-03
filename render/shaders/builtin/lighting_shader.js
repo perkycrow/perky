@@ -27,6 +27,7 @@ uniform vec3 uLightDirection;
 uniform float uDirectionalIntensity;
 uniform vec3 uAmbientSky;
 uniform vec3 uAmbientGround;
+uniform float uToonLevels;
 
 uniform float uFogNear;
 uniform float uFogFar;
@@ -187,6 +188,12 @@ float calcPointShadow (vec3 lightPos, vec3 worldPos, vec3 normal) {
 }
 
 
+float toonify (float value) {
+    if (uToonLevels < 1.5) return value;
+    return floor(value * uToonLevels + 0.5) / uToonLevels;
+}
+
+
 vec3 acesToneMap (vec3 x) {
     return clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0);
 }
@@ -222,7 +229,7 @@ void main() {
         float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), 4.0) * (1.0 - roughness);
 
         vec3 dirLight = normalize(uLightDirection);
-        float diffuse = max(dot(normal, dirLight), 0.0) * uDirectionalIntensity;
+        float diffuse = toonify(max(dot(normal, dirLight), 0.0)) * uDirectionalIntensity;
         float shadow = diffuse > 0.0 ? calcShadow(worldPos, normal, dirLight) : 1.0;
         float hemiFactor = normal.y * 0.5 + 0.5;
         vec3 ambient = mix(uAmbientGround, uAmbientSky, hemiFactor);
@@ -254,7 +261,7 @@ void main() {
 
             float pointShadow = calcPointShadow(posInt.xyz, worldPos, normal);
 
-            float nDotL = max(dot(normal, lightDir), 0.0);
+            float nDotL = toonify(max(dot(normal, lightDir), 0.0));
             lit += baseColor * colRad.xyz * posInt.w * nDotL * attenuation * pointShadow / 3.14159;
 
             if (specular > 0.0 && nDotL > 0.0) {
@@ -296,6 +303,7 @@ export const LIGHTING_SHADER_DEF = {
         'uCameraPosition',
         'uLightDirection',
         'uDirectionalIntensity',
+        'uToonLevels',
         'uAmbientSky',
         'uAmbientGround',
         'uFogNear',
