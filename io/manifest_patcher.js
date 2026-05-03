@@ -1,4 +1,5 @@
 import PerkyStore from './perky_store.js'
+import {blobToImage} from './canvas.js'
 
 
 export function applyOverrides (manifestData, overrides) {
@@ -20,6 +21,7 @@ export async function loadStudioOverrides () {
 
     await loadAnimatorOverrides(store, overrides)
     await loadSceneOverrides(store, overrides)
+    await loadGlbOverrides(store, overrides)
 
     return overrides
 }
@@ -80,6 +82,40 @@ async function loadSceneOverrides (store, overrides) {
 
         const sceneConfig = JSON.parse(await jsonFile.blob.text())
         overrides.push({id: meta.id, source: sceneConfig})
+    }
+}
+
+
+async function loadGlbOverrides (store, overrides) {
+    const resources = await store.list('glb')
+
+    for (const meta of resources) {
+        const resource = await store.get(meta.id)
+        if (!resource) {
+            continue
+        }
+
+        const jsonFile = resource.files.find(f => f.name.endsWith('.json'))
+        if (!jsonFile) {
+            continue
+        }
+
+        const config = JSON.parse(await jsonFile.blob.text())
+        const modifications = []
+
+        for (const mod of config.modifications || []) {
+            if (mod.type === 'texture_swap') {
+                const imageFile = resource.files.find(f => f.name === mod.texture)
+                if (imageFile) {
+                    const image = await blobToImage(imageFile.blob)
+                    modifications.push({...mod, image})
+                }
+            } else {
+                modifications.push(mod)
+            }
+        }
+
+        overrides.push({id: meta.id, source: {modifications}})
     }
 }
 

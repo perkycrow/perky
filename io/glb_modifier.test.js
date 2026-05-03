@@ -1,5 +1,5 @@
 import {test, expect, describe} from 'vitest'
-import {applyModifications, applyMaterialOverrides, rebuildGlb, listMaterials} from './glb_modifier.js'
+import {applyModifications, applyMaterialOverrides, rebuildGlb, exportGlb, listMaterials} from './glb_modifier.js'
 
 
 function createTestGltf () {
@@ -224,7 +224,7 @@ describe('applyMaterialOverrides', () => {
 
 
 describe('rebuildGlb', () => {
-    test('produces valid GLB header', () => {
+    test('produces valid GLB header', async () => {
         const gltf = {
             asset: {version: '2.0'},
             buffers: [{byteLength: 4}],
@@ -238,7 +238,7 @@ describe('rebuildGlb', () => {
         }
         const images = [new Uint8Array([1, 2, 3, 4])]
 
-        const result = rebuildGlb(gltf, images)
+        const result = await rebuildGlb(gltf, images)
         const view = new DataView(result)
 
         expect(view.getUint32(0, true)).toBe(0x46546C67)
@@ -246,7 +246,7 @@ describe('rebuildGlb', () => {
         expect(view.getUint32(8, true)).toBe(result.byteLength)
     })
 
-    test('JSON chunk is padded to 4-byte alignment', () => {
+    test('JSON chunk is padded to 4-byte alignment', async () => {
         const gltf = {
             asset: {version: '2.0'},
             buffers: [{byteLength: 4}],
@@ -260,14 +260,14 @@ describe('rebuildGlb', () => {
         }
         const images = [new Uint8Array([1, 2, 3, 4])]
 
-        const result = rebuildGlb(gltf, images)
+        const result = await rebuildGlb(gltf, images)
         const view = new DataView(result)
         const jsonChunkLength = view.getUint32(12, true)
 
         expect(jsonChunkLength % 4).toBe(0)
     })
 
-    test('round-trips image data', () => {
+    test('round-trips image data', async () => {
         const gltf = {
             asset: {version: '2.0'},
             buffers: [{byteLength: 8}],
@@ -282,7 +282,7 @@ describe('rebuildGlb', () => {
         const imageData = new Uint8Array([10, 20, 30, 40, 50, 60, 70, 80])
         const images = [imageData]
 
-        const result = rebuildGlb(gltf, images)
+        const result = await rebuildGlb(gltf, images)
         const view = new DataView(result)
 
         const jsonChunkLength = view.getUint32(12, true)
@@ -292,7 +292,7 @@ describe('rebuildGlb', () => {
         expect(Array.from(binData)).toEqual([10, 20, 30, 40, 50, 60, 70, 80])
     })
 
-    test('handles null images', () => {
+    test('handles null images', async () => {
         const gltf = {
             asset: {version: '2.0'},
             buffers: [{byteLength: 0}],
@@ -305,13 +305,13 @@ describe('rebuildGlb', () => {
             scenes: [{nodes: []}]
         }
 
-        const result = rebuildGlb(gltf, [null])
+        const result = await rebuildGlb(gltf, [null])
         const view = new DataView(result)
 
         expect(view.getUint32(0, true)).toBe(0x46546C67)
     })
 
-    test('preserves non-image buffer views', () => {
+    test('preserves non-image buffer views', async () => {
         const geometryData = new Uint8Array([100, 101, 102, 103, 104, 105])
         const imageData = new Uint8Array([1, 2, 3, 4])
         const binary = new Uint8Array(10)
@@ -334,7 +334,7 @@ describe('rebuildGlb', () => {
         }
 
         const newImage = new Uint8Array([10, 20, 30, 40, 50])
-        const result = rebuildGlb(gltf, [newImage], binary)
+        const result = await rebuildGlb(gltf, [newImage], binary)
         const view = new DataView(result)
 
         const jsonChunkLength = view.getUint32(12, true)
@@ -346,7 +346,7 @@ describe('rebuildGlb', () => {
         expect(Array.from(binData.slice(6, 11))).toEqual([10, 20, 30, 40, 50])
     })
 
-    test('updates buffer byteLength', () => {
+    test('updates buffer byteLength', async () => {
         const gltf = {
             asset: {version: '2.0'},
             buffers: [{byteLength: 999}],
@@ -360,7 +360,7 @@ describe('rebuildGlb', () => {
         }
         const images = [new Uint8Array([1, 2, 3, 4])]
 
-        const result = rebuildGlb(gltf, images)
+        const result = await rebuildGlb(gltf, images)
         const view = new DataView(result)
 
         const jsonChunkLength = view.getUint32(12, true)
@@ -368,6 +368,63 @@ describe('rebuildGlb', () => {
         const json = JSON.parse(new TextDecoder().decode(jsonBytes))
 
         expect(json.buffers[0].byteLength).toBe(4)
+    })
+
+    test('converts Blob images to bytes', async () => {
+        const gltf = {
+            asset: {version: '2.0'},
+            buffers: [{byteLength: 4}],
+            bufferViews: [{buffer: 0, byteOffset: 0, byteLength: 4}],
+            images: [{bufferView: 0, mimeType: 'image/png'}],
+            textures: [{source: 0}],
+            materials: [],
+            meshes: [],
+            nodes: [],
+            scenes: [{nodes: []}]
+        }
+        const blob = new Blob([new Uint8Array([1, 2, 3, 4])], {type: 'image/png'})
+
+        const result = await rebuildGlb(gltf, [blob])
+        const view = new DataView(result)
+
+        expect(view.getUint32(0, true)).toBe(0x46546C67)
+    })
+})
+
+
+describe('exportGlb', () => {
+    test('applies texture swap and material override to rebuilt GLB', async () => {
+        const gltf = createTestGltf()
+        const binary = new Uint8Array(0)
+        const originalImage = new Uint8Array([1, 2, 3, 4])
+        const newImage = new Uint8Array([10, 20, 30])
+        const images = [originalImage, originalImage]
+
+        const result = await exportGlb({gltf, binary, images}, [
+            {type: 'texture_swap', material: 'Wall', slot: 'baseColor', image: newImage},
+            {type: 'material_override', material: 'Floor', roughness: 0.9}
+        ])
+
+        const view = new DataView(result)
+        expect(view.getUint32(0, true)).toBe(0x46546C67)
+
+        const jsonChunkLength = view.getUint32(12, true)
+        const jsonBytes = new Uint8Array(result, 20, jsonChunkLength)
+        const json = JSON.parse(new TextDecoder().decode(jsonBytes))
+
+        expect(json.materials[1].pbrMetallicRoughness.roughnessFactor).toBe(0.9)
+    })
+
+    test('does not mutate original gltf', async () => {
+        const gltf = createTestGltf()
+        const original = JSON.stringify(gltf)
+        const images = [new Uint8Array([1]), new Uint8Array([2])]
+
+        await exportGlb({gltf, binary: new Uint8Array(0), images}, [
+            {type: 'material_override', material: 'Wall', roughness: 0.1}
+        ])
+
+        expect(JSON.stringify(gltf)).toBe(original)
     })
 })
 

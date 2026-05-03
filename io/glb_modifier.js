@@ -1,3 +1,16 @@
+function blobToArrayBuffer (blob) {
+    if (typeof blob.arrayBuffer === 'function') {
+        return blob.arrayBuffer()
+    }
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(reader.result)
+        reader.onerror = reject
+        reader.readAsArrayBuffer(blob)
+    })
+}
+
+
 const GLB_MAGIC = 0x46546C67
 const GLB_VERSION = 2
 const CHUNK_JSON = 0x4E4F534A
@@ -74,8 +87,8 @@ function resolveImageIndex (gltf, mat, slot) {
 }
 
 
-export function rebuildGlb (gltf, images, binary = new Uint8Array(0)) {
-    const imageBuffers = images.map(img => imageToBytes(img))
+export async function rebuildGlb (gltf, images, binary = new Uint8Array(0)) {
+    const imageBuffers = await Promise.all(images.map(img => imageToBytes(img)))
     const {json, bin} = buildChunks(gltf, imageBuffers, binary)
 
     const jsonBytes = new TextEncoder().encode(JSON.stringify(json))
@@ -217,16 +230,91 @@ function padToAlignment (bytes, padByte) {
 }
 
 
-function imageToBytes (image) {
+async function imageToBytes (image) {
     if (!image) {
         return null
     }
 
-    if (image instanceof Uint8Array || image instanceof ArrayBuffer) {
-        return image instanceof ArrayBuffer ? new Uint8Array(image) : image
+    if (image instanceof Uint8Array) {
+        return image
+    }
+
+    if (image instanceof ArrayBuffer) {
+        return new Uint8Array(image)
+    }
+
+    if (image instanceof Blob) {
+        const buffer = await blobToArrayBuffer(image)
+        return new Uint8Array(buffer)
+    }
+
+    if (typeof image.naturalWidth === 'number' || typeof image.width === 'number') {
+        return imageToPngBytes(image)
     }
 
     return null
+}
+
+
+async function imageToPngBytes (image) {
+    const w = image.naturalWidth || image.width
+    const h = image.naturalHeight || image.height
+    const canvas = document.createElement('canvas')
+    canvas.width = w
+    canvas.height = h
+    canvas.getContext('2d').drawImage(image, 0, 0)
+
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'))
+    return new Uint8Array(await blob.arrayBuffer())
+}
+
+
+export async function exportGlb ({gltf, binary, images}, modifications) {
+    const modifiedGltf = structuredClone(gltf)
+    const modifiedImages = applyModifications({gltf: modifiedGltf, images}, modifications)
+
+    applyMaterialOverridesToGltf(modifiedGltf, modifications)
+
+    return rebuildGlb(modifiedGltf, modifiedImages, binary)
+}
+
+
+function applyMaterialOverridesToGltf (gltf, modifications) {
+    for (const mod of modifications) {
+        if (mod.type !== 'material_override') {
+            continue
+        }
+
+        const index = findMaterialIndex(gltf, mod.material)
+
+        if (index === -1) {
+            continue
+        }
+
+        const mat = gltf.materials[index]
+        const pbr = mat.pbrMetallicRoughness || (mat.pbrMetallicRoughness = {})
+
+        if (mod.color !== undefined) {
+            const a = pbr.baseColorFactor?.[3] ?? 1
+            pbr.baseColorFactor = [...mod.color, a]
+        }
+
+        if (mod.roughness !== undefined) {
+            pbr.roughnessFactor = mod.roughness
+        }
+
+        if (mod.emissive !== undefined) {
+            mat.emissiveFactor = mod.emissive
+        }
+
+        if (mod.opacity !== undefined) {
+            const rgb = pbr.baseColorFactor?.slice(0, 3) ?? [1, 1, 1]
+            pbr.baseColorFactor = [...rgb, mod.opacity]
+            if (mod.opacity < 1) {
+                mat.alphaMode = 'BLEND'
+            }
+        }
+    }
 }
 
 
