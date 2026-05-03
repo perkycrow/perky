@@ -7,6 +7,7 @@ const engine = new PaintEngine(canvas)
 const colorInput = document.getElementById('color')
 const sizeInput = document.getElementById('size')
 const hardnessInput = document.getElementById('hardness')
+const opacityInput = document.getElementById('opacity')
 const flowInput = document.getElementById('flow')
 const smoothingInput = document.getElementById('smoothing')
 const clearBtn = document.getElementById('clear')
@@ -31,6 +32,7 @@ function updateBrush () {
         color: hexToRgb(colorInput.value),
         size: Number(sizeInput.value),
         hardness: Number(hardnessInput.value) / 100,
+        opacity: Number(opacityInput.value) / 100,
         flow: Number(flowInput.value) / 100,
         smoothing: Number(smoothingInput.value) / 100
     })
@@ -44,6 +46,7 @@ window.addEventListener('resize', resize)
 colorInput.addEventListener('input', updateBrush)
 sizeInput.addEventListener('input', updateBrush)
 hardnessInput.addEventListener('input', updateBrush)
+opacityInput.addEventListener('input', updateBrush)
 flowInput.addEventListener('input', updateBrush)
 smoothingInput.addEventListener('input', updateBrush)
 clearBtn.addEventListener('click', () => engine.clear())
