@@ -5,6 +5,7 @@ import Material3D from '../material_3d.js'
 import Object3D from '../object_3d.js'
 import Matrix4 from '../../math/matrix4.js'
 import {loadArrayBuffer} from '../../application/loaders.js'
+import {applyModifications, applyMaterialOverrides} from '../../io/glb_modifier.js'
 import logger from '../../core/logger.js'
 
 
@@ -83,9 +84,19 @@ export function parseGlb (arrayBuffer) {
 }
 
 
-export async function buildGltfScene ({gltf, binary, baseUrl = '', gl}) {
-    const images = await loadGltfImages(gltf, binary, baseUrl)
+export async function buildGltfScene ({gltf, binary, baseUrl = '', gl, modifications}) {
+    let images = await loadGltfImages(gltf, binary, baseUrl)
+
+    if (modifications && modifications.length > 0) {
+        images = applyModifications({gltf, images}, modifications)
+    }
+
     const materials = buildMaterials(gltf, images)
+
+    if (modifications && modifications.length > 0) {
+        applyMaterialOverrides(gltf, materials, modifications)
+    }
+
     const defaultMaterial = new Material3D({color: [1, 1, 1], roughness: 0.7})
     const meshes = buildMeshes(gltf, binary, gl)
 

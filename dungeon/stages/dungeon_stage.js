@@ -12,6 +12,7 @@ import Sprite3D from '../../render/sprite_3d.js'
 import WebGLSprite3DRenderer from '../../render/webgl/webgl_sprite3d_renderer.js'
 import {loadGlb, buildGltfScene} from '../../render/loaders/gltf_loader.js'
 import {loadImage} from '../../application/loaders.js'
+import {loadModifications} from '../../io/glb_modifications.js'
 import {resolveCollisions} from '../collision.js'
 import DungeonWorld from '../worlds/dungeon_world.js'
 import PlayerController from '../controllers/player_controller.js'
@@ -183,19 +184,6 @@ export default class DungeonStage extends Stage {
         this.meshRenderer.lights = lights
         this.scene.markDirty()
 
-        loadImage('assets/props/floor_painted.jpg').then(floorTex => {
-            this.#applyTextureToAll(this.scene, floorTex)
-        })
-    }
-
-
-    #applyTextureToAll (node, texture) {
-        if (node instanceof MeshInstance && node.material) {
-            node.material.texture = texture
-        }
-        for (const child of node.children) {
-            this.#applyTextureToAll(child, texture)
-        }
     }
 
 
@@ -496,10 +484,14 @@ export default class DungeonStage extends Stage {
             names.map(n => loadGlb('assets/props/' + n + '.glb'))
         )
 
+        const modifications = await Promise.all(
+            names.map(n => loadModifications('assets/props/' + n + '.glb.json'))
+        )
+
         const gl = this.meshRenderer.context.gl
 
         const scenes = await Promise.all(
-            glbData.map(data => buildGltfScene({...data, gl}))
+            glbData.map((data, i) => buildGltfScene({...data, gl, modifications: modifications[i]}))
         )
 
         const assets = {}

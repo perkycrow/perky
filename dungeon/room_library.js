@@ -3,6 +3,7 @@ import MeshInstance from '../render/mesh_instance.js'
 import Material3D from '../render/material_3d.js'
 import {loadGlb, buildGltfScene} from '../render/loaders/gltf_loader.js'
 import {loadImage} from '../application/loaders.js'
+import {loadModifications} from '../io/glb_modifications.js'
 
 
 const ROOM_NAMES = [
@@ -31,11 +32,14 @@ export default class RoomLibrary {
 
         const promises = ROOM_NAMES.map(async (name) => {
             const data = await loadGlb(basePath + name + '.glb')
-            const {meshes, materials} = await buildGltfScene({...data, gl})
+            const modifications = await loadModifications(basePath + name + '.glb.json')
+            const {meshes, materials} = await buildGltfScene({...data, gl, modifications})
 
-            for (const mat of materials) {
-                if (mat.texture) {
-                    mat.texture = sharedColormap
+            if (!modifications) {
+                for (const mat of materials) {
+                    if (mat.texture) {
+                        mat.texture = sharedColormap
+                    }
                 }
             }
 
