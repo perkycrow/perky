@@ -29,17 +29,32 @@ const int KERNEL_SIZE = 16;
 const float PI = 3.14159265;
 
 
-float hash(vec2 p) {
-    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
-}
-
-
 vec3 reconstructViewPosition(vec2 uv, float depth) {
     vec4 ndc = vec4(uv * 2.0 - 1.0, depth * 2.0 - 1.0, 1.0);
     vec4 world = uInverseViewProjection * ndc;
     vec3 worldPos = world.xyz / world.w;
     return (uView * vec4(worldPos, 1.0)).xyz;
 }
+
+
+const vec3 KERNEL[16] = vec3[16](
+    vec3(-0.135, 0.179, 0.086),
+    vec3(0.364, -0.212, 0.153),
+    vec3(-0.287, -0.341, 0.218),
+    vec3(0.093, 0.452, 0.297),
+    vec3(-0.489, 0.137, 0.374),
+    vec3(0.278, -0.506, 0.441),
+    vec3(-0.162, -0.093, 0.038),
+    vec3(0.541, 0.319, 0.527),
+    vec3(-0.412, -0.458, 0.589),
+    vec3(0.163, 0.617, 0.643),
+    vec3(-0.623, -0.189, 0.702),
+    vec3(0.472, -0.583, 0.756),
+    vec3(-0.071, 0.294, 0.145),
+    vec3(0.689, 0.087, 0.812),
+    vec3(-0.537, 0.524, 0.869),
+    vec3(0.351, -0.742, 0.923)
+);
 
 
 void main() {
@@ -53,38 +68,18 @@ void main() {
     vec3 normal = normalize(texture(uGNormal, vTexCoord).rgb * 2.0 - 1.0);
     vec3 viewNormal = normalize(mat3(uView) * normal);
 
-    vec2 noiseUV = gl_FragCoord.xy;
-    float angle = hash(noiseUV) * 2.0 * PI;
+    float angle = fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715)) * 52.9829189) * 2.0 * PI;
     float ca = cos(angle);
     float sa = sin(angle);
-    mat3 tbn = mat3(
-        ca, sa, 0.0,
-        -sa, ca, 0.0,
-        0.0, 0.0, 1.0
-    );
 
-    vec3 tangent = normalize(tbn[0] - viewNormal * dot(tbn[0], viewNormal));
+    vec3 tangent = normalize(vec3(ca, sa, 0.0) - viewNormal * dot(vec3(ca, sa, 0.0), viewNormal));
     vec3 bitangent = cross(viewNormal, tangent);
     mat3 kernelBasis = mat3(tangent, bitangent, viewNormal);
 
     float occlusion = 0.0;
 
     for (int i = 0; i < KERNEL_SIZE; i++) {
-        float fi = float(i);
-        float r1 = hash(noiseUV + vec2(fi * 7.23, fi * 3.17));
-        float r2 = hash(noiseUV + vec2(fi * 13.37, fi * 5.91));
-        float r3 = hash(noiseUV + vec2(fi * 1.69, fi * 11.43));
-
-        vec3 sampleDir = vec3(
-            r1 * 2.0 - 1.0,
-            r2 * 2.0 - 1.0,
-            r3
-        );
-        sampleDir = normalize(sampleDir);
-
-        float scale = (fi + 1.0) / float(KERNEL_SIZE);
-        scale = 0.1 + 0.9 * scale * scale;
-        sampleDir *= scale;
+        vec3 sampleDir = KERNEL[i];
 
         vec3 samplePos = viewPos + kernelBasis * sampleDir * uRadius;
 
