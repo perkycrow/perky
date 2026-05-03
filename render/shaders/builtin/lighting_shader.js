@@ -101,6 +101,13 @@ float calcCubeShadowSample (mediump samplerCube smap, vec3 lightPos, float far, 
     vec3 biasedPos = worldPos + normal * normalBias;
     vec3 biasedFrag = biasedPos - lightPos;
 
+    vec3 absDir = abs(normalize(biasedFrag));
+    float maxComp = max(absDir.x, max(absDir.y, absDir.z));
+    float baseTexelSize = far / (512.0 * maxComp);
+    vec3 side = normalize(cross(biasedFrag, vec3(0.0, 1.0, 0.0)));
+    if (length(side) < 0.01) side = normalize(cross(biasedFrag, vec3(1.0, 0.0, 0.0)));
+    vec3 up = normalize(cross(biasedFrag, side));
+
     if (uShadowSoftness < 0.01) {
         float storedDist = texture(smap, biasedFrag).r * far;
         float diff = currentDist - storedDist;
@@ -109,22 +116,55 @@ float calcCubeShadowSample (mediump samplerCube smap, vec3 lightPos, float far, 
         return mix(1.0, 1.0 - inShadow * 0.85, fade);
     }
 
-    vec3 absDir = abs(normalize(biasedFrag));
-    float maxComp = max(absDir.x, max(absDir.y, absDir.z));
-    float texelSize = far / (512.0 * maxComp) * uShadowSoftness;
-    vec3 side = normalize(cross(biasedFrag, vec3(0.0, 1.0, 0.0)));
-    if (length(side) < 0.01) side = normalize(cross(biasedFrag, vec3(1.0, 0.0, 0.0)));
-    vec3 up = normalize(cross(biasedFrag, side));
-    float shadow = 0.0;
+    float searchSize = baseTexelSize * 4.0;
+    float blockerSum = 0.0;
+    float blockerCount = 0.0;
     for (int x = -1; x <= 1; x++) {
         for (int y = -1; y <= 1; y++) {
-            vec3 offset = (side * float(x) + up * float(y)) * texelSize;
+            vec3 offset = (side * float(x) + up * float(y)) * searchSize;
             float storedDist = texture(smap, biasedFrag + offset).r * far;
-            float diff = currentDist - storedDist;
-            shadow += smoothstep(0.02, 0.4, diff);
+            if (storedDist < currentDist - 0.02) {
+                blockerSum += storedDist;
+                blockerCount += 1.0;
+            }
         }
     }
-    shadow /= 9.0;
+
+    if (blockerCount < 0.5) return 1.0;
+
+    float avgBlockerDist = blockerSum / blockerCount;
+    float penumbra = (currentDist - avgBlockerDist) / avgBlockerDist;
+    float filterSize = baseTexelSize * clamp(penumbra * uShadowSoftness * 8.0, 0.5, 5.0);
+
+    float softEdge = 0.1 + penumbra * 0.6;
+    float angle = fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715)) * 52.9829189) * 6.2832;
+    float ca = cos(angle);
+    float sa = sin(angle);
+    vec3 rotSide = side * ca + up * sa;
+    vec3 rotUp = up * ca - side * sa;
+    float shadow = 0.0;
+    const int PCSS_SAMPLES = 12;
+    vec2 poissonDisc[12];
+    poissonDisc[0] = vec2(-0.326, -0.406);
+    poissonDisc[1] = vec2(-0.840, -0.074);
+    poissonDisc[2] = vec2(-0.696, 0.457);
+    poissonDisc[3] = vec2(-0.203, 0.621);
+    poissonDisc[4] = vec2(0.962, -0.195);
+    poissonDisc[5] = vec2(0.473, -0.480);
+    poissonDisc[6] = vec2(0.519, 0.767);
+    poissonDisc[7] = vec2(-0.094, -0.929);
+    poissonDisc[8] = vec2(0.175, 0.210);
+    poissonDisc[9] = vec2(-0.504, -0.783);
+    poissonDisc[10] = vec2(0.782, 0.283);
+    poissonDisc[11] = vec2(-0.074, -0.062);
+    for (int i = 0; i < PCSS_SAMPLES; i++) {
+        vec2 p = poissonDisc[i];
+        vec3 offset = (rotSide * p.x + rotUp * p.y) * filterSize;
+        float storedDist = texture(smap, biasedFrag + offset).r * far;
+        float diff = currentDist - storedDist;
+        shadow += smoothstep(0.02, softEdge, diff);
+    }
+    shadow /= float(PCSS_SAMPLES);
     float fade = smoothstep(0.05, 0.4, NdotL);
     return mix(1.0, 1.0 - shadow * 0.85, fade);
 }
