@@ -11,11 +11,13 @@ const opacityInput = document.getElementById('opacity')
 const flowInput = document.getElementById('flow')
 const smoothingInput = document.getElementById('smoothing')
 const clearBtn = document.getElementById('clear')
+const addLayerBtn = document.getElementById('add-layer')
+const removeLayerBtn = document.getElementById('remove-layer')
+const layerListEl = document.getElementById('layer-list')
 
 
 function resize () {
     engine.resize(window.innerWidth, window.innerHeight)
-    engine.clear()
 }
 
 
@@ -39,8 +41,52 @@ function updateBrush () {
 }
 
 
+function renderLayers () {
+    layerListEl.innerHTML = ''
+    for (let i = engine.layerCount - 1; i >= 0; i--) {
+        const info = engine.getLayerInfo(i)
+        const item = document.createElement('div')
+        item.className = 'layer-item' + (i === engine.activeLayerIndex ? ' active' : '')
+
+        const checkbox = document.createElement('input')
+        checkbox.type = 'checkbox'
+        checkbox.checked = info.visible
+        checkbox.addEventListener('change', () => {
+            engine.setLayerVisible(i, checkbox.checked)
+        })
+
+        const name = document.createElement('span')
+        name.className = 'layer-name'
+        name.textContent = info.name
+
+        const opSlider = document.createElement('input')
+        opSlider.type = 'range'
+        opSlider.min = '0'
+        opSlider.max = '100'
+        opSlider.value = String(Math.round(info.opacity * 100))
+        opSlider.addEventListener('input', () => {
+            engine.setLayerOpacity(i, Number(opSlider.value) / 100)
+        })
+
+        item.addEventListener('click', (e) => {
+            if (e.target === checkbox || e.target === opSlider) {
+                return
+            }
+            engine.activeLayerIndex = i
+            renderLayers()
+        })
+
+        item.appendChild(checkbox)
+        item.appendChild(name)
+        item.appendChild(opSlider)
+        layerListEl.appendChild(item)
+    }
+}
+
+
 resize()
 updateBrush()
+renderLayers()
 
 window.addEventListener('resize', resize)
 colorInput.addEventListener('input', updateBrush)
@@ -50,6 +96,17 @@ opacityInput.addEventListener('input', updateBrush)
 flowInput.addEventListener('input', updateBrush)
 smoothingInput.addEventListener('input', updateBrush)
 clearBtn.addEventListener('click', () => engine.clear())
+
+addLayerBtn.addEventListener('click', () => {
+    const index = engine.addLayer()
+    engine.activeLayerIndex = index
+    renderLayers()
+})
+
+removeLayerBtn.addEventListener('click', () => {
+    engine.removeLayer(engine.activeLayerIndex)
+    renderLayers()
+})
 
 
 let drawing = false

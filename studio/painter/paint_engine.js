@@ -1,7 +1,7 @@
 import ShaderProgram from '../../render/shaders/shader_program.js'
 
 
-const VERTEX_SOURCE = `#version 300 es
+const STAMP_VERTEX = `#version 300 es
 in vec2 a_position;
 uniform vec2 u_center;
 uniform float u_size;
@@ -17,7 +17,7 @@ void main() {
 }`
 
 
-const FRAGMENT_SOURCE = `#version 300 es
+const STAMP_FRAGMENT = `#version 300 es
 precision mediump float;
 in vec2 v_uv;
 uniform vec4 u_color;
@@ -35,6 +35,30 @@ void main() {
 }`
 
 
+const COMPOSITE_VERTEX = `#version 300 es
+in vec2 a_position;
+out vec2 v_uv;
+
+void main() {
+    v_uv = a_position;
+    vec2 clip = a_position * 2.0 - 1.0;
+    gl_Position = vec4(clip, 0.0, 1.0);
+}`
+
+
+const COMPOSITE_FRAGMENT = `#version 300 es
+precision mediump float;
+in vec2 v_uv;
+uniform sampler2D u_texture;
+uniform float u_opacity;
+out vec4 fragColor;
+
+void main() {
+    vec4 color = texture(u_texture, v_uv);
+    fragColor = color * u_opacity;
+}`
+
+
 const DEFAULT_BRUSH = {
     size: 20,
     hardness: 0.8,
@@ -49,27 +73,32 @@ const DEFAULT_BRUSH = {
 export default class PaintEngine {
 
     #gl
-    #shader
+    #stampShader
+    #compositeShader
     #vao
     #canvas
     #lastPoint
     #smoothedPoint
     #remainder
     #brush
+    #layers
+    #activeLayerIndex
 
     constructor (canvas) {
         this.#canvas = canvas
         this.#gl = canvas.getContext('webgl2', {
-            preserveDrawingBuffer: true,
             premultipliedAlpha: true
         })
         this.#lastPoint = null
         this.#smoothedPoint = null
         this.#remainder = 0
         this.#brush = {...DEFAULT_BRUSH}
-        this.#initShader()
+        this.#layers = []
+        this.#activeLayerIndex = 0
+        this.#initShaders()
         this.#initGeometry()
         this.#setupBlending()
+        this.addLayer()
     }
 
 
@@ -83,8 +112,107 @@ export default class PaintEngine {
     }
 
 
+    get layerCount () {
+        return this.#layers.length
+    }
+
+
+    get activeLayerIndex () {
+        return this.#activeLayerIndex
+    }
+
+
+    set activeLayerIndex (index) {
+        if (index >= 0 && index < this.#layers.length) {
+            this.#activeLayerIndex = index
+        }
+    }
+
+
     setBrush (params = {}) {
         Object.assign(this.#brush, params)
+    }
+
+
+    getLayerInfo (index) {
+        const layer = this.#layers[index]
+        if (!layer) {
+            return null
+        }
+        return {name: layer.name, opacity: layer.opacity, visible: layer.visible}
+    }
+
+
+    addLayer () {
+        const gl = this.#gl
+        const layer = createLayerFBO(gl, this.#canvas.width, this.#canvas.height)
+        layer.name = `Layer ${this.#layers.length + 1}`
+        layer.opacity = 1.0
+        layer.visible = true
+        this.#layers.push(layer)
+        this.composite()
+        return this.#layers.length - 1
+    }
+
+
+    removeLayer (index) {
+        if (this.#layers.length <= 1) {
+            return
+        }
+        const layer = this.#layers[index]
+        if (!layer) {
+            return
+        }
+        destroyLayerFBO(this.#gl, layer)
+        this.#layers.splice(index, 1)
+        if (this.#activeLayerIndex >= this.#layers.length) {
+            this.#activeLayerIndex = this.#layers.length - 1
+        }
+        this.composite()
+    }
+
+
+    moveLayer (fromIndex, toIndex) {
+        if (fromIndex < 0 || fromIndex >= this.#layers.length) {
+            return
+        }
+        if (toIndex < 0 || toIndex >= this.#layers.length) {
+            return
+        }
+        const layer = this.#layers.splice(fromIndex, 1)[0]
+        this.#layers.splice(toIndex, 0, layer)
+        if (this.#activeLayerIndex === fromIndex) {
+            this.#activeLayerIndex = toIndex
+        }
+        this.composite()
+    }
+
+
+    setLayerOpacity (index, opacity) {
+        const layer = this.#layers[index]
+        if (!layer) {
+            return
+        }
+        layer.opacity = opacity
+        this.composite()
+    }
+
+
+    setLayerVisible (index, visible) {
+        const layer = this.#layers[index]
+        if (!layer) {
+            return
+        }
+        layer.visible = visible
+        this.composite()
+    }
+
+
+    setLayerName (index, name) {
+        const layer = this.#layers[index]
+        if (layer) {
+            layer.name = name
+        }
     }
 
 
@@ -93,6 +221,7 @@ export default class PaintEngine {
         this.#smoothedPoint = {x, y, pressure}
         this.#remainder = 0
         this.#stamp(x, y, pressure)
+        this.composite()
     }
 
 
@@ -113,6 +242,10 @@ export default class PaintEngine {
 
         this.#remainder = result.remainder
         this.#lastPoint = smoothed
+
+        if (result.stamps.length > 0) {
+            this.composite()
+        }
     }
 
 
@@ -123,35 +256,88 @@ export default class PaintEngine {
     }
 
 
-    clear (r = 1, g = 1, b = 1) {
+    clear () {
         const gl = this.#gl
-        gl.clearColor(r, g, b, 1)
+        const layer = this.#layers[this.#activeLayerIndex]
+        if (!layer) {
+            return
+        }
+        gl.bindFramebuffer(gl.FRAMEBUFFER, layer.fbo)
+        gl.clearColor(0, 0, 0, 0)
         gl.clear(gl.COLOR_BUFFER_BIT)
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+        this.composite()
+    }
+
+
+    composite () {
+        const gl = this.#gl
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+        gl.clearColor(1, 1, 1, 1)
+        gl.clear(gl.COLOR_BUFFER_BIT)
+
+        this.#compositeShader.use()
+        gl.bindVertexArray(this.#vao)
+
+        for (const layer of this.#layers) {
+            if (!layer.visible) {
+                continue
+            }
+            gl.activeTexture(gl.TEXTURE0)
+            gl.bindTexture(gl.TEXTURE_2D, layer.texture)
+            this.#compositeShader
+                .setUniform1i('u_texture', 0)
+                .setUniform1f('u_opacity', layer.opacity)
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
+        }
+
+        gl.bindVertexArray(null)
     }
 
 
     resize (width, height) {
+        const gl = this.#gl
         const dpr = globalThis.devicePixelRatio || 1
         this.#canvas.width = Math.round(width * dpr)
         this.#canvas.height = Math.round(height * dpr)
         this.#canvas.style.width = width + 'px'
         this.#canvas.style.height = height + 'px'
-        this.#gl.viewport(0, 0, this.#canvas.width, this.#canvas.height)
+        gl.viewport(0, 0, this.#canvas.width, this.#canvas.height)
+
+        for (const layer of this.#layers) {
+            resizeLayerFBO(gl, layer, this.#canvas.width, this.#canvas.height)
+        }
+
+        this.composite()
     }
 
 
     dispose () {
-        this.#shader.dispose()
-        this.#gl.deleteVertexArray(this.#vao)
+        const gl = this.#gl
+        for (const layer of this.#layers) {
+            destroyLayerFBO(gl, layer)
+        }
+        this.#layers = []
+        this.#stampShader.dispose()
+        this.#compositeShader.dispose()
+        gl.deleteVertexArray(this.#vao)
         this.#gl = null
     }
 
 
     #stamp (x, y, pressure) {
         const gl = this.#gl
+        const layer = this.#layers[this.#activeLayerIndex]
+        if (!layer) {
+            return
+        }
+
         const dpr = globalThis.devicePixelRatio || 1
 
-        this.#shader.use()
+        gl.bindFramebuffer(gl.FRAMEBUFFER, layer.fbo)
+
+        this.#stampShader.use()
             .setUniform2f('u_center', x * dpr, y * dpr)
             .setUniform1f('u_size', this.#brush.size * dpr)
             .setUniform2f('u_resolution', this.#canvas.width, this.#canvas.height)
@@ -163,12 +349,13 @@ export default class PaintEngine {
         gl.bindVertexArray(this.#vao)
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
         gl.bindVertexArray(null)
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null)
     }
 
 
-    #initShader () {
-        this.#shader = new ShaderProgram(this.#gl, VERTEX_SOURCE, FRAGMENT_SOURCE)
-        this.#shader
+    #initShaders () {
+        this.#stampShader = new ShaderProgram(this.#gl, STAMP_VERTEX, STAMP_FRAGMENT)
+        this.#stampShader
             .registerAttribute('a_position')
             .registerUniform('u_center')
             .registerUniform('u_size')
@@ -177,6 +364,12 @@ export default class PaintEngine {
             .registerUniform('u_hardness')
             .registerUniform('u_flow')
             .registerUniform('u_pressure')
+
+        this.#compositeShader = new ShaderProgram(this.#gl, COMPOSITE_VERTEX, COMPOSITE_FRAGMENT)
+        this.#compositeShader
+            .registerAttribute('a_position')
+            .registerUniform('u_texture')
+            .registerUniform('u_opacity')
     }
 
 
@@ -191,7 +384,7 @@ export default class PaintEngine {
         gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
         gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW)
 
-        const posLoc = this.#shader.attributes.a_position
+        const posLoc = this.#stampShader.attributes.a_position
         gl.enableVertexAttribArray(posLoc)
         gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0)
 
@@ -205,6 +398,44 @@ export default class PaintEngine {
         gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
     }
 
+}
+
+
+function createLayerFBO (gl, width, height) {
+    const texture = gl.createTexture()
+    gl.bindTexture(gl.TEXTURE_2D, texture)
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+
+    const fbo = gl.createFramebuffer()
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo)
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0)
+
+    gl.clearColor(0, 0, 0, 0)
+    gl.clear(gl.COLOR_BUFFER_BIT)
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+
+    return {fbo, texture}
+}
+
+
+function resizeLayerFBO (gl, layer, width, height) {
+    gl.bindTexture(gl.TEXTURE_2D, layer.texture)
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null)
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, layer.fbo)
+    gl.clearColor(0, 0, 0, 0)
+    gl.clear(gl.COLOR_BUFFER_BIT)
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+}
+
+
+function destroyLayerFBO (gl, layer) {
+    gl.deleteFramebuffer(layer.fbo)
+    gl.deleteTexture(layer.texture)
 }
 
 
