@@ -58,6 +58,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     #activeCubeShadows = []
     #maxCubeShadows = DEFAULT_MAX_CUBE_SHADOWS
     #lightDirection = [0.5, 1.0, 0.3]
+    #directionalIntensity = 1.0
     #ambientSky = [0.3, 0.3, 0.3]
     #ambientGround = [0.3, 0.3, 0.3]
     #fogNear = 20
@@ -145,6 +146,15 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
 
     set lightDirection (dir) {
         this.#lightDirection = dir
+    }
+
+
+    get directionalIntensity () {
+        return this.#directionalIntensity
+    }
+
+    set directionalIntensity (v) {
+        this.#directionalIntensity = v
     }
 
 
@@ -866,6 +876,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         )
 
         gl.uniform3fv(program.uniforms.uLightDirection, this.#lightDirection)
+        gl.uniform1f(program.uniforms.uDirectionalIntensity, this.#directionalIntensity)
         gl.uniform3fv(program.uniforms.uAmbientSky, this.#ambientSky)
         gl.uniform3fv(program.uniforms.uAmbientGround, this.#ambientGround)
         gl.uniform1f(program.uniforms.uFogNear, this.#fogNear)

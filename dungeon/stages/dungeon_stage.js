@@ -50,8 +50,9 @@ export default class DungeonStage extends Stage {
         })
 
         this.meshRenderer.lightDirection = [0.3, 0.9, 0.2]
-        this.meshRenderer.ambientSky = [0.12, 0.12, 0.15]
-        this.meshRenderer.ambientGround = [0.05, 0.04, 0.04]
+        this.meshRenderer.directionalIntensity = 0.0
+        this.meshRenderer.ambientSky = [0.02, 0.02, 0.025]
+        this.meshRenderer.ambientGround = [0.02, 0.02, 0.025]
         this.meshRenderer.fogNear = 8
         this.meshRenderer.fogFar = 30
         this.meshRenderer.fogColor = [0.01, 0.01, 0.02]
@@ -183,7 +184,7 @@ export default class DungeonStage extends Stage {
             y: 2.7,
             z: 0,
             color: [1.0, 0.85, 0.6],
-            intensity: 3.5,
+            intensity: 3.0,
             radius: 12
         }))
 
@@ -198,7 +199,7 @@ export default class DungeonStage extends Stage {
             y: 1.5,
             z: -0.5,
             color: [1.0, 0.8, 0.4],
-            intensity: 2.0,
+            intensity: 3.0,
             radius: 6
         })
         this.wallLightIndex = lights.length
@@ -228,7 +229,7 @@ export default class DungeonStage extends Stage {
             y: 2.7,
             z: 0,
             color: [1.0, 0.85, 0.6],
-            intensity: 3.5,
+            intensity: 3.0,
             radius: 10
         }))
 
@@ -254,7 +255,7 @@ export default class DungeonStage extends Stage {
             y: 2.7,
             z: -4,
             color: [0.6, 0.8, 1.0],
-            intensity: 3.5,
+            intensity: 3.0,
             radius: 10
         }))
 
@@ -312,7 +313,7 @@ export default class DungeonStage extends Stage {
             y: 2.7,
             z: 20,
             color: [0.8, 0.9, 1.0],
-            intensity: 4.0,
+            intensity: 2.5,
             radius: 14
         }))
 
@@ -342,7 +343,7 @@ export default class DungeonStage extends Stage {
             y: 2.7,
             z: 20,
             color: [1.0, 0.5, 0.2],
-            intensity: 3.0,
+            intensity: 2.5,
             radius: 10
         }))
 
@@ -353,7 +354,7 @@ export default class DungeonStage extends Stage {
             y: 2.7,
             z: 20,
             color: [0.4, 1.0, 0.5],
-            intensity: 3.0,
+            intensity: 2.5,
             radius: 10
         }))
 

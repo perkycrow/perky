@@ -24,6 +24,7 @@ uniform mat4 uLightMatrix;
 uniform vec3 uCameraPosition;
 
 uniform vec3 uLightDirection;
+uniform float uDirectionalIntensity;
 uniform vec3 uAmbientSky;
 uniform vec3 uAmbientGround;
 
@@ -221,8 +222,8 @@ void main() {
         float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), 4.0) * (1.0 - roughness);
 
         vec3 dirLight = normalize(uLightDirection);
-        float diffuse = max(dot(normal, dirLight), 0.0);
-        float shadow = calcShadow(worldPos, normal, dirLight);
+        float diffuse = max(dot(normal, dirLight), 0.0) * uDirectionalIntensity;
+        float shadow = diffuse > 0.0 ? calcShadow(worldPos, normal, dirLight) : 1.0;
         float hemiFactor = normal.y * 0.5 + 0.5;
         vec3 ambient = mix(uAmbientGround, uAmbientSky, hemiFactor);
         float occlusion = 0.5 + 0.5 * hemiFactor;
@@ -232,7 +233,7 @@ void main() {
         if (specular > 0.0 && diffuse > 0.0) {
             vec3 halfDir = normalize(dirLight + viewDir);
             float specAngle = max(dot(normal, halfDir), 0.0);
-            lit += vec3(specular * specNorm * pow(specAngle, shininess)) * shadow;
+            lit += vec3(specular * specNorm * pow(specAngle, shininess)) * shadow * uDirectionalIntensity;
         }
 
         for (int i = 0; i < uNumLights; i++) {
@@ -294,6 +295,7 @@ export const LIGHTING_SHADER_DEF = {
         'uLightMatrix',
         'uCameraPosition',
         'uLightDirection',
+        'uDirectionalIntensity',
         'uAmbientSky',
         'uAmbientGround',
         'uFogNear',
