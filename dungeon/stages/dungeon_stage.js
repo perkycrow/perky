@@ -77,9 +77,11 @@ export default class DungeonStage extends Stage {
         this.meshRenderer.saturation = 0.9
         this.meshRenderer.toonLevels = 10
         this.meshRenderer.outlineEnabled = true
+        this.meshRenderer.outlineColor = [0.0, 0.0, 0.0]
         this.meshRenderer.rimIntensity = 0.0
         this.meshRenderer.rimColor = [0.6, 0.65, 0.8]
         this.meshRenderer.paperIntensity = 0.15
+        this.meshRenderer.colorLevels = 0
 
         this.scene = new Object3D()
         layer.setContent(this.scene)

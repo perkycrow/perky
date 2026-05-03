@@ -28,6 +28,7 @@ uniform float uDirectionalIntensity;
 uniform vec3 uAmbientSky;
 uniform vec3 uAmbientGround;
 uniform float uToonLevels;
+uniform float uToonBlend;
 uniform float uRimPower;
 uniform float uRimIntensity;
 uniform vec3 uRimColor;
@@ -194,7 +195,7 @@ float calcPointShadow (vec3 lightPos, vec3 worldPos, vec3 normal) {
 float toonify (float value) {
     if (uToonLevels < 1.5) return value;
     float quantized = floor(value * uToonLevels) / uToonLevels;
-    return mix(value, quantized, 0.25);
+    return mix(value, quantized, uToonBlend);
 }
 
 
@@ -317,6 +318,7 @@ export const LIGHTING_SHADER_DEF = {
         'uLightDirection',
         'uDirectionalIntensity',
         'uToonLevels',
+        'uToonBlend',
         'uRimPower',
         'uRimIntensity',
         'uRimColor',

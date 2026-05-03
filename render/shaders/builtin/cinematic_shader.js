@@ -26,6 +26,7 @@ uniform float uContrast;
 uniform float uGrainIntensity;
 uniform sampler2D uPaperTexture;
 uniform float uPaperIntensity;
+uniform float uColorLevels;
 
 in vec2 vTexCoord;
 out vec4 fragColor;
@@ -79,7 +80,8 @@ export const CINEMATIC_SHADER_DEF = {
         'uContrast',
         'uGrainIntensity',
         'uPaperTexture',
-        'uPaperIntensity'
+        'uPaperIntensity',
+        'uColorLevels'
     ],
     attributes: ['aPosition', 'aTexCoord']
 }

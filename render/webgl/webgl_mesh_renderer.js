@@ -68,6 +68,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     #volumetricFogProgram = null
     #volumetricFogEnabled = false
     #toonLevels = 0
+    #toonBlend = 0.25
     #rimPower = 3.0
     #rimIntensity = 0.0
     #rimColor = [1.0, 1.0, 1.0]
@@ -112,6 +113,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     #brightness = 1.0
     #contrast = 1.0
     #grainIntensity = 0.0
+    #colorLevels = 0
     #paperIntensity = 0.0
     #paperTexture = null
     #fogBlurProgram = null
@@ -327,6 +329,15 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     }
 
 
+    get toonBlend () {
+        return this.#toonBlend
+    }
+
+    set toonBlend (v) {
+        this.#toonBlend = v
+    }
+
+
     get toonLevels () {
         return this.#toonLevels
     }
@@ -465,6 +476,15 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     set contrast (v) {
         this.#contrast = v
     }
+
+    get colorLevels () {
+        return this.#colorLevels
+    }
+
+    set colorLevels (v) {
+        this.#colorLevels = v
+    }
+
 
     get paperIntensity () {
         return this.#paperIntensity
@@ -969,6 +989,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         gl.uniform3fv(program.uniforms.uLightDirection, this.#lightDirection)
         gl.uniform1f(program.uniforms.uDirectionalIntensity, this.#directionalIntensity)
         gl.uniform1f(program.uniforms.uToonLevels, this.#toonLevels)
+        gl.uniform1f(program.uniforms.uToonBlend, this.#toonBlend)
         gl.uniform1f(program.uniforms.uRimPower, this.#rimPower)
         gl.uniform1f(program.uniforms.uRimIntensity, this.#rimIntensity)
         gl.uniform3fv(program.uniforms.uRimColor, this.#rimColor)
@@ -1151,6 +1172,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
         gl.uniform1f(program.uniforms.uContrast, this.#contrast)
         gl.uniform1f(program.uniforms.uGrainIntensity, this.#grainIntensity)
         gl.uniform1f(program.uniforms.uPaperIntensity, this.#paperIntensity)
+        gl.uniform1f(program.uniforms.uColorLevels, this.#colorLevels)
         gl.activeTexture(gl.TEXTURE1)
         gl.bindTexture(gl.TEXTURE_2D, this.#paperTexture)
         gl.uniform1i(program.uniforms.uPaperTexture, 1)
