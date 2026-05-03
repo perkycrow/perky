@@ -259,7 +259,7 @@ void main() {
         vec3 dirLight = normalize(uLightDirection);
         float diffuse = max(dot(normal, dirLight), 0.0) * uDirectionalIntensity;
         float shadow = diffuse > 0.0 ? calcShadow(worldPos, normal, dirLight) : 1.0;
-        float hemiFactor = normal.y * 0.5 + 0.5;
+        float hemiFactor = doubleSided > 0.5 ? 0.0 : normal.y * 0.5 + 0.5;
         vec3 ambient = mix(uAmbientGround, uAmbientSky, hemiFactor);
         float occlusion = 0.5 + 0.5 * hemiFactor;
         float ssao = uHasSSAO > 0.5 ? texture(uSSAO, vTexCoord).r : 1.0;

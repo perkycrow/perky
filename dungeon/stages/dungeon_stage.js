@@ -99,11 +99,11 @@ export default class DungeonStage extends Stage {
 
         loadImage('assets/textures/pig.png').then(pigImage => {
             const testSprite = new Sprite3D({
-                x: -3,
+                x: -1.6,
                 y: 0,
-                z: 0,
-                width: 1.5,
-                height: 1.5,
+                z: 20.3,
+                width: 2.5,
+                height: 2.5,
                 texture: pigImage,
                 material: new Material3D({
                     texture: pigImage,

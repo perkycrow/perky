@@ -13,9 +13,20 @@ out float vDepth;
 out vec3 vNormal;
 
 void main() {
-    vec3 right = vec3(uView[0][0], uView[1][0], uView[2][0]);
-    vec3 up    = vec3(uView[0][1], uView[1][1], uView[2][1]);
-    vec3 forward = vec3(uView[0][2], uView[1][2], uView[2][2]);
+    vec3 camRight = vec3(uView[0][0], uView[1][0], uView[2][0]);
+    vec3 camFwd = vec3(uView[0][2], uView[1][2], uView[2][2]);
+    vec3 camPos = vec3(
+        -(uView[0][0]*uView[3][0] + uView[0][1]*uView[3][1] + uView[0][2]*uView[3][2]),
+        -(uView[1][0]*uView[3][0] + uView[1][1]*uView[3][1] + uView[1][2]*uView[3][2]),
+        -(uView[2][0]*uView[3][0] + uView[2][1]*uView[3][1] + uView[2][2]*uView[3][2])
+    );
+    float dist = length(camPos - uCenter);
+    float proximity = 1.0 - smoothstep(1.0, 4.0, dist);
+    vec3 right = normalize(vec3(camRight.x, 0.0, camRight.z));
+    vec3 flatFwd = normalize(vec3(camFwd.x, 0.0, camFwd.z));
+    float tilt = clamp(-camFwd.y, -0.15, 0.15) * proximity;
+    vec3 up = normalize(vec3(0.0, 1.0, 0.0) + flatFwd * tilt);
+    vec3 forward = normalize(cross(right, up));
 
     vec2 offset = aPosition.xy - uAnchor;
     vec3 worldPos = uCenter + right * offset.x * uSize.x + up * offset.y * uSize.y;
