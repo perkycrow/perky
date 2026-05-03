@@ -1238,7 +1238,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
             gl.deleteTexture(this.#fogBlurTexture)
         }
 
-        this.#fogTexture = createScreenTexture(gl, width, height)
+        this.#fogTexture = createHdrTexture(gl, width, height)
         this.#fogFBO = gl.createFramebuffer()
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.#fogFBO)
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#fogTexture, 0)

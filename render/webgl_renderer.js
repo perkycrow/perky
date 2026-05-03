@@ -87,6 +87,7 @@ export default class WebGLRenderer extends BaseRenderer {
 
         const gl = this.gl
 
+        this.hasFloatColorBuffer = gl.getExtension('EXT_color_buffer_float') !== null
         gl.enable(gl.BLEND)
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
@@ -141,7 +142,8 @@ export default class WebGLRenderer extends BaseRenderer {
             primitiveProgram: this.primitiveProgram,
             textureManager: this.textureManager,
             shaderEffectRegistry: this.#shaderEffectRegistry,
-            shaderRegistry: this.#shaderRegistry
+            shaderRegistry: this.#shaderRegistry,
+            hasFloatColorBuffer: this.hasFloatColorBuffer
         }
 
         renderer.init(context)

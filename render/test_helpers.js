@@ -60,6 +60,7 @@ export function createMockGL () {
         renderbufferStorageMultisample: () => {},
         deleteRenderbuffer: () => {},
         blitFramebuffer: () => {},
+        getExtension: () => null,
         getParameter: (param) => {
 
             if (param === 0x8d57) {
@@ -171,6 +172,7 @@ export function createMockGLWithSpies () {
         renderbufferStorageMultisample: vi.fn(),
         deleteRenderbuffer: vi.fn(),
         blitFramebuffer: vi.fn(),
+        getExtension: vi.fn(() => null),
         getParameter: vi.fn((param) => {
             if (param === 0x8d57) {
                 return 4
