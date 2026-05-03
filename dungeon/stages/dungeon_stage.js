@@ -76,7 +76,7 @@ export default class DungeonStage extends Stage {
         this.meshRenderer.temperature = -0.3
         this.meshRenderer.saturation = 0.9
         this.meshRenderer.toonLevels = 10
-        this.meshRenderer.toonBlend = 0.8
+        this.meshRenderer.toonBlend = 0.3
         this.meshRenderer.lightBlobiness = 0.015
         this.meshRenderer.outlineEnabled = true
         this.meshRenderer.outlineColor = [0.0, 0.0, 0.0]
@@ -171,6 +171,20 @@ export default class DungeonStage extends Stage {
 
         this.meshRenderer.lights = lights
         this.scene.markDirty()
+
+        loadImage('assets/props/floor_painted.jpg').then(floorTex => {
+            this.#applyTextureToAll(this.scene, floorTex)
+        })
+    }
+
+
+    #applyTextureToAll (node, texture) {
+        if (node instanceof MeshInstance && node.material) {
+            node.material.texture = texture
+        }
+        for (const child of node.children) {
+            this.#applyTextureToAll(child, texture)
+        }
     }
 
 
