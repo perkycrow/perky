@@ -1,5 +1,4 @@
 import {doc, section, text, code, container, logger} from '../doc/runtime.js'
-import AudioSystem from './audio_system.js'
 
 
 export default doc('AudioSource', {advanced: true}, () => {
