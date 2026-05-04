@@ -227,4 +227,77 @@ describe('PerkyLogger', () => {
         expect(logger.hasAttribute('theme')).toBe(false)
     })
 
+
+    test('log accepts html format', () => {
+        const entry = logger.log('<strong>Bold</strong>', 'info', 'html')
+
+        const message = entry.querySelector('.logger-message')
+        expect(message.innerHTML).toContain('<strong>Bold</strong>')
+    })
+
+
+    test('log accepts element format', () => {
+        const span = document.createElement('span')
+        span.textContent = 'Element content'
+
+        const entry = logger.log(span, 'info', 'element')
+
+        const message = entry.querySelector('.logger-message')
+        expect(message.contains(span)).toBe(true)
+    })
+
+
+    test('log accepts custom timestamp', () => {
+        const customTime = new Date('2024-01-15T10:30:00')
+        const entry = logger.log('Test', 'info', 'text', customTime.getTime())
+
+        const timestamp = entry.querySelector('.logger-timestamp')
+        expect(timestamp.textContent).toBe(customTime.toLocaleTimeString())
+    })
+
+
+    test('entry has copy button', () => {
+        const entry = logger.log('Test message', 'info')
+
+        const copyBtn = entry.querySelector('.logger-copy-btn')
+        expect(copyBtn).not.toBeNull()
+    })
+
+
+    test('controls container exists', () => {
+        const controls = logger.shadowRoot.querySelector('.logger-controls')
+        expect(controls).not.toBeNull()
+    })
+
+
+    test('controls has clear button', () => {
+        const controls = logger.shadowRoot.querySelector('.logger-controls')
+        const buttons = controls.querySelectorAll('.logger-btn')
+
+        expect(buttons.length).toBeGreaterThanOrEqual(1)
+    })
+
+
+    test('controls visibility updates on entry add', () => {
+        const controls = logger.shadowRoot.querySelector('.logger-controls')
+
+        expect(controls.classList.contains('has-entries')).toBe(false)
+
+        logger.log('Test', 'info')
+
+        expect(controls.classList.contains('has-entries')).toBe(true)
+    })
+
+
+    test('controls visibility updates on clear', () => {
+        logger.log('Test', 'info')
+
+        const controls = logger.shadowRoot.querySelector('.logger-controls')
+        expect(controls.classList.contains('has-entries')).toBe(true)
+
+        logger.clear()
+
+        expect(controls.classList.contains('has-entries')).toBe(false)
+    })
+
 })

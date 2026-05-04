@@ -440,15 +440,16 @@ export default class SelectInput extends EditorComponent {
 
     #updateFocusedOption () {
         const optionEls = this.#dropdownEl.querySelectorAll('.select-option')
-        optionEls.forEach((el, i) => {
-            el.classList.toggle('focused', i === this.#focusedIndex)
+        optionEls.forEach((el) => {
+            const idx = parseInt(el.dataset.index, 10)
+            el.classList.toggle('focused', idx === this.#focusedIndex)
         })
     }
 
 
     #scrollToFocused () {
         const optionEls = this.#dropdownEl.querySelectorAll('.select-option')
-        const focusedEl = optionEls[this.#focusedIndex]
+        const focusedEl = Array.from(optionEls).find(el => parseInt(el.dataset.index, 10) === this.#focusedIndex)
         if (focusedEl) {
             focusedEl.scrollIntoView({block: 'nearest'})
         }

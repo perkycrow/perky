@@ -314,6 +314,64 @@ describe('SelectInput', () => {
             expect(button.classList.contains('open')).toBe(false)
         })
 
+
+        test('Space selects focused option when open', () => {
+            select.setOptions(['a', 'b', 'c'])
+            const button = select.shadowRoot.querySelector('.select-button')
+            button.click()
+
+            button.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowDown'}))
+            button.dispatchEvent(new KeyboardEvent('keydown', {key: ' '}))
+
+            expect(select.value).toBe('b')
+            expect(button.classList.contains('open')).toBe(false)
+        })
+
+
+        test('Tab closes dropdown', () => {
+            select.setOptions(['a', 'b'])
+            const button = select.shadowRoot.querySelector('.select-button')
+            button.click()
+
+            button.dispatchEvent(new KeyboardEvent('keydown', {key: 'Tab'}))
+
+            expect(button.classList.contains('open')).toBe(false)
+        })
+
+
+        test('ArrowDown skips separators', () => {
+            select.setOptions([
+                {value: 'a', label: 'A'},
+                {separator: true},
+                {value: 'b', label: 'B'}
+            ])
+            const button = select.shadowRoot.querySelector('.select-button')
+            button.click()
+
+            button.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowDown'}))
+
+            const optionB = select.shadowRoot.querySelectorAll('.select-option')[1]
+            expect(optionB.textContent).toBe('B')
+            expect(optionB.classList.contains('focused')).toBe(true)
+        })
+
+
+        test('ArrowUp skips separators', () => {
+            select.setOptions([
+                {value: 'a', label: 'A'},
+                {separator: true},
+                {value: 'b', label: 'B'}
+            ])
+            select.setValue('b')
+            const button = select.shadowRoot.querySelector('.select-button')
+            button.click()
+
+            button.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowUp'}))
+
+            const options = select.shadowRoot.querySelectorAll('.select-option')
+            expect(options[0].classList.contains('focused')).toBe(true)
+        })
+
     })
 
 
@@ -373,6 +431,26 @@ describe('SelectInput', () => {
 
             const options = select.shadowRoot.querySelectorAll('.select-option')
             expect(options[1].classList.contains('select-action')).toBe(true)
+        })
+
+
+        test('action option selected via keyboard dispatches action event', () => {
+            const actionHandler = vi.fn()
+            select.addEventListener('action', actionHandler)
+
+            select.setOptions([
+                {value: 'a', label: 'A'},
+                {value: 'add', label: 'Add New', action: true}
+            ])
+
+            const button = select.shadowRoot.querySelector('.select-button')
+            button.click()
+
+            button.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowDown'}))
+            button.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter'}))
+
+            expect(actionHandler).toHaveBeenCalled()
+            expect(actionHandler.mock.calls[0][0].detail).toEqual({value: 'add'})
         })
 
     })
