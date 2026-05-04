@@ -46,6 +46,7 @@ export default doc('Material3D', () => {
             logger.log('uvScale:', material.uvScale)
             logger.log('roughness:', material.roughness)
             logger.log('specular:', material.specular)
+            logger.log('filtering:', material.filtering)
         })
 
         action('Custom values', () => {
@@ -110,10 +111,11 @@ export default doc('Material3D', () => {
                 opacity: 1,
                 unlit: false,
                 uvScale: [1, 1],
-                roughness: 0.5,
-                specular: 0.5,
+                roughness: 0.8,
+                specular: 0.04,
                 normalMap: null,
-                normalStrength: 1.0
+                normalStrength: 1.0,
+                filtering: 'linear'
             })
         })
 
