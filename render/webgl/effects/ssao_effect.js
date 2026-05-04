@@ -11,6 +11,8 @@ export default class SsaoEffect {
     #texture = null
     #blurFBO = null
     #blurTexture = null
+    #fboWidth = 0
+    #fboHeight = 0
     #radius = 0.5
     #bias = 0.025
     #intensity = 1.5
@@ -116,8 +118,15 @@ export default class SsaoEffect {
 
 
     #ensureFBOs (gl, width, height) {
-        if (this.#fbo && this.#texture) {
+        if (this.#fbo && this.#fboWidth === width && this.#fboHeight === height) {
             return
+        }
+
+        if (this.#fbo) {
+            gl.deleteFramebuffer(this.#fbo)
+            gl.deleteTexture(this.#texture)
+            gl.deleteFramebuffer(this.#blurFBO)
+            gl.deleteTexture(this.#blurTexture)
         }
 
         this.#texture = createScreenTexture(gl, width, height)
@@ -125,6 +134,9 @@ export default class SsaoEffect {
 
         this.#blurTexture = createScreenTexture(gl, width, height)
         this.#blurFBO = createFBO(gl, this.#blurTexture)
+
+        this.#fboWidth = width
+        this.#fboHeight = height
     }
 
 

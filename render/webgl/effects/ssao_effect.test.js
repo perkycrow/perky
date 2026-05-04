@@ -139,3 +139,23 @@ test('dispose cleans up', () => {
     expect(delTex.length).toBe(2)
     expect(effect.outputTexture).toBe(null)
 })
+
+
+test('resize recreates FBOs', () => {
+    const gl = createMockGL()
+    const effect = new SsaoEffect()
+    effect.init(createMockShaderRegistry())
+
+    effect.render(gl, createMockCtx())
+    gl.calls.length = 0
+
+    const resizedCtx = createMockCtx()
+    resizedCtx.canvasWidth = 1024
+    resizedCtx.canvasHeight = 768
+    effect.render(gl, resizedCtx)
+
+    const delFBO = gl.calls.filter(c => c.fn === 'deleteFramebuffer')
+    const delTex = gl.calls.filter(c => c.fn === 'deleteTexture')
+    expect(delFBO.length).toBe(2)
+    expect(delTex.length).toBe(2)
+})
