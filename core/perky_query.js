@@ -54,28 +54,7 @@ function findMatchingChildren (candidates, conditions) {
 }
 
 
-export function query (root, selector) {
-    const segments = parseSelector(selector)
-
-    if (segments.length === 0) {
-        return null
-    }
-
-    let candidates = [root]
-
-    for (const conditions of segments) {
-        candidates = findMatchingChildren(candidates, conditions)
-
-        if (candidates.length === 0) {
-            return null
-        }
-    }
-
-    return candidates[0] || null
-}
-
-
-export function queryAll (root, selector) {
+function findCandidates (root, selector) {
     const segments = parseSelector(selector)
 
     if (segments.length === 0) {
@@ -93,4 +72,14 @@ export function queryAll (root, selector) {
     }
 
     return candidates
+}
+
+
+export function query (root, selector) {
+    return findCandidates(root, selector)[0] || null
+}
+
+
+export function queryAll (root, selector) {
+    return findCandidates(root, selector)
 }
