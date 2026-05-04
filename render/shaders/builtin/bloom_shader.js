@@ -1,4 +1,4 @@
-const BLOOM_VERTEX = `#version 300 es
+export const BLOOM_VERTEX = `#version 300 es
 in vec2 aPosition;
 in vec2 aTexCoord;
 out vec2 vTexCoord;
