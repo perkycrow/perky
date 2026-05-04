@@ -1,6 +1,5 @@
 import {pack, unpack} from './pack.js'
-import {createElement} from '../application/dom_utils.js'
-import {blobToText} from './canvas.js'
+import {blobToText, downloadBlob} from './canvas.js'
 
 
 const DB_PREFIX = 'perky-'
@@ -311,18 +310,4 @@ export default class PerkyStore {
 
 function capitalize (str) {
     return str.charAt(0).toUpperCase() + str.slice(1)
-}
-
-
-function downloadBlob (blob, filename) {
-    const file = new File([blob], filename)
-
-    if (navigator.canShare?.({files: [file]})) {
-        navigator.share({files: [file]})
-        return
-    }
-
-    const url = URL.createObjectURL(blob)
-    createElement('a', {href: url, download: filename}).click()
-    URL.revokeObjectURL(url)
 }

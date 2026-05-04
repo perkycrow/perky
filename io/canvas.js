@@ -149,3 +149,20 @@ export function blobToImage (blob) {
         img.src = url
     })
 }
+
+
+export function downloadBlob (blob, filename) {
+    const file = new File([blob], filename)
+
+    if (navigator.canShare?.({files: [file]})) {
+        navigator.share({files: [file]})
+        return
+    }
+
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    a.click()
+    URL.revokeObjectURL(url)
+}

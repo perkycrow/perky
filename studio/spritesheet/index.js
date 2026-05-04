@@ -1,6 +1,6 @@
 import {createElement} from 'perky/application/dom_utils.js'
 import {parsePsd} from 'perky/io/psd.js'
-import {canvasToBlob, calculateResizeDimensions} from 'perky/io/canvas.js'
+import {canvasToBlob, calculateResizeDimensions, downloadBlob} from 'perky/io/canvas.js'
 import {
     findAnimationGroups,
     parseAnimationName,
@@ -227,14 +227,6 @@ function downloadJson () {
     const json = JSON.stringify(currentResult.jsonData, null, 2)
     const blob = new Blob([json], {type: 'application/json'})
     downloadBlob(blob, `${currentResult.filename}.json`)
-}
-
-
-function downloadBlob (blob, filename) {
-    const url = URL.createObjectURL(blob)
-    const a = createElement('a', {href: url, attrs: {download: filename}})
-    a.click()
-    URL.revokeObjectURL(url)
 }
 
 
