@@ -4,6 +4,7 @@ import ShaderRegistry from './shaders/shader_registry.js'
 import ShaderEffectRegistry from './shaders/shader_effect_registry.js'
 import {SPRITE_SHADER_DEF} from './shaders/builtin/sprite_shader.js'
 import {PRIMITIVE_SHADER_DEF} from './shaders/builtin/primitive_shader.js'
+import {COMPOSITE_SHADER_DEF} from './shaders/builtin/composite_shader.js'
 import PostProcessor from './postprocessing/post_processor.js'
 import WebGLTextureManager from './webgl_texture_manager.js'
 import {parseColor} from './webgl/color_utils.js'
@@ -315,33 +316,6 @@ export default class WebGLRenderer extends BaseRenderer {
 
 
     #setupCompositeShader () {
-        const COMPOSITE_SHADER_DEF = {
-            vertex: `#version 300 es
-                in vec2 aPosition;
-                in vec2 aTexCoord;
-                out vec2 vTexCoord;
-                void main() {
-                    gl_Position = vec4(aPosition, 0.0, 1.0);
-                    vTexCoord = aTexCoord;
-                }
-            `,
-            fragment: `#version 300 es
-                precision mediump float;
-                uniform sampler2D uTexture;
-                uniform float uOpacity;
-                in vec2 vTexCoord;
-                out vec4 fragColor;
-                void main() {
-                    vec4 color = texture(uTexture, vTexCoord);
-
-                    float alpha = color.a * uOpacity;
-                    fragColor = vec4(color.rgb * uOpacity, alpha);
-                }
-            `,
-            uniforms: ['uTexture', 'uOpacity'],
-            attributes: ['aPosition', 'aTexCoord']
-        }
-
         this.#compositeProgram = this.#shaderRegistry.register('_composite', COMPOSITE_SHADER_DEF)
     }
 
@@ -421,9 +395,17 @@ export default class WebGLRenderer extends BaseRenderer {
         const matrices = this.#getMatrices()
 
         scene.updateWorldMatrix(false)
+        this.#renderSceneGraph(scene, matrices)
 
+        if (usePostProcessing) {
+            this.postProcessor.finish()
+        }
+    }
+
+
+    #renderSceneGraph (root, matrices, renderContext = null) {
         for (const renderer of this.#renderers) {
-            renderer.reset()
+            renderer.reset(renderContext)
         }
 
         const debugGizmoRenderer = this.enableDebugGizmos ? this.#debugGizmoRenderer : null
@@ -431,7 +413,7 @@ export default class WebGLRenderer extends BaseRenderer {
             debugGizmoRenderer.reset()
         }
 
-        traverseAndCollect(scene, this.#rendererRegistry, {
+        traverseAndCollect(root, this.#rendererRegistry, {
             camera: this.camera,
             enableCulling: this.enableCulling,
             stats: this.stats,
@@ -439,15 +421,11 @@ export default class WebGLRenderer extends BaseRenderer {
         })
 
         for (const renderer of this.#renderers) {
-            renderer.flush(matrices)
+            renderer.flush(matrices, renderContext)
         }
 
         if (debugGizmoRenderer) {
             debugGizmoRenderer.flush(matrices)
-        }
-
-        if (usePostProcessing) {
-            this.postProcessor.finish()
         }
     }
 
@@ -483,34 +461,11 @@ export default class WebGLRenderer extends BaseRenderer {
 
         group.content.updateWorldMatrix(false)
 
-
         const renderContext = group.renderTransform?.enabled
             ? {transform: group.renderTransform}
             : null
 
-        for (const renderer of this.#renderers) {
-            renderer.reset(renderContext)
-        }
-
-        const debugGizmoRenderer = this.enableDebugGizmos ? this.#debugGizmoRenderer : null
-        if (debugGizmoRenderer) {
-            debugGizmoRenderer.reset()
-        }
-
-        traverseAndCollect(group.content, this.#rendererRegistry, {
-            camera: this.camera,
-            enableCulling: this.enableCulling,
-            stats: this.stats,
-            debugGizmoRenderer
-        })
-
-        for (const renderer of this.#renderers) {
-            renderer.flush(matrices, renderContext)
-        }
-
-        if (debugGizmoRenderer) {
-            debugGizmoRenderer.flush(matrices)
-        }
+        this.#renderSceneGraph(group.content, matrices, renderContext)
 
         fbManager.resolveToBuffer(group.$id)
 
