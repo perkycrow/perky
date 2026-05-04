@@ -341,11 +341,6 @@ function hasImportTarget (value) {
 }
 
 
-function isNonNullObject (value) {
-    return Boolean(value) && typeof value === 'object'
-}
-
-
 function isSpecial (value) {
     const stringValue = Object.prototype.toString.call(value)
     return stringValue === '[object RegExp]' || stringValue === '[object Date]'
@@ -353,7 +348,7 @@ function isSpecial (value) {
 
 
 function isMergeableObject (value) {
-    if (!isNonNullObject(value) || isSpecial(value)) {
+    if (!isObject(value) || isSpecial(value)) {
         return false
     }
     if (Array.isArray(value)) {
