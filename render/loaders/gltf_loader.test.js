@@ -4,6 +4,7 @@ import * as loaders from '../../application/loaders.js'
 import {createMockGL as createBaseMockGL} from '../test_helpers.js'
 import Material3D from '../material_3d.js'
 import MeshInstance from '../mesh_instance.js'
+import Object3D from '../object_3d.js'
 
 
 function createMockGL () {
@@ -237,6 +238,19 @@ describe('parseGlb', () => {
         expect(() => parseGlb(buffer)).toThrow('Unsupported GLB version')
     })
 
+
+    test('parseGlb throws when JSON chunk is missing', () => {
+        const buffer = new ArrayBuffer(20)
+        const dv = new DataView(buffer)
+        dv.setUint32(0, 0x46546C67, true)
+        dv.setUint32(4, 2, true)
+        dv.setUint32(8, 20, true)
+        dv.setUint32(12, 0, true)
+        dv.setUint32(16, 0x004E4942, true)
+
+        expect(() => parseGlb(buffer)).toThrow('GLB is missing its JSON chunk')
+    })
+
 })
 
 
@@ -340,6 +354,201 @@ describe('buildGltfScene', () => {
 
         expect(instance.material).toBeInstanceOf(Material3D)
         expect(instance.material.color).toEqual([1, 1, 1])
+    })
+
+
+    test('buildGltfScene builds node hierarchy with children', async () => {
+        const gl = createMockGL()
+        const {binary, offsets, lengths} = buildTrianglePrimitiveBinary()
+        const gltf = buildTriangleGltf(offsets, lengths)
+        gltf.scenes[0].nodes = [0]
+        gltf.nodes = [
+            {children: [1], translation: [0, 0, 0]},
+            {mesh: 0, translation: [5, 5, 5]}
+        ]
+
+        const {scene} = await buildGltfScene({gltf, binary, gl})
+
+        expect(scene.children).toHaveLength(1)
+        const parentNode = scene.children[0]
+        expect(parentNode).toBeInstanceOf(Object3D)
+        expect(parentNode.children).toHaveLength(1)
+        const childNode = parentNode.children[0]
+        expect(childNode).toBeInstanceOf(MeshInstance)
+        expect(childNode.position.x).toBe(5)
+    })
+
+
+    test('buildGltfScene creates Object3D for node without mesh', async () => {
+        const gl = createMockGL()
+        const {binary, offsets, lengths} = buildTrianglePrimitiveBinary()
+        const gltf = buildTriangleGltf(offsets, lengths)
+        gltf.scenes[0].nodes = [0]
+        gltf.nodes = [{translation: [1, 2, 3], name: 'EmptyNode'}]
+
+        const {scene} = await buildGltfScene({gltf, binary, gl})
+
+        const node = scene.children[0]
+        expect(node).toBeInstanceOf(Object3D)
+        expect(node).not.toBeInstanceOf(MeshInstance)
+        expect(node.name).toBe('EmptyNode')
+    })
+
+
+    test('buildGltfScene preserves node name', async () => {
+        const gl = createMockGL()
+        const {binary, offsets, lengths} = buildTrianglePrimitiveBinary()
+        const gltf = buildTriangleGltf(offsets, lengths)
+        gltf.nodes[0].name = 'TestMesh'
+
+        const {scene} = await buildGltfScene({gltf, binary, gl})
+
+        expect(scene.children[0].name).toBe('TestMesh')
+    })
+
+
+    test('buildGltfScene creates group for mesh with multiple primitives', async () => {
+        const gl = createMockGL()
+        const {binary, offsets, lengths} = buildTrianglePrimitiveBinary()
+        const gltf = buildTriangleGltf(offsets, lengths)
+        gltf.meshes[0].primitives.push({
+            attributes: {POSITION: 0, NORMAL: 1, TEXCOORD_0: 2},
+            indices: 3,
+            material: 0
+        })
+
+        const {scene} = await buildGltfScene({gltf, binary, gl})
+
+        const node = scene.children[0]
+        expect(node).toBeInstanceOf(Object3D)
+        expect(node).not.toBeInstanceOf(MeshInstance)
+        expect(node.children).toHaveLength(2)
+        expect(node.children[0]).toBeInstanceOf(MeshInstance)
+        expect(node.children[1]).toBeInstanceOf(MeshInstance)
+    })
+
+
+    test('buildGltfScene applies rotation and scale transforms', async () => {
+        const gl = createMockGL()
+        const {binary, offsets, lengths} = buildTrianglePrimitiveBinary()
+        const gltf = buildTriangleGltf(offsets, lengths)
+        gltf.nodes[0] = {
+            mesh: 0,
+            rotation: [0, 0, 0.7071, 0.7071],
+            scale: [2, 3, 4]
+        }
+
+        const {scene} = await buildGltfScene({gltf, binary, gl})
+        const instance = scene.children[0]
+
+        expect(instance.rotation.z).toBeCloseTo(0.7071)
+        expect(instance.rotation.w).toBeCloseTo(0.7071)
+        expect(instance.scale.x).toBe(2)
+        expect(instance.scale.y).toBe(3)
+        expect(instance.scale.z).toBe(4)
+    })
+
+
+    test('buildGltfScene generates sequential indices for primitive without indices', async () => {
+        const gl = createMockGL()
+        const {binary, offsets, lengths} = buildTrianglePrimitiveBinary()
+        const gltf = buildTriangleGltf(offsets, lengths)
+        delete gltf.meshes[0].primitives[0].indices
+        gltf.accessors = gltf.accessors.slice(0, 3)
+        gltf.bufferViews = gltf.bufferViews.slice(0, 3)
+
+        const {meshes} = await buildGltfScene({gltf, binary, gl})
+        const geometry = meshes[0].primitives[0].geometry
+
+        expect(geometry.indices).toBeInstanceOf(Uint16Array)
+        expect(geometry.indices[0]).toBe(0)
+        expect(geometry.indices[1]).toBe(1)
+        expect(geometry.indices[2]).toBe(2)
+    })
+
+
+    test('buildGltfScene creates empty normals and uvs when missing', async () => {
+        const gl = createMockGL()
+        const positions = new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0])
+        const indices = new Uint16Array([0, 1, 2, 0])
+        const posBytes = new Uint8Array(positions.buffer)
+        const idxBytes = new Uint8Array(indices.buffer)
+        const binaryData = new Uint8Array(posBytes.byteLength + idxBytes.byteLength)
+        binaryData.set(posBytes, 0)
+        binaryData.set(idxBytes, posBytes.byteLength)
+
+        const gltf = {
+            asset: {version: '2.0'},
+            scene: 0,
+            scenes: [{nodes: [0]}],
+            nodes: [{mesh: 0}],
+            meshes: [{
+                primitives: [{
+                    attributes: {POSITION: 0},
+                    indices: 1
+                }]
+            }],
+            materials: [],
+            buffers: [{byteLength: binaryData.byteLength}],
+            bufferViews: [
+                {buffer: 0, byteOffset: 0, byteLength: posBytes.byteLength},
+                {buffer: 0, byteOffset: posBytes.byteLength, byteLength: idxBytes.byteLength}
+            ],
+            accessors: [
+                {bufferView: 0, componentType: 5126, count: 3, type: 'VEC3'},
+                {bufferView: 1, componentType: 5123, count: 3, type: 'SCALAR'}
+            ]
+        }
+
+        const {meshes} = await buildGltfScene({gltf, binary: binaryData, gl})
+        const geometry = meshes[0].primitives[0].geometry
+
+        expect(geometry.normals).toBeInstanceOf(Float32Array)
+        expect(geometry.normals.length).toBe(9)
+        expect(geometry.uvs).toBeInstanceOf(Float32Array)
+        expect(geometry.uvs.length).toBe(6)
+    })
+
+
+    test('buildGltfScene handles empty scene without nodes', async () => {
+        const gl = createMockGL()
+        const gltf = {
+            asset: {version: '2.0'},
+            scene: 0,
+            scenes: [{}],
+            meshes: [],
+            materials: []
+        }
+
+        const {scene} = await buildGltfScene({gltf, binary: new Uint8Array(0), gl})
+
+        expect(scene).toBeInstanceOf(Object3D)
+        expect(scene.children).toHaveLength(0)
+    })
+
+
+    test('buildGltfScene applies material opacity from baseColorFactor', async () => {
+        const gl = createMockGL()
+        const {binary, offsets, lengths} = buildTrianglePrimitiveBinary()
+        const gltf = buildTriangleGltf(offsets, lengths)
+        gltf.materials[0].pbrMetallicRoughness.baseColorFactor = [1, 1, 1, 0.5]
+
+        const {materials} = await buildGltfScene({gltf, binary, gl})
+
+        expect(materials[0].opacity).toBe(0.5)
+    })
+
+
+    test('buildGltfScene handles alphaMode BLEND', async () => {
+        const gl = createMockGL()
+        const {binary, offsets, lengths} = buildTrianglePrimitiveBinary()
+        const gltf = buildTriangleGltf(offsets, lengths)
+        gltf.materials[0].alphaMode = 'BLEND'
+        delete gltf.materials[0].pbrMetallicRoughness.baseColorFactor
+
+        const {materials} = await buildGltfScene({gltf, binary, gl})
+
+        expect(materials[0].opacity).toBe(1)
     })
 
 })
