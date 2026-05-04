@@ -107,14 +107,15 @@ export default {
             state.maxComplexity = Math.max(state.maxComplexity, state.currentDepth)
         }
 
-        function exitComplexityNode () {
+        function exitComplexityNode (node) {
             if (functionStack.length === 0) {
                 return
             }
 
             const state = functionStack[functionStack.length - 1]
+            const conditionDepth = getConditionDepth(node)
 
-            state.currentDepth -= 1
+            state.currentDepth -= conditionDepth
         }
 
         const visitors = {
