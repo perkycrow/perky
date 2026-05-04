@@ -98,7 +98,7 @@ describe('CubeShadowMap', () => {
         const gl = createMockGL()
         const csm = new CubeShadowMap({gl})
         csm.dispose()
-        expect(csm.texture).toBeUndefined()
+        expect(csm.texture).toBe(null)
     })
 
 })

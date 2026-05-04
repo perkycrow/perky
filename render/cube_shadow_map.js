@@ -112,12 +112,15 @@ export default class CubeShadowMap {
         const gl = this.#gl
         if (this.#framebuffer) {
             gl.deleteFramebuffer(this.#framebuffer)
+            this.#framebuffer = null
         }
         if (this.#cubemap) {
             gl.deleteTexture(this.#cubemap)
+            this.#cubemap = null
         }
         if (this.#depthRenderbuffer) {
             gl.deleteRenderbuffer(this.#depthRenderbuffer)
+            this.#depthRenderbuffer = null
         }
         this.#gl = null
     }
