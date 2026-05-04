@@ -181,6 +181,53 @@ describe('MESH_FRAGMENT', () => {
         expect(MESH_FRAGMENT).toContain('uMaterialColor * vertexColor')
     })
 
+    test('declares cube shadow sampler uniforms', () => {
+        expect(MESH_FRAGMENT).toContain('uniform mediump samplerCube uCubeShadow0')
+        expect(MESH_FRAGMENT).toContain('uniform mediump samplerCube uCubeShadow1')
+        expect(MESH_FRAGMENT).toContain('uniform mediump samplerCube uCubeShadow2')
+        expect(MESH_FRAGMENT).toContain('uniform mediump samplerCube uCubeShadow3')
+        expect(MESH_FRAGMENT).toContain('uniform mediump samplerCube uCubeShadow4')
+    })
+
+    test('declares cube shadow position uniforms', () => {
+        expect(MESH_FRAGMENT).toContain('uniform vec3 uCubeShadowPos0')
+        expect(MESH_FRAGMENT).toContain('uniform vec3 uCubeShadowPos4')
+    })
+
+    test('declares cube shadow far uniforms', () => {
+        expect(MESH_FRAGMENT).toContain('uniform float uCubeShadowFar0')
+        expect(MESH_FRAGMENT).toContain('uniform float uCubeShadowFar4')
+    })
+
+    test('declares uNumCubeShadows uniform', () => {
+        expect(MESH_FRAGMENT).toContain('uniform int uNumCubeShadows')
+    })
+
+    test('contains calcCubeShadowSample function', () => {
+        expect(MESH_FRAGMENT).toContain('float calcCubeShadowSample')
+    })
+
+    test('contains calcPointShadow function', () => {
+        expect(MESH_FRAGMENT).toContain('float calcPointShadow')
+    })
+
+    test('contains acesToneMap function', () => {
+        expect(MESH_FRAGMENT).toContain('vec3 acesToneMap')
+    })
+
+    test('applies ACES tone mapping', () => {
+        expect(MESH_FRAGMENT).toContain('acesToneMap(color)')
+    })
+
+    test('calculates fresnel effect', () => {
+        expect(MESH_FRAGMENT).toContain('fresnel')
+        expect(MESH_FRAGMENT).toContain('1.0 - max(dot(normal, viewDir), 0.0)')
+    })
+
+    test('applies dithering to reduce banding', () => {
+        expect(MESH_FRAGMENT).toContain('fract(dot(gl_FragCoord.xy')
+    })
+
 })
 
 
