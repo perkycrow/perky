@@ -88,6 +88,31 @@ describe('section', () => {
 })
 
 
+describe('setup', () => {
+
+    test('throws when called outside doc', () => {
+        expect(() => {
+            setup(() => {})
+        }).toThrow('setup() must be called inside doc() or section()')
+    })
+
+
+    test('captures source from function', () => {
+        const result = doc('Test', () => {
+            section('With Setup', () => {
+                setup(() => {
+                    const x = 1
+                    return x
+                })
+            })
+        })
+
+        expect(result.blocks[0].setup.source).toContain('const x = 1')
+    })
+
+})
+
+
 describe('text', () => {
 
     test('creates text block', () => {
@@ -560,7 +585,349 @@ describe('executeContainer', () => {
         expect(logger.error).toHaveBeenCalledWith('Container error:', 'Container error')
     })
 
+
+    test('executes sectionSetup before block', async () => {
+        const order = []
+        const containerEl = createMockContainer()
+        const sectionSetup = {fn: vi.fn(() => order.push('setup'))}
+        const block = {fn: vi.fn(() => order.push('block'))}
+
+        await executeContainer(block, containerEl, sectionSetup)
+
+        expect(order).toEqual(['setup', 'block'])
+    })
+
+
+    test('focuses container when tabIndex >= 0', async () => {
+        const containerEl = createMockContainer()
+        containerEl.tabIndex = 0
+        containerEl.focus = vi.fn()
+        const block = {fn: vi.fn()}
+
+        await executeContainer(block, containerEl)
+
+        expect(containerEl.focus).toHaveBeenCalled()
+    })
+
+
+    test('does not focus container when tabIndex < 0', async () => {
+        const containerEl = createMockContainer()
+        containerEl.tabIndex = -1
+        containerEl.focus = vi.fn()
+        const block = {fn: vi.fn()}
+
+        await executeContainer(block, containerEl)
+
+        expect(containerEl.focus).not.toHaveBeenCalled()
+    })
+
+
+    test('ctx.setApp stores app on container', async () => {
+        const containerEl = createMockContainer()
+        const app = {id: 'test-app'}
+        const block = {fn: (ctx) => ctx.setApp(app)}
+
+        await executeContainer(block, containerEl)
+
+        expect(containerEl._currentApp).toBe(app)
+    })
+
+
+    test('ctx.hint creates hint element', async () => {
+        const containerEl = createMockContainer()
+        const block = {fn: (ctx) => ctx.hint('Press any key')}
+
+        await executeContainer(block, containerEl)
+
+        const hint = containerEl.querySelector('.doc-hint')
+        expect(hint.textContent).toBe('Press any key')
+    })
+
+
+    test('ctx.box creates positioned box element', async () => {
+        const containerEl = createMockContainer()
+        const block = {fn: (ctx) => ctx.box({size: 50, color: 'red'})}
+
+        await executeContainer(block, containerEl)
+
+        const box = containerEl.children[0]
+        expect(box.style.width).toBe('50px')
+        expect(box.style.height).toBe('50px')
+        expect(box.style.background).toBe('red')
+    })
+
+
+    test('ctx.marker creates positioned marker element', async () => {
+        const containerEl = createMockContainer()
+        const block = {fn: (ctx) => ctx.marker(100, 200, {size: 30, color: 'blue'})}
+
+        await executeContainer(block, containerEl)
+
+        const marker = containerEl.children[0]
+        expect(marker.style.left).toBe('100px')
+        expect(marker.style.top).toBe('200px')
+        expect(marker.style.width).toBe('30px')
+        expect(marker.style.background).toBe('blue')
+    })
+
+
+    test('ctx.column creates flex column', async () => {
+        const containerEl = createMockContainer()
+        const block = {fn: (ctx) => ctx.column({gap: 10})}
+
+        await executeContainer(block, containerEl)
+
+        const column = containerEl.children[0]
+        expect(column.style.display).toBe('flex')
+        expect(column.style.flexDirection).toBe('column')
+        expect(column.style.gap).toBe('10px')
+    })
+
+
+    test('ctx.row creates flex row', async () => {
+        const containerEl = createMockContainer()
+        const block = {fn: (ctx) => ctx.row({gap: 16})}
+
+        await executeContainer(block, containerEl)
+
+        const row = containerEl.children[0]
+        expect(row.style.display).toBe('flex')
+        expect(row.style.flexDirection).toBe('row')
+        expect(row.style.gap).toBe('16px')
+    })
+
+
+    test('ctx.label creates label element', async () => {
+        const containerEl = createMockContainer()
+        const block = {fn: (ctx) => ctx.label('Status')}
+
+        await executeContainer(block, containerEl)
+
+        const label = containerEl.children[0]
+        expect(label.textContent).toBe('Status')
+    })
+
+
+    test('ctx.checkerBoard creates checkered background', async () => {
+        const containerEl = createMockContainer()
+        const block = {fn: (ctx) => ctx.checkerBoard({width: 100, height: 100})}
+
+        await executeContainer(block, containerEl)
+
+        const board = containerEl.children[0]
+        expect(board.style.cssText).toContain('width: 100px')
+        expect(board.style.cssText).toContain('height: 100px')
+        expect(board.style.cssText).toContain('border')
+        expect(board.style.cssText).toContain('overflow: hidden')
+    })
+
+
+    test('ctx.info creates updatable info element', async () => {
+        const containerEl = createMockContainer()
+        let updateFn
+        const block = {
+            fn: (ctx) => {
+                updateFn = ctx.info((val) => `Count: ${val || 0}`)
+            }
+        }
+
+        await executeContainer(block, containerEl)
+
+        const infoBar = containerEl.querySelector('.doc-info-bar')
+        const info = infoBar.querySelector('.doc-info')
+        expect(info.textContent).toBe('Count: 0')
+
+        updateFn(5)
+        expect(info.textContent).toBe('Count: 5')
+    })
+
+
+    test('ctx.display creates updatable display element', async () => {
+        const containerEl = createMockContainer()
+        let updateFn
+        const block = {
+            fn: (ctx) => {
+                updateFn = ctx.display((val) => `Value: ${val || 'none'}`)
+            }
+        }
+
+        await executeContainer(block, containerEl)
+
+        const display = containerEl.querySelector('.doc-display')
+        expect(display.innerHTML).toBe('Value: none')
+
+        updateFn('test')
+        expect(display.innerHTML).toBe('Value: test')
+    })
+
+
+    test('ctx.display handles array result', async () => {
+        const containerEl = createMockContainer()
+        let updateFn
+        const block = {
+            fn: (ctx) => {
+                updateFn = ctx.display(() => ['a', 'b', 'c'])
+            }
+        }
+
+        await executeContainer(block, containerEl)
+
+        const display = containerEl.querySelector('.doc-display')
+        expect(display.querySelectorAll('.doc-display-tag').length).toBe(3)
+    })
+
+
+    test('ctx.display handles HTMLElement result', async () => {
+        const containerEl = createMockContainer()
+        let updateFn
+        const block = {
+            fn: (ctx) => {
+                updateFn = ctx.display(() => {
+                    const el = document.createElement('span')
+                    el.textContent = 'custom'
+                    return el
+                })
+            }
+        }
+
+        await executeContainer(block, containerEl)
+
+        const display = containerEl.querySelector('.doc-display')
+        expect(display.querySelector('span').textContent).toBe('custom')
+    })
+
+
+    test('ctx.action creates action bar with buttons', async () => {
+        const containerEl = createMockContainer()
+        const callback1 = vi.fn()
+        const callback2 = vi.fn()
+        const block = {
+            fn: (ctx) => {
+                ctx.action('Action 1', callback1)
+                ctx.action('Action 2', callback2)
+            }
+        }
+
+        await executeContainer(block, containerEl)
+
+        const actionsBar = containerEl.querySelector('.doc-actions-bar')
+        expect(actionsBar).toBeTruthy()
+
+        const buttons = actionsBar.querySelectorAll('.doc-actions-btn')
+        expect(buttons.length).toBe(2)
+        expect(buttons[0].textContent).toBe('Action 1')
+        expect(buttons[0].classList.contains('doc-actions-btn--active')).toBe(true)
+        expect(callback1).toHaveBeenCalled()
+        expect(callback2).not.toHaveBeenCalled()
+    })
+
+
+    test('ctx.action clicking button activates it', async () => {
+        const containerEl = createMockContainer()
+        const callback1 = vi.fn()
+        const callback2 = vi.fn()
+        const block = {
+            fn: (ctx) => {
+                ctx.action('Action 1', callback1)
+                ctx.action('Action 2', callback2)
+            }
+        }
+
+        await executeContainer(block, containerEl)
+
+        const buttons = containerEl.querySelectorAll('.doc-actions-btn')
+        buttons[1].click()
+
+        expect(buttons[0].classList.contains('doc-actions-btn--active')).toBe(false)
+        expect(buttons[1].classList.contains('doc-actions-btn--active')).toBe(true)
+        expect(callback2).toHaveBeenCalled()
+    })
+
+
+    test('ctx.slider creates slider with controls', async () => {
+        const containerEl = createMockContainer()
+        const onChange = vi.fn()
+        let sliderHandle
+        const block = {
+            fn: (ctx) => {
+                sliderHandle = ctx.slider('Speed', {min: 0, max: 100, default: 50}, onChange)
+            }
+        }
+
+        await executeContainer(block, containerEl)
+
+        const slidersBar = containerEl.querySelector('.doc-sliders-bar')
+        expect(slidersBar).toBeTruthy()
+
+        const label = slidersBar.querySelector('.doc-slider-label')
+        expect(label.textContent).toBe('Speed')
+
+        const value = slidersBar.querySelector('.doc-slider-value')
+        expect(value.textContent).toBe('50')
+
+        const input = slidersBar.querySelector('.doc-slider')
+        expect(input.min).toBe('0')
+        expect(input.max).toBe('100')
+        expect(input.value).toBe('50')
+
+        expect(onChange).toHaveBeenCalledWith(50)
+
+        expect(sliderHandle.get()).toBe(50)
+        sliderHandle.set(75)
+        expect(sliderHandle.get()).toBe(75)
+    })
+
+
+    test('ctx.slider updates on input', async () => {
+        const containerEl = createMockContainer()
+        const onChange = vi.fn()
+        const block = {
+            fn: (ctx) => {
+                ctx.slider('Value', {min: 0, max: 10, default: 5}, onChange)
+            }
+        }
+
+        await executeContainer(block, containerEl)
+
+        const input = containerEl.querySelector('.doc-slider')
+        input.value = '8'
+        input.dispatchEvent(new Event('input'))
+
+        expect(onChange).toHaveBeenLastCalledWith(8)
+    })
+
+
+    test('ctx.canvas creates canvas wrapper with update function', async () => {
+        const containerEl = createMockContainer()
+        const sourceCanvas = document.createElement('canvas')
+        sourceCanvas.width = 100
+        sourceCanvas.height = 50
+        let canvasHandle
+        const block = {
+            fn: (ctx) => {
+                canvasHandle = ctx.canvas(sourceCanvas, {maxWidth: 200})
+            }
+        }
+
+        await executeContainer(block, containerEl)
+
+        expect(canvasHandle.element).toBeTruthy()
+        expect(canvasHandle.canvas).toBeTruthy()
+        expect(canvasHandle.canvas.width).toBe(100)
+        expect(canvasHandle.canvas.height).toBe(50)
+        expect(typeof canvasHandle.update).toBe('function')
+    })
+
 })
+
+
+function createMockContainer () {
+    const container = document.createElement('div')
+    container._currentApp = null
+    container.style = {}
+    container.tabIndex = -1
+    return container
+}
 
 
 describe('renderAction', () => {
