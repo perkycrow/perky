@@ -1,4 +1,5 @@
 import {doc, section, text, code, logger} from '../doc/runtime.js'
+import PerkyView from './perky_view.js'
 
 
 export default doc('PerkyView', {advanced: true}, () => {
