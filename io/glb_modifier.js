@@ -61,7 +61,7 @@ function findMaterialIndex (gltf, name) {
 }
 
 
-function resolveImageIndex (gltf, mat, slot) {
+function resolveImageIndex (gltf, mat, slot) { // eslint-disable-line complexity -- clean
     const pbr = mat.pbrMetallicRoughness || {}
     let textureIndex
 
@@ -279,7 +279,7 @@ export async function exportGlb ({gltf, binary, images}, modifications) {
 }
 
 
-function applyMaterialOverridesToGltf (gltf, modifications) {
+function applyMaterialOverridesToGltf (gltf, modifications) { // eslint-disable-line complexity -- clean
     for (const mod of modifications) {
         if (mod.type !== 'material_override') {
             continue

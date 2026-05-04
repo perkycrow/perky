@@ -157,11 +157,8 @@ function createMockGL () {
         POLYGON_OFFSET_FILL: 0x8037,
         ALWAYS: 0x0207,
         RENDERBUFFER: 0x8D41,
-        DEPTH_COMPONENT24: 0x81A6,
         DEPTH_ATTACHMENT: 0x8D00,
         RGBA8: 0x8058,
-        RGBA: 0x1908,
-        UNSIGNED_BYTE: 0x1401,
         createRenderbuffer () {
             calls.push({fn: 'createRenderbuffer'})
             return 'mockRB'

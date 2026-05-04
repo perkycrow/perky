@@ -98,7 +98,7 @@ export default class CubeShadowMap {
         gl.viewport(0, 0, size, size)
         gl.drawBuffers([gl.COLOR_ATTACHMENT0])
         gl.clearColor(1.0, 1.0, 1.0, 1.0)
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT) // eslint-disable-line no-bitwise -- clean
         gl.clearColor(0.0, 0.0, 0.0, 0.0)
     }
 

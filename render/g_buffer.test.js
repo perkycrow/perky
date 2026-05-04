@@ -154,7 +154,7 @@ describe('GBuffer', () => {
         expect(vpCalls[0].args).toEqual([0, 0, 800, 600])
         const clearCalls = gl.calls.filter(c => c.fn === 'clear')
         expect(clearCalls.length).toBe(1)
-        expect(clearCalls[0].args[0]).toBe(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+        expect(clearCalls[0].args[0]).toBe(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT) // eslint-disable-line no-bitwise -- clean
     })
 
 

@@ -11,6 +11,7 @@ const opacityInput = document.getElementById('opacity')
 const flowInput = document.getElementById('flow')
 const smoothingInput = document.getElementById('smoothing')
 const eraserBtn = document.getElementById('eraser')
+const smudgeBtn = document.getElementById('smudge')
 const clearBtn = document.getElementById('clear')
 const addLayerBtn = document.getElementById('add-layer')
 const removeLayerBtn = document.getElementById('remove-layer')
@@ -98,8 +99,16 @@ flowInput.addEventListener('input', updateBrush)
 smoothingInput.addEventListener('input', updateBrush)
 eraserBtn.addEventListener('click', () => {
     const active = !engine.brush.eraser
-    engine.setBrush({eraser: active})
+    engine.setBrush({eraser: active, smudge: false})
     eraserBtn.classList.toggle('active', active)
+    smudgeBtn.classList.remove('active')
+})
+
+smudgeBtn.addEventListener('click', () => {
+    const active = !engine.brush.smudge
+    engine.setBrush({smudge: active, eraser: false})
+    smudgeBtn.classList.toggle('active', active)
+    eraserBtn.classList.remove('active')
 })
 
 clearBtn.addEventListener('click', () => engine.clear())

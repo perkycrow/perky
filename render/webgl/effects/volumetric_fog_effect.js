@@ -166,7 +166,7 @@ export default class VolumetricFogEffect {
         const fw = Math.ceil(ctx.canvasWidth / 2)
         const fh = Math.ceil(ctx.canvasHeight / 2)
 
-        this.#ensureFBOs(gl, fw, fh, ctx.canvasWidth, ctx.canvasHeight)
+        this.#ensureFBOs({gl, fw, fh, fullW: ctx.canvasWidth, fullH: ctx.canvasHeight})
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.#fogFBO)
         gl.viewport(0, 0, fw, fh)
@@ -228,7 +228,7 @@ export default class VolumetricFogEffect {
     }
 
 
-    #ensureFBOs (gl, fw, fh, fullW, fullH) {
+    #ensureFBOs ({gl, fw, fh, fullW, fullH}) {
         if (this.#fogFBO && this.#fboWidth === fw && this.#fboHeight === fh) {
             return
         }

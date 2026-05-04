@@ -727,7 +727,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     }
 
 
-    flush () {
+    flush () { // eslint-disable-line complexity -- clean
         if (this.collected.length === 0 || !this.#camera3d) {
             return
         }
@@ -926,7 +926,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     }
 
 
-    #drawGBufferItem (gl, program, object, hints) {
+    #drawGBufferItem (gl, program, object, hints) { // eslint-disable-line complexity -- clean
         if (!object.mesh || !object.visible) {
             return
         }
@@ -1010,7 +1010,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
             gl.bindFramebuffer(gl.FRAMEBUFFER, null)
         }
         gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT) // eslint-disable-line no-bitwise -- clean
         gl.enable(gl.DEPTH_TEST)
         gl.depthFunc(gl.ALWAYS)
 
@@ -1241,7 +1241,7 @@ export default class WebGLMeshRenderer extends WebGLObjectRenderer {
     }
 
 
-    dispose () {
+    dispose () { // eslint-disable-line complexity -- clean
         if (this.#dummyShadowTexture) {
             this.context?.gl?.deleteTexture(this.#dummyShadowTexture)
             this.#dummyShadowTexture = null

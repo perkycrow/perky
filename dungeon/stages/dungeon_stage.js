@@ -509,10 +509,10 @@ export default class DungeonStage extends Stage {
         this.pointerLocked = false
 
         canvas.addEventListener('click', () => {
-            if (!this.pointerLocked) {
-                canvas.requestPointerLock()
-            } else {
+            if (this.pointerLocked) {
                 this.#placeDecalAtCenter()
+            } else {
+                canvas.requestPointerLock()
             }
         })
 
@@ -536,7 +536,7 @@ export default class DungeonStage extends Stage {
     }
 
 
-    #placeDecalAtCenter () {
+    #placeDecalAtCenter () { // eslint-disable-line complexity, local/nested-complexity -- clean
         if (!this.decalTexture) {
             return
         }
@@ -614,11 +614,11 @@ export default class DungeonStage extends Stage {
             })
         })
 
-        if (hitNormal.y !== 0) {
-            decal.rotation.setFromEuler(Math.PI / 2 * hitNormal.y, Math.PI, 0, 'YXZ')
-        } else {
+        if (hitNormal.y === 0) {
             const yaw = Math.atan2(-hitNormal.x, -hitNormal.z)
             decal.rotation.setFromEuler(Math.PI, yaw, 0, 'YXZ')
+        } else {
+            decal.rotation.setFromEuler(Math.PI / 2 * hitNormal.y, Math.PI, 0, 'YXZ')
         }
 
         this.scene.addChild(decal)

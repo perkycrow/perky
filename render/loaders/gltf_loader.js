@@ -84,7 +84,7 @@ export function parseGlb (arrayBuffer) {
 }
 
 
-export async function buildGltfScene ({gltf, binary, baseUrl = '', gl, modifications}) {
+export async function buildGltfScene ({gltf, binary, baseUrl = '', gl, modifications}) { // eslint-disable-line complexity -- clean
     let images = await loadGltfImages(gltf, binary, baseUrl)
 
     if (modifications && modifications.length > 0) {

@@ -31,7 +31,56 @@ void main() {
     if (dist > 1.0) discard;
     float alpha = 1.0 - smoothstep(u_hardness, 1.0, dist);
     alpha *= u_flow * u_pressure;
-    fragColor = vec4(u_color.rgb * alpha, alpha);
+    float finalAlpha = alpha * u_color.a;
+    fragColor = vec4(u_color.rgb * finalAlpha, finalAlpha);
+}`
+
+
+const SMUDGE_VERTEX = `#version 300 es
+in vec2 a_position;
+uniform vec2 u_center;
+uniform vec2 u_prevCenter;
+uniform float u_size;
+uniform vec2 u_resolution;
+out vec2 v_uv;
+out vec2 v_prevUV;
+out vec2 v_currUV;
+
+void main() {
+    v_uv = a_position;
+    vec2 pixel = u_center + (a_position - 0.5) * u_size;
+    vec2 clip = (pixel / u_resolution) * 2.0 - 1.0;
+    clip.y = -clip.y;
+    gl_Position = vec4(clip, 0.0, 1.0);
+
+    v_currUV = pixel / u_resolution;
+    v_currUV.y = 1.0 - v_currUV.y;
+
+    vec2 prevPixel = u_prevCenter + (a_position - 0.5) * u_size;
+    v_prevUV = prevPixel / u_resolution;
+    v_prevUV.y = 1.0 - v_prevUV.y;
+}`
+
+
+const SMUDGE_FRAGMENT = `#version 300 es
+precision mediump float;
+in vec2 v_uv;
+in vec2 v_prevUV;
+in vec2 v_currUV;
+uniform sampler2D u_snapshot;
+uniform float u_hardness;
+uniform float u_strength;
+out vec4 fragColor;
+
+void main() {
+    float dist = length(v_uv - 0.5) * 2.0;
+    if (dist > 1.0) discard;
+    float shape = 1.0 - smoothstep(u_hardness, 1.0, dist);
+    float mask = shape * u_strength;
+
+    vec4 carried = texture(u_snapshot, v_prevUV);
+    vec4 current = texture(u_snapshot, v_currUV);
+    fragColor = mix(current, carried, mask);
 }`
 
 
@@ -67,7 +116,9 @@ const DEFAULT_BRUSH = {
     spacing: 0.05,
     smoothing: 0.9,
     color: [0, 0, 0, 1],
-    eraser: false
+    eraser: false,
+    smudge: false,
+    smudgeStrength: 0.6
 }
 
 
@@ -75,6 +126,7 @@ export default class PaintEngine {
 
     #gl
     #stampShader
+    #smudgeShader
     #compositeShader
     #vao
     #canvas
@@ -84,6 +136,8 @@ export default class PaintEngine {
     #brush
     #layers
     #activeLayerIndex
+    #smudgeSnapshot
+    #prevStampPoint
 
     constructor (canvas) {
         this.#canvas = canvas
@@ -96,6 +150,8 @@ export default class PaintEngine {
         this.#brush = {...DEFAULT_BRUSH}
         this.#layers = []
         this.#activeLayerIndex = 0
+        this.#smudgeSnapshot = null
+        this.#prevStampPoint = null
         this.#initShaders()
         this.#initGeometry()
         this.#setupBlending()
@@ -221,7 +277,15 @@ export default class PaintEngine {
         this.#lastPoint = {x, y, pressure}
         this.#smoothedPoint = {x, y, pressure}
         this.#remainder = 0
-        this.#stamp(x, y, pressure)
+
+        if (this.#brush.smudge) {
+            this.#initSmudgeSnapshot()
+            this.#blitToSnapshot()
+            this.#prevStampPoint = {x, y}
+        } else {
+            this.#stamp(x, y, pressure)
+        }
+
         this.composite()
     }
 
@@ -253,6 +317,7 @@ export default class PaintEngine {
     endStroke () {
         this.#lastPoint = null
         this.#smoothedPoint = null
+        this.#prevStampPoint = null
         this.#remainder = 0
     }
 
@@ -310,6 +375,11 @@ export default class PaintEngine {
             resizeLayerFBO(gl, layer, this.#canvas.width, this.#canvas.height)
         }
 
+        if (this.#smudgeSnapshot) {
+            destroyLayerFBO(gl, this.#smudgeSnapshot)
+            this.#smudgeSnapshot = null
+        }
+
         this.composite()
     }
 
@@ -319,8 +389,12 @@ export default class PaintEngine {
         for (const layer of this.#layers) {
             destroyLayerFBO(gl, layer)
         }
+        if (this.#smudgeSnapshot) {
+            destroyLayerFBO(gl, this.#smudgeSnapshot)
+        }
         this.#layers = []
         this.#stampShader.dispose()
+        this.#smudgeShader.dispose()
         this.#compositeShader.dispose()
         gl.deleteVertexArray(this.#vao)
         this.#gl = null
@@ -334,7 +408,10 @@ export default class PaintEngine {
             return
         }
 
-        const dpr = globalThis.devicePixelRatio || 1
+        if (this.#brush.smudge && this.#prevStampPoint) {
+            this.#smudgeStamp(x, y, pressure)
+            return
+        }
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, layer.fbo)
 
@@ -342,11 +419,59 @@ export default class PaintEngine {
             gl.blendFunc(gl.ZERO, gl.ONE_MINUS_SRC_ALPHA)
         }
 
+        this.#drawStamp(x, y, pressure, this.#brush.color)
+
+        if (this.#brush.eraser) {
+            gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
+        }
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+    }
+
+
+    #smudgeStamp (x, y, pressure) {
+        const gl = this.#gl
+        const layer = this.#layers[this.#activeLayerIndex]
+        const prev = this.#prevStampPoint
+        const dpr = globalThis.devicePixelRatio || 1
+        const strength = this.#brush.smudgeStrength * pressure
+
+        gl.bindFramebuffer(gl.FRAMEBUFFER, layer.fbo)
+        gl.blendFunc(gl.ONE, gl.ZERO)
+
+        gl.activeTexture(gl.TEXTURE0)
+        gl.bindTexture(gl.TEXTURE_2D, this.#smudgeSnapshot.texture)
+
+        this.#smudgeShader.use()
+            .setUniform2f('u_center', x * dpr, y * dpr)
+            .setUniform2f('u_prevCenter', prev.x * dpr, prev.y * dpr)
+            .setUniform1f('u_size', this.#brush.size * dpr)
+            .setUniform2f('u_resolution', this.#canvas.width, this.#canvas.height)
+            .setUniform1f('u_hardness', this.#brush.hardness)
+            .setUniform1f('u_strength', strength)
+            .setUniform1i('u_snapshot', 0)
+
+        gl.bindVertexArray(this.#vao)
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
+        gl.bindVertexArray(null)
+
+        gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+
+        this.#blitToSnapshot()
+        this.#prevStampPoint = {x, y}
+    }
+
+
+    #drawStamp (x, y, pressure, color) {
+        const gl = this.#gl
+        const dpr = globalThis.devicePixelRatio || 1
+
         this.#stampShader.use()
             .setUniform2f('u_center', x * dpr, y * dpr)
             .setUniform1f('u_size', this.#brush.size * dpr)
             .setUniform2f('u_resolution', this.#canvas.width, this.#canvas.height)
-            .setUniform4f('u_color', this.#brush.color)
+            .setUniform4f('u_color', color)
             .setUniform1f('u_hardness', this.#brush.hardness)
             .setUniform1f('u_flow', this.#brush.flow * this.#brush.opacity)
             .setUniform1f('u_pressure', pressure)
@@ -354,12 +479,29 @@ export default class PaintEngine {
         gl.bindVertexArray(this.#vao)
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
         gl.bindVertexArray(null)
+    }
 
-        if (this.#brush.eraser) {
-            gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
+
+    #initSmudgeSnapshot () {
+        const gl = this.#gl
+        if (this.#smudgeSnapshot) {
+            return
         }
+        this.#smudgeSnapshot = createLayerFBO(gl, this.#canvas.width, this.#canvas.height)
+    }
 
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+
+    #blitToSnapshot () {
+        const gl = this.#gl
+        const layer = this.#layers[this.#activeLayerIndex]
+        const w = this.#canvas.width
+        const h = this.#canvas.height
+
+        gl.bindFramebuffer(gl.READ_FRAMEBUFFER, layer.fbo)
+        gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, this.#smudgeSnapshot.fbo)
+        gl.blitFramebuffer(0, 0, w, h, 0, 0, w, h, gl.COLOR_BUFFER_BIT, gl.NEAREST)
+        gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null)
+        gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null)
     }
 
 
@@ -374,6 +516,17 @@ export default class PaintEngine {
             .registerUniform('u_hardness')
             .registerUniform('u_flow')
             .registerUniform('u_pressure')
+
+        this.#smudgeShader = new ShaderProgram(this.#gl, SMUDGE_VERTEX, SMUDGE_FRAGMENT)
+        this.#smudgeShader
+            .registerAttribute('a_position')
+            .registerUniform('u_center')
+            .registerUniform('u_prevCenter')
+            .registerUniform('u_size')
+            .registerUniform('u_resolution')
+            .registerUniform('u_snapshot')
+            .registerUniform('u_hardness')
+            .registerUniform('u_strength')
 
         this.#compositeShader = new ShaderProgram(this.#gl, COMPOSITE_VERTEX, COMPOSITE_FRAGMENT)
         this.#compositeShader
