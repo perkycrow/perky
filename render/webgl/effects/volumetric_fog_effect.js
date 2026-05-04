@@ -1,5 +1,5 @@
 import {VOLUMETRIC_FOG_SHADER_DEF, FOG_BLUR_SHADER_DEF} from '../../shaders/builtin/volumetric_fog_shader.js'
-import {createScreenTexture, createHdrTexture} from './texture_helpers.js'
+import {createScreenTexture, createHdrTexture, createFBO} from './texture_helpers.js'
 
 
 export default class VolumetricFogEffect {
@@ -241,16 +241,10 @@ export default class VolumetricFogEffect {
         }
 
         this.#fogTexture = createHdrTexture(gl, fw, fh)
-        this.#fogFBO = gl.createFramebuffer()
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#fogFBO)
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#fogTexture, 0)
+        this.#fogFBO = createFBO(gl, this.#fogTexture)
 
         this.#blurTexture = createScreenTexture(gl, fullW, fullH)
-        this.#blurFBO = gl.createFramebuffer()
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#blurFBO)
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#blurTexture, 0)
-
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+        this.#blurFBO = createFBO(gl, this.#blurTexture)
         this.#fboWidth = fw
         this.#fboHeight = fh
     }
