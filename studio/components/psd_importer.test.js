@@ -35,7 +35,8 @@ vi.mock('../../io/spritesheet.js', () => ({
 
 
 vi.mock('../../io/canvas.js', () => ({
-    putPixels: vi.fn()
+    putPixels: vi.fn(),
+    canvasToBlob: vi.fn(() => Promise.resolve(new Blob()))
 }))
 
 
@@ -219,6 +220,21 @@ describe('PsdImporter', () => {
         })
 
 
+        test('setExistingNames normalizes names to lowercase', () => {
+            importer.setExistingNames(['TestAnimator', 'PLAYER_ANIMATOR'])
+
+            const nameInput = importer.shadowRoot.querySelector('.name-input')
+            const errorMessage = importer.shadowRoot.querySelector('.error-message')
+            const createBtn = importer.shadowRoot.querySelector('.create-btn')
+
+            nameInput.value = 'test'
+            nameInput.dispatchEvent(new Event('input'))
+
+            expect(errorMessage.classList.contains('hidden')).toBe(false)
+            expect(createBtn.disabled).toBe(true)
+        })
+
+
         test('has setTargetName method', () => {
             expect(typeof importer.setTargetName).toBe('function')
         })
@@ -228,6 +244,26 @@ describe('PsdImporter', () => {
             expect(() => {
                 importer.setTargetName('playerAnimator')
             }).not.toThrow()
+        })
+
+
+        test('close calls overlay.close', () => {
+            const overlay = importer.shadowRoot.querySelector('editor-overlay')
+            const closeSpy = vi.spyOn(overlay, 'close')
+
+            importer.close()
+
+            expect(closeSpy).toHaveBeenCalled()
+        })
+
+
+        test('open calls overlay.open', () => {
+            const overlay = importer.shadowRoot.querySelector('editor-overlay')
+            const openSpy = vi.spyOn(overlay, 'open')
+
+            importer.open()
+
+            expect(openSpy).toHaveBeenCalled()
         })
 
     })
