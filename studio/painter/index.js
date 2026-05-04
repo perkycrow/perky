@@ -1,5 +1,6 @@
 import PaintEngine from './paint_engine.js'
 import {createElement} from '../../application/dom_utils.js'
+import Color from '../../math/color.js'
 
 
 const canvas = document.getElementById('canvas')
@@ -24,17 +25,10 @@ function resize () {
 }
 
 
-function hexToRgb (hex) {
-    const r = parseInt(hex.slice(1, 3), 16) / 255
-    const g = parseInt(hex.slice(3, 5), 16) / 255
-    const b = parseInt(hex.slice(5, 7), 16) / 255
-    return [r, g, b, 1]
-}
-
-
 function updateBrush () {
+    const color = new Color(colorInput.value)
     engine.setBrush({
-        color: hexToRgb(colorInput.value),
+        color: [color.r, color.g, color.b, color.a],
         size: Number(sizeInput.value),
         hardness: Number(hardnessInput.value) / 100,
         opacity: Number(opacityInput.value) / 100,
