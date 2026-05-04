@@ -59,7 +59,7 @@ async function loadAnimatorOverrides (store, overrides) {
         const pngFiles = resource.files
             .filter(f => f.name.endsWith('.png'))
             .sort((a, b) => a.name.localeCompare(b.name))
-        const images = await Promise.all(pngFiles.map(f => loadImageFromBlob(f.blob)))
+        const images = await Promise.all(pngFiles.map(f => createImageBitmap(f.blob)))
 
         overrides.push({id: spritesheetName, source: {data: spritesheetData, images}})
     }
@@ -126,9 +126,4 @@ async function resolveGlbModifications (config, files) {
     }
 
     return modifications
-}
-
-
-function loadImageFromBlob (blob) {
-    return createImageBitmap(blob)
 }
