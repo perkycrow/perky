@@ -42,7 +42,7 @@ export default doc('GLB Modifier', {advanced: true}, () => {
         code('List materials', () => {
             const materials = listMaterials(gltf)
             for (const mat of materials) {
-                console.log(mat.name, 'slots:', mat.slots.join(', '))
+                logger.info(mat.name, 'slots:', mat.slots.join(', '))
             }
         })
 
