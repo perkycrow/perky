@@ -40,9 +40,10 @@ export default doc('SceneView', {advanced: true}, () => {
 
         text(`
             The viewport displays entities on a grid with axis lines and a
-            camera frame showing the game's visible area. Pan with middle-click
-            or right-click drag. Zoom with the scroll wheel. Click entities to
-            select them, then drag to reposition.
+            camera frame showing the game's visible area. Zoom with scroll
+            wheel or pinch gesture. Click entities to select them, then drag
+            to reposition. On touch devices, two-finger tap to undo and
+            three-finger tap to redo.
         `)
 
     })
@@ -64,9 +65,10 @@ export default doc('SceneView', {advanced: true}, () => {
 
         text(`
             All entity operations (add, move, delete) go through a
-            CommandHistory stack. Undo with Ctrl+Z or the toolbar
-            button. Redo with Ctrl+Shift+Z. Keyboard shortcuts also handle
-            Delete and Backspace for removing selected entities.
+            CommandHistory stack. Undo with Ctrl+Z or the toolbar button.
+            Redo with Ctrl+Shift+Z or Ctrl+Y. Keyboard shortcuts handle
+            Delete/Backspace for removing, Ctrl+C/Ctrl+V for copy/paste,
+            and Ctrl+D for duplicating entities.
         `)
 
     })
