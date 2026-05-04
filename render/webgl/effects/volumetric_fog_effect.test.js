@@ -111,9 +111,17 @@ test('default state', () => {
     const effect = new VolumetricFogEffect()
     expect(effect.enabled).toBe(false)
     expect(effect.density).toBe(0.05)
+    expect(effect.heightFalloff).toBe(0.2)
+    expect(effect.baseHeight).toBe(0.0)
+    expect(effect.noiseScale).toBe(0.1)
+    expect(effect.noiseStrength).toBe(0.5)
+    expect(effect.windDirection).toEqual([1.0, 0.0])
+    expect(effect.windSpeed).toBe(0.5)
+    expect(effect.scatterAnisotropy).toBe(0.3)
     expect(effect.steps).toBe(16)
     expect(effect.maxDistance).toBe(80)
     expect(effect.startDistance).toBe(3)
+    expect(effect.time).toBe(0)
 })
 
 
@@ -166,6 +174,56 @@ test('dispose cleans up', () => {
     effect.render(gl, createMockCtx(), 'sceneTex')
 
     effect.dispose(gl)
+
+    const delFBO = gl.calls.filter(c => c.fn === 'deleteFramebuffer')
+    const delTex = gl.calls.filter(c => c.fn === 'deleteTexture')
+    expect(delFBO.length).toBe(2)
+    expect(delTex.length).toBe(2)
+})
+
+
+test('dispose without prior render is safe', () => {
+    const gl = createMockGL()
+    const effect = new VolumetricFogEffect()
+    effect.init(createMockShaderRegistry())
+
+    effect.dispose(gl)
+
+    expect(gl.calls.length).toBe(0)
+})
+
+
+test('init registers shaders', () => {
+    const effect = new VolumetricFogEffect()
+    const registeredNames = []
+    const registry = {
+        register (name) {
+            registeredNames.push(name)
+            return {program: name, uniforms: {}, attributes: {}}
+        }
+    }
+
+    effect.init(registry)
+
+    expect(registeredNames).toContain('volumetricFog')
+    expect(registeredNames).toContain('fogBlur')
+})
+
+
+test('render recreates FBOs when dimensions change', () => {
+    const gl = createMockGL()
+    const effect = new VolumetricFogEffect()
+    effect.init(createMockShaderRegistry())
+
+    const ctx1 = createMockCtx()
+    effect.render(gl, ctx1, 'sceneTex')
+
+    gl.calls.length = 0
+
+    const ctx2 = createMockCtx()
+    ctx2.canvasWidth = 1024
+    ctx2.canvasHeight = 768
+    effect.render(gl, ctx2, 'sceneTex')
 
     const delFBO = gl.calls.filter(c => c.fn === 'deleteFramebuffer')
     const delTex = gl.calls.filter(c => c.fn === 'deleteTexture')
