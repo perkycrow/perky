@@ -101,4 +101,39 @@ describe('CubeShadowMap', () => {
         expect(csm.texture).toBe(null)
     })
 
+
+    test('beginFace binds framebuffer and sets up render target', () => {
+        const gl = createMockGL()
+        const calls = []
+        gl.bindFramebuffer = (...args) => calls.push(['bindFramebuffer', ...args])
+        gl.framebufferTexture2D = (...args) => calls.push(['framebufferTexture2D', ...args])
+        gl.viewport = (...args) => calls.push(['viewport', ...args])
+        gl.drawBuffers = (...args) => calls.push(['drawBuffers', ...args])
+        gl.clear = (...args) => calls.push(['clear', ...args])
+
+        const csm = new CubeShadowMap({gl, resolution: 256})
+        calls.length = 0
+
+        csm.beginFace(2)
+
+        expect(calls.some(c => c[0] === 'bindFramebuffer' && c[1] === gl.FRAMEBUFFER)).toBe(true)
+        expect(calls.some(c => c[0] === 'framebufferTexture2D' && c[3] === gl.TEXTURE_CUBE_MAP_POSITIVE_X + 2)).toBe(true)
+        expect(calls.some(c => c[0] === 'viewport' && c[1] === 0 && c[2] === 0 && c[3] === 256 && c[4] === 256)).toBe(true)
+        expect(calls.some(c => c[0] === 'clear')).toBe(true)
+    })
+
+
+    test('end unbinds framebuffer', () => {
+        const gl = createMockGL()
+        const calls = []
+        gl.bindFramebuffer = (...args) => calls.push(['bindFramebuffer', ...args])
+
+        const csm = new CubeShadowMap({gl})
+        calls.length = 0
+
+        csm.end()
+
+        expect(calls).toEqual([['bindFramebuffer', gl.FRAMEBUFFER, null]])
+    })
+
 })

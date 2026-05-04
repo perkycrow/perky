@@ -173,6 +173,28 @@ describe('GBuffer', () => {
     })
 
 
+    test('resume binds framebuffer without clearing', () => {
+        const gl = createMockGL()
+        const gb = new GBuffer({gl, width: 800, height: 600})
+        gl.calls.length = 0
+        gb.resume()
+        const bindCalls = gl.calls.filter(c => c.fn === 'bindFramebuffer')
+        expect(bindCalls.length).toBe(1)
+        expect(bindCalls[0].args[1]).toBe('gbufferFBO')
+        const drawCalls = gl.calls.filter(c => c.fn === 'drawBuffers')
+        expect(drawCalls.length).toBe(1)
+        expect(drawCalls[0].args[0]).toEqual([
+            gl.COLOR_ATTACHMENT0,
+            gl.COLOR_ATTACHMENT1,
+            gl.COLOR_ATTACHMENT2
+        ])
+        const vpCalls = gl.calls.filter(c => c.fn === 'viewport')
+        expect(vpCalls[0].args).toEqual([0, 0, 800, 600])
+        const clearCalls = gl.calls.filter(c => c.fn === 'clear')
+        expect(clearCalls.length).toBe(0)
+    })
+
+
     test('end resets draw buffers and unbinds', () => {
         const gl = createMockGL()
         const gb = new GBuffer({gl, width: 800, height: 600})

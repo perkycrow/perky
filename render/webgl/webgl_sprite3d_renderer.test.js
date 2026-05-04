@@ -161,6 +161,18 @@ describe('WebGLSprite3DRenderer', () => {
 })
 
 
+describe('flush', () => {
+
+    test('is a no-op', () => {
+        const {renderer, gl} = createRenderer()
+        gl.calls.length = 0
+        renderer.flush()
+        expect(gl.calls.length).toBe(0)
+    })
+
+})
+
+
 describe('flushToGBuffer', () => {
 
     test('does nothing with no collected items', () => {
