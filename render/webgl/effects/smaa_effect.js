@@ -1,6 +1,6 @@
 import {SMAA_EDGE_SHADER_DEF, SMAA_WEIGHT_SHADER_DEF, SMAA_BLEND_SHADER_DEF} from '../../shaders/builtin/smaa_shader.js'
 import {SMAA_AREA_TEXTURE, SMAA_SEARCH_TEXTURE} from '../../smaa_lookup_textures.js'
-import {createScreenTexture} from './texture_helpers.js'
+import {createScreenTexture, createFBO} from './texture_helpers.js'
 
 
 export default class SmaaEffect {
@@ -116,21 +116,13 @@ export default class SmaaEffect {
         this.#deleteFBOs(gl)
 
         this.#edgesTexture = createScreenTexture(gl, width, height)
-        this.#edgesFBO = gl.createFramebuffer()
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#edgesFBO)
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#edgesTexture, 0)
+        this.#edgesFBO = createFBO(gl, this.#edgesTexture)
 
         this.#weightsTexture = createScreenTexture(gl, width, height)
-        this.#weightsFBO = gl.createFramebuffer()
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#weightsFBO)
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#weightsTexture, 0)
+        this.#weightsFBO = createFBO(gl, this.#weightsTexture)
 
         this.#outputTexture = createScreenTexture(gl, width, height)
-        this.#outputFBO = gl.createFramebuffer()
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#outputFBO)
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#outputTexture, 0)
-
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+        this.#outputFBO = createFBO(gl, this.#outputTexture)
 
         this.#fboWidth = width
         this.#fboHeight = height
@@ -160,32 +152,12 @@ export default class SmaaEffect {
 
 
     #loadTextures (gl) {
-        const loadImage = (src) => {
-            const img = new Image()
-            img.src = src
-            return new Promise(resolve => {
-                img.onload = () => resolve(img)
-            })
-        }
-
-        Promise.all([loadImage(SMAA_AREA_TEXTURE), loadImage(SMAA_SEARCH_TEXTURE)]).then(([areaImg, searchImg]) => {
-            this.#areaTexture = gl.createTexture()
-            gl.bindTexture(gl.TEXTURE_2D, this.#areaTexture)
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, areaImg)
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-
-            this.#searchTexture = gl.createTexture()
-            gl.bindTexture(gl.TEXTURE_2D, this.#searchTexture)
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, searchImg)
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-
-            gl.bindTexture(gl.TEXTURE_2D, null)
+        Promise.all([
+            loadImage(SMAA_AREA_TEXTURE),
+            loadImage(SMAA_SEARCH_TEXTURE)
+        ]).then(([areaImg, searchImg]) => {
+            this.#areaTexture = createLookupTexture(gl, areaImg, gl.LINEAR)
+            this.#searchTexture = createLookupTexture(gl, searchImg, gl.NEAREST)
             this.#ready = true
         })
     }
@@ -209,4 +181,26 @@ export default class SmaaEffect {
         this.#ready = false
     }
 
+}
+
+
+function loadImage (src) {
+    const img = new Image()
+    img.src = src
+    return new Promise(resolve => {
+        img.onload = () => resolve(img)
+    })
+}
+
+
+function createLookupTexture (gl, image, filter) {
+    const texture = gl.createTexture()
+    gl.bindTexture(gl.TEXTURE_2D, texture)
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+    gl.bindTexture(gl.TEXTURE_2D, null)
+    return texture
 }
