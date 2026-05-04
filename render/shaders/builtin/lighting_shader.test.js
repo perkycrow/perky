@@ -147,6 +147,41 @@ describe('LIGHTING_FRAGMENT', () => {
         expect(LIGHTING_FRAGMENT).toContain('(shininess + 2.0) / 25.0')
     })
 
+    test('contains toon shading with toonify function', () => {
+        expect(LIGHTING_FRAGMENT).toContain('float toonify')
+        expect(LIGHTING_FRAGMENT).toContain('uToonLevels')
+        expect(LIGHTING_FRAGMENT).toContain('uToonBlend')
+    })
+
+    test('contains rim lighting', () => {
+        expect(LIGHTING_FRAGMENT).toContain('uRimPower')
+        expect(LIGHTING_FRAGMENT).toContain('uRimIntensity')
+        expect(LIGHTING_FRAGMENT).toContain('uRimColor')
+    })
+
+    test('contains SSAO sampling', () => {
+        expect(LIGHTING_FRAGMENT).toContain('uniform sampler2D uSSAO')
+        expect(LIGHTING_FRAGMENT).toContain('uHasSSAO')
+    })
+
+    test('contains volumetric fog toggle', () => {
+        expect(LIGHTING_FRAGMENT).toContain('uVolumetricFogEnabled')
+    })
+
+    test('contains light blobiness noise', () => {
+        expect(LIGHTING_FRAGMENT).toContain('uLightBlobiness')
+        expect(LIGHTING_FRAGMENT).toContain('lightNoise')
+    })
+
+    test('contains shadow softness for PCSS', () => {
+        expect(LIGHTING_FRAGMENT).toContain('uShadowSoftness')
+    })
+
+    test('contains double-sided lighting support', () => {
+        expect(LIGHTING_FRAGMENT).toContain('float doubleSided = materialSample.a')
+        expect(LIGHTING_FRAGMENT).toContain('faceforward')
+    })
+
 })
 
 
@@ -188,6 +223,38 @@ describe('LIGHTING_SHADER_DEF', () => {
         expect(u).toContain('uLightMatrix')
         expect(u).toContain('uCubeShadow0')
         expect(u).toContain('uNumCubeShadows')
+        expect(u).toContain('uShadowSoftness')
+    })
+
+    test('has toon shading uniforms', () => {
+        const u = LIGHTING_SHADER_DEF.uniforms
+        expect(u).toContain('uToonLevels')
+        expect(u).toContain('uToonBlend')
+    })
+
+    test('has rim lighting uniforms', () => {
+        const u = LIGHTING_SHADER_DEF.uniforms
+        expect(u).toContain('uRimPower')
+        expect(u).toContain('uRimIntensity')
+        expect(u).toContain('uRimColor')
+    })
+
+    test('has SSAO uniforms', () => {
+        const u = LIGHTING_SHADER_DEF.uniforms
+        expect(u).toContain('uSSAO')
+        expect(u).toContain('uHasSSAO')
+    })
+
+    test('has directional light uniforms', () => {
+        const u = LIGHTING_SHADER_DEF.uniforms
+        expect(u).toContain('uDirectionalIntensity')
+        expect(u).toContain('uCameraPosition')
+    })
+
+    test('has effect uniforms', () => {
+        const u = LIGHTING_SHADER_DEF.uniforms
+        expect(u).toContain('uLightBlobiness')
+        expect(u).toContain('uVolumetricFogEnabled')
     })
 
     test('has fullscreen quad attributes', () => {
