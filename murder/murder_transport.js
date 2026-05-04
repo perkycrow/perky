@@ -1,11 +1,23 @@
 import ServiceTransport from '../service/service_transport.js'
 
 
+const SERVICE_MESSAGE_TYPES = new Set([
+    'service-request',
+    'service-response',
+    'service-event'
+])
+
+
+function isServiceMessage (data) {
+    return data && SERVICE_MESSAGE_TYPES.has(data.type)
+}
+
+
 export default function createMurderTransport (peerConnection) {
     const handlers = []
 
     peerConnection.on('message', (data) => {
-        if (data && (data.type === 'service-request' || data.type === 'service-response' || data.type === 'service-event')) {
+        if (isServiceMessage(data)) {
             handlers.forEach(handler => handler(data))
         }
     })
