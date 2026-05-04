@@ -161,15 +161,11 @@ describe('WebGLSprite3DRenderer', () => {
 })
 
 
-describe('flush', () => {
-
-    test('is a no-op', () => {
-        const {renderer, gl} = createRenderer()
-        gl.calls.length = 0
-        renderer.flush()
-        expect(gl.calls.length).toBe(0)
-    })
-
+test('flush is a no-op', () => {
+    const {renderer, gl} = createRenderer()
+    gl.calls.length = 0
+    renderer.flush()
+    expect(gl.calls.length).toBe(0)
 })
 
 
