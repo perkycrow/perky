@@ -1,3 +1,6 @@
+import {clamp} from '../math/utils.js'
+
+
 const DEFAULT_DELAY = 100
 const DEFAULT_MAX_SNAPSHOTS = 5
 
@@ -39,7 +42,7 @@ export default class SnapshotInterpolator {
         const [a, b] = pair
         const t = (renderTime - a.timestamp) / (b.timestamp - a.timestamp)
 
-        return interpolateState(a.state, b.state, clamp01(t))
+        return interpolateState(a.state, b.state, clamp(t, 0, 1))
     }
 
 
@@ -63,11 +66,6 @@ function findSurroundingPair (snapshots, time) {
     }
 
     return null
-}
-
-
-function clamp01 (value) {
-    return Math.max(0, Math.min(1, value))
 }
 
 
