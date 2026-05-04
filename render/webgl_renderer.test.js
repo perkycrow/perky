@@ -104,6 +104,17 @@ describe('WebGLRenderer', () => {
             expect(renderer.enableDebugGizmos).toBe(true)
         })
 
+
+        test('backgroundColor defaults to null', () => {
+            expect(renderer.backgroundColor).toBe(null)
+        })
+
+
+        test('with autoFit option sets autoFitEnabled', () => {
+            const r = new WebGLRenderer({canvas, autoFit: true})
+            expect(r.autoFitEnabled).toBe(true)
+        })
+
     })
 
 
@@ -289,6 +300,32 @@ describe('WebGLRenderer', () => {
             renderer.backgroundColor = '#0000FF'
             const scene = new Group2D()
             expect(() => renderer.render(scene)).not.toThrow()
+        })
+
+
+        test('renders with render groups when no scene passed', () => {
+            const scene1 = new Group2D()
+            const scene2 = new Group2D()
+
+            renderer.setRenderGroups([
+                {$id: 'background', content: scene1},
+                {$id: 'foreground', content: scene2}
+            ])
+
+            expect(() => renderer.render()).not.toThrow()
+        })
+
+
+        test('renders with render groups containing objects', () => {
+            const scene = new Group2D()
+            const circle = new Circle({radius: 1, color: '#FF0000'})
+            scene.addChild(circle)
+
+            renderer.setRenderGroups([
+                {$id: 'main', content: scene}
+            ])
+
+            expect(() => renderer.render()).not.toThrow()
         })
 
     })

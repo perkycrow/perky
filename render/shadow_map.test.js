@@ -109,6 +109,20 @@ describe('ShadowMap', () => {
     })
 
 
+    test('lightProjection returns Matrix4', () => {
+        const gl = createMockGL()
+        const sm = new ShadowMap({gl})
+        expect(sm.lightProjection).toBeInstanceOf(Matrix4)
+    })
+
+
+    test('lightView returns Matrix4', () => {
+        const gl = createMockGL()
+        const sm = new ShadowMap({gl})
+        expect(sm.lightView).toBeInstanceOf(Matrix4)
+    })
+
+
     test('update computes light matrix', () => {
         const gl = createMockGL()
         const sm = new ShadowMap({gl})
@@ -116,6 +130,21 @@ describe('ShadowMap', () => {
         sm.update([0, 1, 0], cam, 10)
         expect(sm.lightMatrix).toBeInstanceOf(Matrix4)
         expect(sm.lightMatrix.elements[15]).not.toBe(0)
+    })
+
+
+    test('update modifies lightView and lightProjection', () => {
+        const gl = createMockGL()
+        const sm = new ShadowMap({gl})
+        const cam = new Camera3D({x: 5, y: 5, z: 5})
+
+        const initialView = [...sm.lightView.elements]
+        const initialProjection = [...sm.lightProjection.elements]
+
+        sm.update([1, 0, 0], cam, 15)
+
+        expect(sm.lightView.elements).not.toEqual(initialView)
+        expect(sm.lightProjection.elements).not.toEqual(initialProjection)
     })
 
 
@@ -130,6 +159,17 @@ describe('ShadowMap', () => {
         const vpCalls = gl.calls.filter(c => c.fn === 'viewport')
         expect(vpCalls.length).toBe(1)
         expect(vpCalls[0].args).toEqual([0, 0, 512, 512])
+    })
+
+
+    test('begin clears depth buffer', () => {
+        const gl = createMockGL()
+        const sm = new ShadowMap({gl})
+        gl.calls.length = 0
+        sm.begin()
+        const clearCalls = gl.calls.filter(c => c.fn === 'clear')
+        expect(clearCalls.length).toBe(1)
+        expect(clearCalls[0].args[0]).toBe(gl.DEPTH_BUFFER_BIT)
     })
 
 
