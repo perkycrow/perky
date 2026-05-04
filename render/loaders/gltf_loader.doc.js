@@ -130,7 +130,8 @@ export default doc('GLTFLoader', () => {
                 gltf: Object,
                 binary: Uint8Array,
                 baseUrl: String,
-                gl: WebGL2RenderingContext
+                gl: WebGL2RenderingContext,
+                modifications: Array
             })
         })
 
