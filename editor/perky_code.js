@@ -382,75 +382,12 @@ export default class PerkyCode extends EditorComponent {
             return
         }
 
-        let code = this.#code.trim()
+        const cleaned = cleanCode(this.#code)
+        const escaped = escapeHtml(cleaned)
+        const highlighted = highlightSyntax(escaped)
+        const trimmed = trimTrailingEmptyLines(highlighted)
 
-        code = code.replace(/\/\/# sourceMappingURL=.*$/gm, '')
-        code = code.replace(/(from\s+["'])([^"']+)\?t=\d+(["'])/g, '$1$2$3')
-
-        code = code
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-
-        const placeholders = []
-        let counter = 0
-
-        const replaceWithPlaceholder = (match, cssClass) => {
-            const placeholder = `__PLACEHOLDER_${counter++}__`
-            placeholders.push({
-                placeholder,
-                replacement: `<span class="${cssClass}">${match}</span>`
-            })
-            return placeholder
-        }
-
-        let result = code
-            .replace(/\/\/.*$/gm,
-                match => replaceWithPlaceholder(match, 'hl-comment'))
-
-        result = result
-            .replace(/(["'`])(?:(?=(\\?))\2.)*?\1/g,
-                match => replaceWithPlaceholder(match, 'hl-string'))
-            .replace(/\.(\w+)(?=\()/g,
-                match => {
-                    const methodName = match.substring(1)
-                    return '.' + replaceWithPlaceholder(methodName, 'hl-keyword')
-                })
-            .replace(/\.(\w+)(?=\s|=|,|;|\))/g,
-                match => {
-                    const propName = match.substring(1)
-                    return '.' + replaceWithPlaceholder(propName, 'hl-constant')
-                })
-            .replace(/\b(import|from|const|let|var|function|class|extends|return|async|await|new)\b/g,
-                match => replaceWithPlaceholder(match, 'hl-keyword'))
-            .replace(/\b(if|else|try|catch)\b/g,
-                match => replaceWithPlaceholder(match, 'hl-keyword'))
-            .replace(/\b(true|false)\b/g,
-                match => replaceWithPlaceholder(match, 'hl-constant'))
-            .replace(/\b(\d+(\.\d+)?([eE][+-]?\d+)?)\b/g,
-                match => replaceWithPlaceholder(match, 'hl-constant'))
-            .replace(/\b(document|window|console)\b(?=\.)/g,
-                match => replaceWithPlaceholder(match, 'hl-keyword'))
-
-        placeholders.forEach(item => {
-            result = result.replace(item.placeholder, item.replacement)
-        })
-
-        const lines = result.split('\n')
-        let lastCodeLineIndex = lines.length - 1
-
-        while (lastCodeLineIndex >= 0 && lines[lastCodeLineIndex].trim() === '') {
-            lastCodeLineIndex--
-        }
-
-        const codeLines = lines.slice(0, lastCodeLineIndex + 1)
-
-        this.#formattedCode = codeLines.map((line, index) => {
-            const lineNumber = index + 1
-            const paddedNumber = lineNumber.toString().padStart(3, ' ')
-            return `<span class="line-number">${paddedNumber}</span>${line}`
-        }).join('\n')
-
+        this.#formattedCode = addLineNumbers(trimmed)
         this.#updateView()
     }
 
@@ -478,6 +415,71 @@ export default class PerkyCode extends EditorComponent {
         }
     }
 
+}
+
+
+function cleanCode (code) {
+    return code.trim()
+        .replace(/\/\/# sourceMappingURL=.*$/gm, '')
+        .replace(/(from\s+["'])([^"']+)\?t=\d+(["'])/g, '$1$2$3')
+}
+
+
+function escapeHtml (code) {
+    return code
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+}
+
+
+function highlightSyntax (code) {
+    const placeholders = []
+    let counter = 0
+
+    const wrap = (match, cssClass) => {
+        const placeholder = `__PLACEHOLDER_${counter++}__`
+        placeholders.push({placeholder, replacement: `<span class="${cssClass}">${match}</span>`})
+        return placeholder
+    }
+
+    let result = code.replace(/\/\/.*$/gm, match => wrap(match, 'hl-comment'))
+
+    result = result
+        .replace(/(["'`])(?:(?=(\\?))\2.)*?\1/g, match => wrap(match, 'hl-string'))
+        .replace(/\.(\w+)(?=\()/g, match => '.' + wrap(match.substring(1), 'hl-keyword'))
+        .replace(/\.(\w+)(?=\s|=|,|;|\))/g, match => '.' + wrap(match.substring(1), 'hl-constant'))
+        .replace(/\b(import|from|const|let|var|function|class|extends|return|async|await|new)\b/g, match => wrap(match, 'hl-keyword'))
+        .replace(/\b(if|else|try|catch)\b/g, match => wrap(match, 'hl-keyword'))
+        .replace(/\b(true|false)\b/g, match => wrap(match, 'hl-constant'))
+        .replace(/\b(\d+(\.\d+)?([eE][+-]?\d+)?)\b/g, match => wrap(match, 'hl-constant'))
+        .replace(/\b(document|window|console)\b(?=\.)/g, match => wrap(match, 'hl-keyword'))
+
+    for (const {placeholder, replacement} of placeholders) {
+        result = result.replace(placeholder, replacement)
+    }
+
+    return result
+}
+
+
+function trimTrailingEmptyLines (code) {
+    const lines = code.split('\n')
+    let lastIndex = lines.length - 1
+
+    while (lastIndex >= 0 && lines[lastIndex].trim() === '') {
+        lastIndex--
+    }
+
+    return lines.slice(0, lastIndex + 1)
+}
+
+
+function addLineNumbers (lines) {
+    return lines.map((line, index) => {
+        const paddedNumber = (index + 1).toString().padStart(3, ' ')
+        return `<span class="line-number">${paddedNumber}</span>${line}`
+    }).join('\n')
 }
 
 
