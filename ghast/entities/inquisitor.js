@@ -54,23 +54,33 @@ export default class Inquisitor extends Entity {
         const enemy = this.target
 
         if (enemy) {
-            this.#tryShoot(this.host, enemy, deltaTime)
-
-            const dist = this.position.distanceTo(enemy.position)
-
-            if (dist < 1.5) {
-                this.flee(enemy.position, 0.6)
-            }
-
-            applySporeFrame(this)
-            applyLeash(this)
-            this.move(this.resolveForce())
-            applyMovement(this, deltaTime)
-            this.clampVelocity(getMaxSpeed(this))
-            this.applyVelocity(deltaTime)
-            return
+            this.#updateCombat(enemy, deltaTime)
+        } else {
+            this.#updateIdle(deltaTime)
         }
 
+        applyLeash(this)
+        this.move(this.resolveForce())
+        applyMovement(this, deltaTime)
+        this.clampVelocity(getMaxSpeed(this))
+        this.applyVelocity(deltaTime)
+    }
+
+
+    #updateCombat (enemy, deltaTime) {
+        this.#tryShoot(this.host, enemy, deltaTime)
+
+        const dist = this.position.distanceTo(enemy.position)
+
+        if (dist < 1.5) {
+            this.flee(enemy.position, 0.6)
+        }
+
+        applySporeFrame(this)
+    }
+
+
+    #updateIdle (deltaTime) {
         this.shootCooldown = Math.max(0, this.shootCooldown - deltaTime)
 
         if (this._battleCenter) {
@@ -82,12 +92,6 @@ export default class Inquisitor extends Entity {
 
         const neighbors = this.host?.space?.entitiesInRange(this, 1) ?? []
         this.separate(neighbors, 0.6)
-
-        applyLeash(this)
-        this.move(this.resolveForce())
-        applyMovement(this, deltaTime)
-        this.clampVelocity(getMaxSpeed(this))
-        this.applyVelocity(deltaTime)
     }
 
 
