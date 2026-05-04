@@ -66,7 +66,7 @@ export default doc('GameSession', {advanced: true}, () => {
 
         code('Client input', () => {
             // session.sendInput('attack', {target: 'enemy1'})
-            // session.sendMove(1) // move right
+            // session.sendMove(1, 0) // move right
         })
 
     })
