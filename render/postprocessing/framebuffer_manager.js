@@ -206,20 +206,7 @@ export default class FramebufferManager {
 
 
     resolveSceneBuffer () {
-        const gl = this.#gl
-        const width = this.#width
-        const height = this.#height
-
-        gl.bindFramebuffer(gl.READ_FRAMEBUFFER, this.#msaaFramebuffer)
-        gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, this.#sceneFramebuffer)
-        gl.blitFramebuffer(
-            0, 0, width, height,
-            0, 0, width, height,
-            gl.COLOR_BUFFER_BIT,
-            gl.NEAREST
-        )
-        gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null)
-        gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null)
+        this.#blitToFramebuffer(this.#sceneFramebuffer)
     }
 
 
@@ -229,12 +216,18 @@ export default class FramebufferManager {
             return false
         }
 
+        this.#blitToFramebuffer(buffer.framebuffer)
+        return true
+    }
+
+
+    #blitToFramebuffer (targetFramebuffer) {
         const gl = this.#gl
         const width = this.#width
         const height = this.#height
 
         gl.bindFramebuffer(gl.READ_FRAMEBUFFER, this.#msaaFramebuffer)
-        gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, buffer.framebuffer)
+        gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, targetFramebuffer)
         gl.blitFramebuffer(
             0, 0, width, height,
             0, 0, width, height,
@@ -243,8 +236,6 @@ export default class FramebufferManager {
         )
         gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null)
         gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null)
-
-        return true
     }
 
 
