@@ -37,6 +37,8 @@ Studio reads the game's manifest, lets you edit assets, and saves changes to Ind
 
 **Scene** (`scene/index.html`) — visual scene editor. Place and arrange entities, edit transforms, preview with camera framing.
 
+**Painter** (`painter/index.html`) — WebGL-based painting app with layers, pressure sensitivity, and brush controls (size, hardness, opacity, flow, smoothing). Includes eraser and smudge modes.
+
 **Spritesheet exporter** (`spritesheet/index.html`) — standalone PSD to spritesheet converter. No storage, just download PNG + JSON.
 
 ---
@@ -50,6 +52,7 @@ EditorComponent (from editor/)
 │  HubView           animator + scene gallery │
 │  AnimatorView      animation editor      │
 │  SceneView         scene editor          │
+│  PaintEngine       layer-based painting  │
 │  AssetBrowserView  asset browser         │
 │  PsdImporter       PSD import wizard     │
 │  ConflictResolver  version conflicts     │
@@ -132,5 +135,6 @@ A zip archive containing animator config + spritesheet data + atlas PNGs. Used f
 - [animator/components/](animator/components/) — frame editor, anchor editor, animation settings
 - [components/psd_importer.js](components/psd_importer.js) — PSD import wizard
 - [scene/scene_view.js](scene/scene_view.js) — visual scene editor
+- [painter/paint_engine.js](painter/paint_engine.js) — WebGL painting engine with layers
 - [spritesheet/](spritesheet/) — standalone PSD to spritesheet tool
 - [assets/asset_browser_view.js](assets/asset_browser_view.js) — searchable asset grid
