@@ -1,5 +1,5 @@
 import {doc, section, text, code} from '../../doc/runtime.js'
-import WebGLRectangleRenderer from './webgl_rectangle_renderer.js'
+import Rectangle from '../rectangle.js'
 
 
 export default doc('WebGLRectangleRenderer', {advanced: true}, () => {
@@ -34,7 +34,6 @@ export default doc('WebGLRectangleRenderer', {advanced: true}, () => {
             })
 
             rect.setPosition(50, 50)
-            webglRenderer.render(scene)
         })
 
     })
