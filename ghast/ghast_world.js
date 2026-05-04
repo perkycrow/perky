@@ -40,6 +40,7 @@ export default class GhastWorld extends World {
 
         this.on('kill', ({killer}) => {
             this.#trackStat(killer, 'kills', 1, 'kill')
+            applySporeReactions(killer, 'kill')
 
             if (killer?.swarm) {
                 killer.swarm.recentKills++
@@ -65,10 +66,6 @@ export default class GhastWorld extends World {
                     applySporeReactions(member, 'ally_died')
                 }
             }
-        })
-
-        this.on('kill', ({killer}) => {
-            applySporeReactions(killer, 'kill')
         })
 
         this.on('low_hp', ({entity}) => {
