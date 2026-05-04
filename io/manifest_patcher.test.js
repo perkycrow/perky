@@ -263,6 +263,95 @@ describe('loadStudioOverrides', () => {
         expect(result[0]).toEqual({id: 'chapterScene', source: sceneConfig})
     })
 
+
+    test('skips scene when store.get returns null', async () => {
+        PerkyStore.prototype.list.mockImplementation((type) => {
+            if (type === 'scene') {
+                return Promise.resolve([{id: 'missingScene'}])
+            }
+            return Promise.resolve([])
+        })
+        PerkyStore.prototype.get.mockResolvedValue(null)
+
+        const result = await loadStudioOverrides()
+
+        expect(result).toEqual([])
+    })
+
+
+    test('skips scene when no json file found', async () => {
+        PerkyStore.prototype.list.mockImplementation((type) => {
+            if (type === 'scene') {
+                return Promise.resolve([{id: 'noJsonScene'}])
+            }
+            return Promise.resolve([])
+        })
+        PerkyStore.prototype.get.mockResolvedValue({
+            id: 'noJsonScene',
+            files: [{name: 'texture.png', blob: createPngBlob()}]
+        })
+
+        const result = await loadStudioOverrides()
+
+        expect(result).toEqual([])
+    })
+
+
+    test('loads glb overrides from store', async () => {
+        const glbConfig = {modifications: [{type: 'material_override', material: 'Wall', color: [1, 0, 0]}]}
+
+        PerkyStore.prototype.list.mockImplementation((type) => {
+            if (type === 'glb') {
+                return Promise.resolve([{id: 'corridorGlb'}])
+            }
+            return Promise.resolve([])
+        })
+        PerkyStore.prototype.get.mockResolvedValue({
+            id: 'corridorGlb',
+            files: [{name: 'corridorGlb.json', blob: createBlob(glbConfig)}]
+        })
+
+        const result = await loadStudioOverrides()
+
+        expect(result.length).toBe(1)
+        expect(result[0].id).toBe('corridorGlb')
+        expect(result[0].source.modifications).toHaveLength(1)
+        expect(result[0].source.modifications[0].type).toBe('material_override')
+    })
+
+
+    test('skips glb when store.get returns null', async () => {
+        PerkyStore.prototype.list.mockImplementation((type) => {
+            if (type === 'glb') {
+                return Promise.resolve([{id: 'missingGlb'}])
+            }
+            return Promise.resolve([])
+        })
+        PerkyStore.prototype.get.mockResolvedValue(null)
+
+        const result = await loadStudioOverrides()
+
+        expect(result).toEqual([])
+    })
+
+
+    test('skips glb when no json file found', async () => {
+        PerkyStore.prototype.list.mockImplementation((type) => {
+            if (type === 'glb') {
+                return Promise.resolve([{id: 'noJsonGlb'}])
+            }
+            return Promise.resolve([])
+        })
+        PerkyStore.prototype.get.mockResolvedValue({
+            id: 'noJsonGlb',
+            files: [{name: 'model.glb', blob: createPngBlob()}]
+        })
+
+        const result = await loadStudioOverrides()
+
+        expect(result).toEqual([])
+    })
+
 })
 
 

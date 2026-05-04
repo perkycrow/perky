@@ -75,4 +75,43 @@ describe('loadModifications', () => {
         const result = await loadModifications('test.glb.json')
         expect(result).toEqual([])
     })
+
+
+    test('returns null when fetch throws network error', async () => {
+        global.fetch = vi.fn(() => Promise.reject(new Error('Network error')))
+
+        const result = await loadModifications('assets/corridor.glb.json')
+        expect(result).toBe(null)
+    })
+
+
+    test('handles config with no modifications property', async () => {
+        global.fetch = vi.fn(() => Promise.resolve({
+            ok: true,
+            headers: new Map([['content-type', 'application/json']]),
+            json: () => Promise.resolve({})
+        }))
+
+        const result = await loadModifications('test.glb.json')
+        expect(result).toEqual([])
+    })
+
+
+    test('handles url without path separator', async () => {
+        const config = {
+            modifications: [
+                {type: 'texture_swap', material: 'Wall', texture: 'wall.png'}
+            ]
+        }
+
+        global.fetch = vi.fn(() => Promise.resolve({
+            ok: true,
+            headers: new Map([['content-type', 'application/json']]),
+            json: () => Promise.resolve(config)
+        }))
+
+        const result = await loadModifications('config.json')
+
+        expect(result[0].image.src).toBe('wall.png')
+    })
 })
