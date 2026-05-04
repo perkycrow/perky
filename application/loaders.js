@@ -131,12 +131,18 @@ export function removeFileExtension (filename) {
 }
 
 
+export function extractBaseUrl (url) {
+    const index = url.lastIndexOf('/')
+    return index === -1 ? '' : url.substring(0, index + 1)
+}
+
+
 export async function loadSpritesheet (params) {
     const {url} = normalizeParams(params)
 
     const data = await loadJson({url})
 
-    const baseUrl = url.substring(0, url.lastIndexOf('/') + 1)
+    const baseUrl = extractBaseUrl(url)
 
     const imagePromises = data.meta.images.map(imageInfo => {
         const imageUrl = baseUrl + imageInfo.filename

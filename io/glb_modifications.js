@@ -1,4 +1,4 @@
-import {loadImage} from '../application/loaders.js'
+import {loadImage, extractBaseUrl} from '../application/loaders.js'
 
 
 export async function loadModifications (url) {
@@ -36,10 +36,4 @@ async function resolveModifications (config, baseUrl) {
     }
 
     return modifications
-}
-
-
-function extractBaseUrl (url) {
-    const index = url.lastIndexOf('/')
-    return index === -1 ? '' : url.substring(0, index + 1)
 }

@@ -2,9 +2,13 @@ import {test, expect, describe, vi} from 'vitest'
 import {loadModifications} from './glb_modifications.js'
 
 
-vi.mock('../application/loaders.js', () => ({
-    loadImage: vi.fn(url => Promise.resolve({src: url, tagName: 'IMG'}))
-}))
+vi.mock('../application/loaders.js', async (importOriginal) => {
+    const actual = await importOriginal()
+    return {
+        ...actual,
+        loadImage: vi.fn(url => Promise.resolve({src: url, tagName: 'IMG'}))
+    }
+})
 
 
 describe('loadModifications', () => {

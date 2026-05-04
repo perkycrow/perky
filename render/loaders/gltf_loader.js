@@ -4,7 +4,7 @@ import MeshInstance from '../mesh_instance.js'
 import Material3D from '../material_3d.js'
 import Object3D from '../object_3d.js'
 import Matrix4 from '../../math/matrix4.js'
-import {loadArrayBuffer} from '../../application/loaders.js'
+import {loadArrayBuffer, extractBaseUrl} from '../../application/loaders.js'
 import {applyModifications, applyMaterialOverrides} from '../../io/glb_modifier.js'
 import logger from '../../core/logger.js'
 
@@ -406,10 +406,4 @@ function resolveTextureImage (gltf, images, textureIndex) {
         return null
     }
     return images[tex.source] || null
-}
-
-
-function extractBaseUrl (url) {
-    const index = url.lastIndexOf('/')
-    return index === -1 ? '' : url.substring(0, index + 1)
 }
