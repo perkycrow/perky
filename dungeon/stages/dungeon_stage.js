@@ -13,6 +13,7 @@ import WebGLSprite3DRenderer from '../../render/webgl/webgl_sprite3d_renderer.js
 import {loadGlb, buildGltfScene} from '../../render/loaders/gltf_loader.js'
 import {loadImage} from '../../application/loaders.js'
 import {loadModifications} from '../../io/glb_modifications.js'
+import {createElement} from '../../application/dom_utils.js'
 import {resolveCollisions} from '../collision.js'
 import DungeonWorld from '../worlds/dungeon_world.js'
 import PlayerController from '../controllers/player_controller.js'
@@ -691,17 +692,18 @@ export default class DungeonStage extends Stage {
 
 
     #createDebugOverlay () {
-        this.debugOverlay = document.createElement('div')
-        Object.assign(this.debugOverlay.style, {
-            position: 'fixed',
-            top: '10px',
-            left: '10px',
-            color: '#0f0',
-            fontFamily: 'monospace',
-            fontSize: '13px',
-            zIndex: '9999',
-            pointerEvents: 'none',
-            textShadow: '1px 1px 2px #000'
+        this.debugOverlay = createElement('div', {
+            style: {
+                position: 'fixed',
+                top: '10px',
+                left: '10px',
+                color: '#0f0',
+                fontFamily: 'monospace',
+                fontSize: '13px',
+                zIndex: '9999',
+                pointerEvents: 'none',
+                textShadow: '1px 1px 2px #000'
+            }
         })
         document.body.appendChild(this.debugOverlay)
 
@@ -709,108 +711,52 @@ export default class DungeonStage extends Stage {
         this.fpsTime = performance.now()
         this.fpsDisplay = 0
 
-        const smaaBtn = document.createElement('button')
-        smaaBtn.textContent = 'SMAA: ON'
-        Object.assign(smaaBtn.style, {
+        const btnStyle = {
             position: 'fixed',
-            top: '10px',
             right: '10px',
             zIndex: '9999',
             fontFamily: 'monospace',
             fontSize: '13px',
             padding: '4px 8px',
             cursor: 'pointer'
-        })
+        }
+
+        const smaaBtn = createElement('button', {text: 'SMAA: ON', style: {...btnStyle, top: '10px'}})
         smaaBtn.addEventListener('click', () => {
             this.meshRenderer.smaaEnabled = !this.meshRenderer.smaaEnabled
             smaaBtn.textContent = 'SMAA: ' + (this.meshRenderer.smaaEnabled ? 'ON' : 'OFF')
         })
         document.body.appendChild(smaaBtn)
 
-        const fogBtn = document.createElement('button')
-        fogBtn.textContent = 'FOG: ON'
-        Object.assign(fogBtn.style, {
-            position: 'fixed',
-            top: '40px',
-            right: '10px',
-            zIndex: '9999',
-            fontFamily: 'monospace',
-            fontSize: '13px',
-            padding: '4px 8px',
-            cursor: 'pointer'
-        })
+        const fogBtn = createElement('button', {text: 'FOG: ON', style: {...btnStyle, top: '40px'}})
         fogBtn.addEventListener('click', () => {
             this.meshRenderer.volumetricFogEnabled = !this.meshRenderer.volumetricFogEnabled
             fogBtn.textContent = 'FOG: ' + (this.meshRenderer.volumetricFogEnabled ? 'ON' : 'OFF')
         })
         document.body.appendChild(fogBtn)
 
-        const ssaoBtn = document.createElement('button')
-        ssaoBtn.textContent = 'SSAO: ON'
-        Object.assign(ssaoBtn.style, {
-            position: 'fixed',
-            top: '70px',
-            right: '10px',
-            zIndex: '9999',
-            fontFamily: 'monospace',
-            fontSize: '13px',
-            padding: '4px 8px',
-            cursor: 'pointer'
-        })
+        const ssaoBtn = createElement('button', {text: 'SSAO: ON', style: {...btnStyle, top: '70px'}})
         ssaoBtn.addEventListener('click', () => {
             this.meshRenderer.ssaoEnabled = !this.meshRenderer.ssaoEnabled
             ssaoBtn.textContent = 'SSAO: ' + (this.meshRenderer.ssaoEnabled ? 'ON' : 'OFF')
         })
         document.body.appendChild(ssaoBtn)
 
-        const bloomBtn = document.createElement('button')
-        bloomBtn.textContent = 'BLOOM: ON'
-        Object.assign(bloomBtn.style, {
-            position: 'fixed',
-            top: '100px',
-            right: '10px',
-            zIndex: '9999',
-            fontFamily: 'monospace',
-            fontSize: '13px',
-            padding: '4px 8px',
-            cursor: 'pointer'
-        })
+        const bloomBtn = createElement('button', {text: 'BLOOM: ON', style: {...btnStyle, top: '100px'}})
         bloomBtn.addEventListener('click', () => {
             this.meshRenderer.bloomEnabled = !this.meshRenderer.bloomEnabled
             bloomBtn.textContent = 'BLOOM: ' + (this.meshRenderer.bloomEnabled ? 'ON' : 'OFF')
         })
         document.body.appendChild(bloomBtn)
 
-        const cineBtn = document.createElement('button')
-        cineBtn.textContent = 'CINE: ON'
-        Object.assign(cineBtn.style, {
-            position: 'fixed',
-            top: '130px',
-            right: '10px',
-            zIndex: '9999',
-            fontFamily: 'monospace',
-            fontSize: '13px',
-            padding: '4px 8px',
-            cursor: 'pointer'
-        })
+        const cineBtn = createElement('button', {text: 'CINE: ON', style: {...btnStyle, top: '130px'}})
         cineBtn.addEventListener('click', () => {
             this.meshRenderer.cinematicEnabled = !this.meshRenderer.cinematicEnabled
             cineBtn.textContent = 'CINE: ' + (this.meshRenderer.cinematicEnabled ? 'ON' : 'OFF')
         })
         document.body.appendChild(cineBtn)
 
-        const toonBtn = document.createElement('button')
-        toonBtn.textContent = 'TOON: ON'
-        Object.assign(toonBtn.style, {
-            position: 'fixed',
-            top: '160px',
-            right: '10px',
-            zIndex: '9999',
-            fontFamily: 'monospace',
-            fontSize: '13px',
-            padding: '4px 8px',
-            cursor: 'pointer'
-        })
+        const toonBtn = createElement('button', {text: 'TOON: ON', style: {...btnStyle, top: '160px'}})
         toonBtn.addEventListener('click', () => {
             const on = this.meshRenderer.toonLevels > 0
             this.meshRenderer.toonLevels = on ? 0 : 3
@@ -824,18 +770,19 @@ export default class DungeonStage extends Stage {
 
 
     #createFogPanel () {
-        const panel = document.createElement('div')
-        Object.assign(panel.style, {
-            position: 'fixed',
-            bottom: '10px',
-            right: '10px',
-            zIndex: '9999',
-            fontFamily: 'monospace',
-            fontSize: '12px',
-            color: '#fff',
-            background: 'rgba(0,0,0,0.7)',
-            padding: '8px',
-            borderRadius: '4px'
+        const panel = createElement('div', {
+            style: {
+                position: 'fixed',
+                bottom: '10px',
+                right: '10px',
+                zIndex: '9999',
+                fontFamily: 'monospace',
+                fontSize: '12px',
+                color: '#fff',
+                background: 'rgba(0,0,0,0.7)',
+                padding: '8px',
+                borderRadius: '4px'
+            }
         })
 
         const r = this.meshRenderer
@@ -848,16 +795,19 @@ export default class DungeonStage extends Stage {
         ]
 
         for (const [label, prop, min, max, step] of sliders) {
-            const row = document.createElement('div')
-            row.style.marginBottom = '2px'
-            const val = document.createElement('span')
-            val.style.display = 'inline-block'
-            val.style.width = '40px'
-            val.textContent = r[prop]
-            const input = document.createElement('input')
-            Object.assign(input, {type: 'range', min, max, step, value: r[prop]})
-            input.style.width = '100px'
-            input.style.verticalAlign = 'middle'
+            const row = createElement('div', {style: {marginBottom: '2px'}})
+            const val = createElement('span', {
+                text: r[prop],
+                style: {display: 'inline-block', width: '40px'}
+            })
+            const input = createElement('input', {
+                type: 'range',
+                min,
+                max,
+                step,
+                value: r[prop],
+                style: {width: '100px', verticalAlign: 'middle'}
+            })
             input.addEventListener('input', () => {
                 r[prop] = parseFloat(input.value)
                 val.textContent = r[prop]
@@ -868,13 +818,13 @@ export default class DungeonStage extends Stage {
             panel.appendChild(row)
         }
 
-        const colorRow = document.createElement('div')
-        colorRow.style.marginTop = '4px'
-        const colorInput = document.createElement('input')
-        colorInput.type = 'color'
+        const colorRow = createElement('div', {style: {marginTop: '4px'}})
         const fc = r.fogColor
         const toHex = (v) => Math.round(v * 255).toString(16).padStart(2, '0')
-        colorInput.value = '#' + toHex(fc[0]) + toHex(fc[1]) + toHex(fc[2])
+        const colorInput = createElement('input', {
+            type: 'color',
+            value: '#' + toHex(fc[0]) + toHex(fc[1]) + toHex(fc[2])
+        })
         colorInput.addEventListener('input', () => {
             const hex = colorInput.value
             r.fogColor = [

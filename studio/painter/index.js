@@ -1,4 +1,5 @@
 import PaintEngine from './paint_engine.js'
+import {createElement} from '../../application/dom_utils.js'
 
 
 const canvas = document.getElementById('canvas')
@@ -47,25 +48,23 @@ function renderLayers () {
     layerListEl.innerHTML = ''
     for (let i = engine.layerCount - 1; i >= 0; i--) {
         const info = engine.getLayerInfo(i)
-        const item = document.createElement('div')
-        item.className = 'layer-item' + (i === engine.activeLayerIndex ? ' active' : '')
+        const item = createElement('div', {
+            class: 'layer-item' + (i === engine.activeLayerIndex ? ' active' : '')
+        })
 
-        const checkbox = document.createElement('input')
-        checkbox.type = 'checkbox'
-        checkbox.checked = info.visible
+        const checkbox = createElement('input', {type: 'checkbox', checked: info.visible})
         checkbox.addEventListener('change', () => {
             engine.setLayerVisible(i, checkbox.checked)
         })
 
-        const name = document.createElement('span')
-        name.className = 'layer-name'
-        name.textContent = info.name
+        const name = createElement('span', {class: 'layer-name', text: info.name})
 
-        const opSlider = document.createElement('input')
-        opSlider.type = 'range'
-        opSlider.min = '0'
-        opSlider.max = '100'
-        opSlider.value = String(Math.round(info.opacity * 100))
+        const opSlider = createElement('input', {
+            type: 'range',
+            min: '0',
+            max: '100',
+            value: String(Math.round(info.opacity * 100))
+        })
         opSlider.addEventListener('input', () => {
             engine.setLayerOpacity(i, Number(opSlider.value) / 100)
         })
