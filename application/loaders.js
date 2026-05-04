@@ -9,13 +9,6 @@ export function normalizeParams (params) {
 }
 
 
-function checkResponse (response, url) {
-    if (!response.ok) {
-        throw new Error(`HTTP Error ${response.status} (${response.statusText}) for ${url}`)
-    }
-}
-
-
 export async function loadResponse (params) {
     const {url, config} = normalizeParams(params)
 
@@ -23,66 +16,58 @@ export async function loadResponse (params) {
 }
 
 
-export async function loadBlob (params) {
+async function loadWith (params, method) {
     const {url} = normalizeParams(params)
     const response = await loadResponse(params)
 
-    checkResponse(response, url)
+    if (!response.ok) {
+        throw new Error(`HTTP Error ${response.status} (${response.statusText}) for ${url}`)
+    }
 
-    return response.blob()
+    return response[method]()
+}
+
+
+export async function loadBlob (params) {
+    return loadWith(params, 'blob')
 }
 
 
 export async function loadImage (params) {
     const blob = await loadBlob(params)
-    const url = URL.createObjectURL(blob)
+    const blobUrl = URL.createObjectURL(blob)
 
     return new Promise((resolve, reject) => {
         const img = new Image()
 
         img.onload = function () {
-            URL.revokeObjectURL(url)
+            URL.revokeObjectURL(blobUrl)
             resolve(img)
         }
 
         img.onerror = function () {
-            URL.revokeObjectURL(url)
-            const normalizedParams = normalizeParams(params)
-            reject(new Error(`Failed to load image: ${normalizedParams.url}`))
+            URL.revokeObjectURL(blobUrl)
+            const {url} = normalizeParams(params)
+            reject(new Error(`Failed to load image: ${url}`))
         }
 
-        img.src = url
+        img.src = blobUrl
     })
 }
 
 
 export async function loadText (params) {
-    const {url} = normalizeParams(params)
-    const response = await loadResponse(params)
-
-    checkResponse(response, url)
-
-    return response.text()
+    return loadWith(params, 'text')
 }
 
 
 export async function loadJson (params) {
-    const {url} = normalizeParams(params)
-    const response = await loadResponse(params)
-
-    checkResponse(response, url)
-
-    return response.json()
+    return loadWith(params, 'json')
 }
 
 
 export async function loadArrayBuffer (params) {
-    const {url} = normalizeParams(params)
-    const response = await loadResponse(params)
-
-    checkResponse(response, url)
-
-    return response.arrayBuffer()
+    return loadWith(params, 'arrayBuffer')
 }
 
 
@@ -119,10 +104,10 @@ export function loadFont (params) {
 
 
 export function replaceUrlFilename (url, filename) {
-    let splitted = url.split('/')
-    splitted.pop()
-    splitted.push(filename)
-    return splitted.join('/')
+    const parts = url.split('/')
+    parts.pop()
+    parts.push(filename)
+    return parts.join('/')
 }
 
 
