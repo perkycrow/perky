@@ -8,6 +8,8 @@ export default class OutlineEffect {
     #enabled = false
     #fbo = null
     #texture = null
+    #fboWidth = 0
+    #fboHeight = 0
     #color = [0.0, 0.0, 0.0]
     #depthThreshold = 0.001
     #normalThreshold = 0.3
@@ -72,10 +74,7 @@ export default class OutlineEffect {
         const w = ctx.canvasWidth
         const h = ctx.canvasHeight
 
-        if (!this.#fbo) {
-            this.#texture = createScreenTexture(gl, w, h)
-            this.#fbo = createFBO(gl, this.#texture)
-        }
+        this.#ensureFBO(gl, w, h)
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, this.#fbo)
         gl.viewport(0, 0, w, h)
@@ -110,12 +109,31 @@ export default class OutlineEffect {
     }
 
 
+    #ensureFBO (gl, width, height) {
+        if (this.#fbo && this.#fboWidth === width && this.#fboHeight === height) {
+            return
+        }
+
+        if (this.#fbo) {
+            gl.deleteFramebuffer(this.#fbo)
+            gl.deleteTexture(this.#texture)
+        }
+
+        this.#texture = createScreenTexture(gl, width, height)
+        this.#fbo = createFBO(gl, this.#texture)
+        this.#fboWidth = width
+        this.#fboHeight = height
+    }
+
+
     dispose (gl) {
         if (this.#fbo) {
             gl.deleteFramebuffer(this.#fbo)
             gl.deleteTexture(this.#texture)
             this.#fbo = null
             this.#texture = null
+            this.#fboWidth = 0
+            this.#fboHeight = 0
         }
         this.#program = null
     }

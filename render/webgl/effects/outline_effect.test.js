@@ -139,3 +139,29 @@ test('dispose cleans up', () => {
     expect(delFBO.length).toBe(1)
     expect(delTex.length).toBe(1)
 })
+
+
+test('recreates FBO on canvas resize', () => {
+    const gl = createMockGL()
+    const effect = new OutlineEffect()
+    effect.init(createMockShaderRegistry())
+
+    const ctx = {
+        canvasWidth: 800,
+        canvasHeight: 600,
+        gBuffer: {depthTexture: 'depthTex', normalTexture: 'normalTex'},
+        fullscreenQuad: {draw () {}}
+    }
+
+    effect.render(gl, ctx, 'sceneTex')
+    gl.calls.length = 0
+
+    ctx.canvasWidth = 1024
+    ctx.canvasHeight = 768
+    effect.render(gl, ctx, 'sceneTex')
+
+    const delFBO = gl.calls.filter(c => c.fn === 'deleteFramebuffer')
+    const delTex = gl.calls.filter(c => c.fn === 'deleteTexture')
+    expect(delFBO.length).toBe(1)
+    expect(delTex.length).toBe(1)
+})
