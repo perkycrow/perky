@@ -192,12 +192,12 @@ export default class Grid {
 }
 
 
-function getCellKey (coords) {
+export function getCellKey (coords) {
     return `${coords.x},${coords.y}`
 }
 
 
-function parseCellKey (key) {
+export function parseCellKey (key) {
     const [x, y] = key.split(',').map(Number)
     return {x, y}
 }

@@ -1,4 +1,4 @@
-import Grid, {fourDirections, eightDirections} from './grid.js'
+import Grid, {fourDirections, eightDirections, getCellKey, parseCellKey} from './grid.js'
 
 
 describe('Grid', () => {
@@ -303,6 +303,20 @@ describe('Grid', () => {
         const exported = grid.export()
 
         expect(exported.cells['0,0']).toEqual({exported: true, value: 10})
+    })
+
+
+    test('getCellKey', () => {
+        expect(getCellKey({x: 0, y: 0})).toBe('0,0')
+        expect(getCellKey({x: 5, y: 10})).toBe('5,10')
+        expect(getCellKey({x: -3, y: 7})).toBe('-3,7')
+    })
+
+
+    test('parseCellKey', () => {
+        expect(parseCellKey('0,0')).toEqual({x: 0, y: 0})
+        expect(parseCellKey('5,10')).toEqual({x: 5, y: 10})
+        expect(parseCellKey('-3,7')).toEqual({x: -3, y: 7})
     })
 
 })

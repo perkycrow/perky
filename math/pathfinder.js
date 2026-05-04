@@ -1,4 +1,4 @@
-import {fourDirections, eightDirections} from './grid.js'
+import {fourDirections, eightDirections, getCellKey, parseCellKey} from './grid.js'
 
 
 export const heuristics = {
@@ -38,8 +38,8 @@ export default class Pathfinder {
         const gScore = new Map()
         const fScore = new Map()
 
-        const startKey = getCoordsKey(start)
-        const goalKey = getCoordsKey(goal)
+        const startKey = getCellKey(start)
+        const goalKey = getCellKey(goal)
 
         openSet.add(startKey)
         gScore.set(startKey, 0)
@@ -47,7 +47,7 @@ export default class Pathfinder {
 
         while (openSet.size > 0) {
             let current = getLowestFScore(openSet, fScore)
-            let currentCoords = parseKey(current)
+            let currentCoords = parseCellKey(current)
 
             if (current === goalKey) {
                 return reconstructPath(cameFrom, current)
@@ -65,7 +65,7 @@ export default class Pathfinder {
             })
 
             for (const neighbor of neighbors) {
-                const neighborKey = getCoordsKey(neighbor)
+                const neighborKey = getCellKey(neighbor)
 
                 if (!grid.isInside(neighbor)) {
                     continue
@@ -114,17 +114,6 @@ export default class Pathfinder {
 }
 
 
-function getCoordsKey (coords) {
-    return `${coords.x},${coords.y}`
-}
-
-
-function parseKey (key) {
-    const [x, y] = key.split(',').map(Number)
-    return {x, y}
-}
-
-
 function getLowestFScore (openSet, fScore) {
     let lowest = null
     let lowestScore = Infinity
@@ -153,11 +142,11 @@ function getMoveCost (from, to) {
 
 
 function reconstructPath (cameFrom, current) {
-    const path = [parseKey(current)]
+    const path = [parseCellKey(current)]
 
     while (cameFrom.has(current)) {
         current = cameFrom.get(current)
-        path.unshift(parseKey(current))
+        path.unshift(parseCellKey(current))
     }
 
     return path
