@@ -1,5 +1,5 @@
 import {BLOOM_EXTRACT_SHADER_DEF, BLOOM_BLUR_SHADER_DEF} from '../../shaders/builtin/bloom_shader.js'
-import {createScreenTexture} from './texture_helpers.js'
+import {createScreenTexture, createFBO} from './texture_helpers.js'
 
 
 export default class BloomEffect {
@@ -14,6 +14,7 @@ export default class BloomEffect {
     #pongFBO = null
     #pongTexture = null
     #fboWidth = 0
+    #fboHeight = 0
     #threshold = 0.8
     #softThreshold = 0.5
     #intensity = 0.3
@@ -146,9 +147,10 @@ export default class BloomEffect {
 
 
     #ensureFBOs (gl, width, height) {
-        if (this.#extractFBO && this.#fboWidth === width) {
+        if (this.#extractFBO && this.#fboWidth === width && this.#fboHeight === height) {
             return
         }
+
         if (this.#extractFBO) {
             gl.deleteFramebuffer(this.#extractFBO)
             gl.deleteTexture(this.#extractTexture)
@@ -159,22 +161,16 @@ export default class BloomEffect {
         }
 
         this.#extractTexture = createScreenTexture(gl, width, height)
-        this.#extractFBO = gl.createFramebuffer()
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#extractFBO)
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#extractTexture, 0)
+        this.#extractFBO = createFBO(gl, this.#extractTexture)
 
         this.#pingTexture = createScreenTexture(gl, width, height)
-        this.#pingFBO = gl.createFramebuffer()
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#pingFBO)
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#pingTexture, 0)
+        this.#pingFBO = createFBO(gl, this.#pingTexture)
 
         this.#pongTexture = createScreenTexture(gl, width, height)
-        this.#pongFBO = gl.createFramebuffer()
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this.#pongFBO)
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.#pongTexture, 0)
+        this.#pongFBO = createFBO(gl, this.#pongTexture)
 
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null)
         this.#fboWidth = width
+        this.#fboHeight = height
     }
 
 
@@ -187,8 +183,11 @@ export default class BloomEffect {
             gl.deleteFramebuffer(this.#pongFBO)
             gl.deleteTexture(this.#pongTexture)
             this.#extractFBO = null
+            this.#extractTexture = null
             this.#pingFBO = null
+            this.#pingTexture = null
             this.#pongFBO = null
+            this.#pongTexture = null
         }
         this.#extractProgram = null
         this.#blurProgram = null
