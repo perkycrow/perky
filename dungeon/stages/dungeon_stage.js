@@ -711,59 +711,19 @@ export default class DungeonStage extends Stage {
         this.fpsTime = performance.now()
         this.fpsDisplay = 0
 
-        const btnStyle = {
-            position: 'fixed',
-            right: '10px',
-            zIndex: '9999',
-            fontFamily: 'monospace',
-            fontSize: '13px',
-            padding: '4px 8px',
-            cursor: 'pointer'
-        }
+        const toggles = [
+            ['SMAA', 'smaaEnabled'],
+            ['FOG', 'volumetricFogEnabled'],
+            ['SSAO', 'ssaoEnabled'],
+            ['BLOOM', 'bloomEnabled'],
+            ['CINE', 'cinematicEnabled']
+        ]
 
-        const smaaBtn = createElement('button', {text: 'SMAA: ON', style: {...btnStyle, top: '10px'}})
-        smaaBtn.addEventListener('click', () => {
-            this.meshRenderer.smaaEnabled = !this.meshRenderer.smaaEnabled
-            smaaBtn.textContent = 'SMAA: ' + (this.meshRenderer.smaaEnabled ? 'ON' : 'OFF')
+        toggles.forEach(([label, prop], i) => {
+            createToggleButton(this.meshRenderer, label, prop, 10 + i * 30)
         })
-        document.body.appendChild(smaaBtn)
 
-        const fogBtn = createElement('button', {text: 'FOG: ON', style: {...btnStyle, top: '40px'}})
-        fogBtn.addEventListener('click', () => {
-            this.meshRenderer.volumetricFogEnabled = !this.meshRenderer.volumetricFogEnabled
-            fogBtn.textContent = 'FOG: ' + (this.meshRenderer.volumetricFogEnabled ? 'ON' : 'OFF')
-        })
-        document.body.appendChild(fogBtn)
-
-        const ssaoBtn = createElement('button', {text: 'SSAO: ON', style: {...btnStyle, top: '70px'}})
-        ssaoBtn.addEventListener('click', () => {
-            this.meshRenderer.ssaoEnabled = !this.meshRenderer.ssaoEnabled
-            ssaoBtn.textContent = 'SSAO: ' + (this.meshRenderer.ssaoEnabled ? 'ON' : 'OFF')
-        })
-        document.body.appendChild(ssaoBtn)
-
-        const bloomBtn = createElement('button', {text: 'BLOOM: ON', style: {...btnStyle, top: '100px'}})
-        bloomBtn.addEventListener('click', () => {
-            this.meshRenderer.bloomEnabled = !this.meshRenderer.bloomEnabled
-            bloomBtn.textContent = 'BLOOM: ' + (this.meshRenderer.bloomEnabled ? 'ON' : 'OFF')
-        })
-        document.body.appendChild(bloomBtn)
-
-        const cineBtn = createElement('button', {text: 'CINE: ON', style: {...btnStyle, top: '130px'}})
-        cineBtn.addEventListener('click', () => {
-            this.meshRenderer.cinematicEnabled = !this.meshRenderer.cinematicEnabled
-            cineBtn.textContent = 'CINE: ' + (this.meshRenderer.cinematicEnabled ? 'ON' : 'OFF')
-        })
-        document.body.appendChild(cineBtn)
-
-        const toonBtn = createElement('button', {text: 'TOON: ON', style: {...btnStyle, top: '160px'}})
-        toonBtn.addEventListener('click', () => {
-            const on = this.meshRenderer.toonLevels > 0
-            this.meshRenderer.toonLevels = on ? 0 : 3
-            this.meshRenderer.outlineEnabled = !on
-            toonBtn.textContent = 'TOON: ' + (on ? 'OFF' : 'ON')
-        })
-        document.body.appendChild(toonBtn)
+        createToonButton(this.meshRenderer, 10 + toggles.length * 30)
 
         this.#createFogPanel()
     }
@@ -888,4 +848,43 @@ export default class DungeonStage extends Stage {
         this.debugOverlay.style.whiteSpace = 'pre'
     }
 
+}
+
+
+const DEBUG_BUTTON_STYLE = {
+    position: 'fixed',
+    right: '10px',
+    zIndex: '9999',
+    fontFamily: 'monospace',
+    fontSize: '13px',
+    padding: '4px 8px',
+    cursor: 'pointer'
+}
+
+
+function createToggleButton (renderer, label, property, top) {
+    const btn = createElement('button', {
+        text: `${label}: ON`,
+        style: {...DEBUG_BUTTON_STYLE, top: top + 'px'}
+    })
+    btn.addEventListener('click', () => {
+        renderer[property] = !renderer[property]
+        btn.textContent = `${label}: ${renderer[property] ? 'ON' : 'OFF'}`
+    })
+    document.body.appendChild(btn)
+}
+
+
+function createToonButton (renderer, top) {
+    const btn = createElement('button', {
+        text: 'TOON: ON',
+        style: {...DEBUG_BUTTON_STYLE, top: top + 'px'}
+    })
+    btn.addEventListener('click', () => {
+        const on = renderer.toonLevels > 0
+        renderer.toonLevels = on ? 0 : 3
+        renderer.outlineEnabled = !on
+        btn.textContent = `TOON: ${on ? 'OFF' : 'ON'}`
+    })
+    document.body.appendChild(btn)
 }
