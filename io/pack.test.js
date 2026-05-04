@@ -1,4 +1,4 @@
-import {pack, unpack} from './pack.js'
+import {pack, unpack, blobToArrayBuffer} from './pack.js'
 
 
 async function blobToText (blob) {
@@ -7,16 +7,6 @@ async function blobToText (blob) {
         reader.onload = () => resolve(reader.result)
         reader.onerror = reject
         reader.readAsText(blob)
-    })
-}
-
-
-async function blobToArrayBuffer (blob) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader()
-        reader.onload = () => resolve(reader.result)
-        reader.onerror = reject
-        reader.readAsArrayBuffer(blob)
     })
 }
 
@@ -140,4 +130,15 @@ describe('unpack', () => {
         expect(text).toBe('Hello')
     })
 
+})
+
+
+test('blobToArrayBuffer', async () => {
+    const data = new Uint8Array([1, 2, 3, 4])
+    const blob = new Blob([data])
+
+    const buffer = await blobToArrayBuffer(blob)
+
+    expect(buffer).toBeInstanceOf(ArrayBuffer)
+    expect(new Uint8Array(buffer)).toEqual(data)
 })

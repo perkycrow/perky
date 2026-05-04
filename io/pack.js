@@ -1,4 +1,4 @@
-function blobToArrayBuffer (blob) {
+export function blobToArrayBuffer (blob) {
     if (typeof blob.arrayBuffer === 'function') {
         return blob.arrayBuffer()
     }

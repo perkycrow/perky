@@ -1,14 +1,4 @@
-function blobToArrayBuffer (blob) {
-    if (typeof blob.arrayBuffer === 'function') {
-        return blob.arrayBuffer()
-    }
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader()
-        reader.onload = () => resolve(reader.result)
-        reader.onerror = reject
-        reader.readAsArrayBuffer(blob)
-    })
-}
+import {blobToArrayBuffer} from './pack.js'
 
 
 const GLB_MAGIC = 0x46546C67
